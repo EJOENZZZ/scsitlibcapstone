@@ -1,68 +1,74 @@
-// app/dashboard/page.tsx
-'use client';
+import Image from "next/image";
+import Link from "next/link";
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-
-export default function DashboardPage() {
-  const router = useRouter();
-
-  useEffect(() => {
-    if (localStorage.getItem('isLoggedIn') !== 'true') {
-      router.replace('/login');
-    }
-  }, [router]);
-
-  if (typeof window !== 'undefined' && localStorage.getItem('isLoggedIn') !== 'true') {
-    return null;
-  }
-
+export default function HomePage() {
   return (
-    <div className="min-h-screen bg-teal-50 flex flex-col">
-      {/* Header */}
-      <header className="bg-teal-600 text-white px-4 py-3 flex items-center justify-between shadow-md">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
-            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-            </svg>
-          </div>
-          <h1 className="text-lg font-bold tracking-wide">EJO HEALTH MANAGEMENT</h1>
+    <div className="flex flex-col min-h-screen font-sans bg-gray-50">
+
+      {/* ================= NAVBAR ================= */}
+      <nav className="w-full bg-white shadow-md py-4 px-10 flex justify-between items-center">
+        <div className="flex items-center gap-2">
+          <Image src="/headerpicture.png" alt="Library Logo" width={40} height={40} />
+          <span className="text-xl font-bold text-blue-700">SCSIT Library</span>
         </div>
-        <span className="text-sm opacity-90">Home</span>
-      </header>
-
-      {/* Greeting + Cards (insert your images here) */}
-      <main className="flex-1 p-5 pb-24">
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-800">
-            Hello, Ellajoy 👋
-          </h2>
-          <p className="text-gray-600 mt-1">Stay Healthy Today</p>
+        <div className="hidden md:flex gap-8 font-medium text-gray-700">
+          <Link href="/" className="hover:text-blue-600 transition">Home</Link>
+          <Link href="/about" className="hover:text-blue-600 transition">About</Link>
         </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          {/* Heart Rate - insert picture */}
-          <div className="bg-white rounded-xl shadow-md overflow-hidden border-2 border-blue-400">
-            <div className="h-32 bg-gray-100 flex items-center justify-center">
-              {/* <Image src="/your-heart-rate.jpg" alt="Heart" fill className="object-cover" /> */}
-              <p className="text-gray-500 text-sm">Heart Rate Photo</p>
-            </div>
-            <div className="p-3 text-center">
-              <p className="font-semibold">Heart Rate</p>
-              <p className="text-xl font-bold text-blue-600">76 BPM</p>
-            </div>
-          </div>
-
-          {/* BP Rate, Sugar, Step - pareho ra, insert your own pictures */}
-          {/* ... copy-paste the other 3 cards ... */}
+        <div className="flex gap-4">
+          <Link href="/login" className="px-5 py-2 rounded-full border border-blue-600 text-blue-600 hover:bg-blue-50 transition">Login</Link>
+          <Link href="/register" className="px-5 py-2 rounded-full bg-blue-600 text-white hover:bg-blue-700 transition">Sign Up</Link>
+          <Link href="/admin" className="px-5 py-2 rounded-full border border-gray-400 text-gray-600 hover:bg-gray-100 transition">Admin</Link>
         </div>
-      </main>
-
-      {/* Bottom Nav */}
-      <nav className="bg-teal-600 text-white fixed bottom-0 left-0 right-0 shadow-lg">
-        {/* ... your bottom nav code ... */}
       </nav>
+
+      {/* ================= HERO SECTION ================= */}
+      <section className="relative flex items-center justify-center text-center text-white h-[80vh]">
+        <Image src="/headerpicture.png" alt="Library Background" fill className="object-cover" />
+        <div className="absolute inset-0 bg-black/60"></div>
+        <div className="relative z-10 max-w-3xl px-6">
+          <h1 className="text-5xl font-bold mb-6">Welcome to SCSIT Library</h1>
+          <p className="text-lg mb-8 text-gray-200">
+            Browse our collection and find the perfect book for your studies and leisure.
+          </p>
+          <div className="flex justify-center gap-6">
+            <Link href="/dashboard" className="px-8 py-3 rounded-full bg-blue-600 hover:bg-blue-700 transition font-semibold">Get Started</Link>
+            <Link href="/about" className="px-8 py-3 rounded-full border border-white hover:bg-white hover:text-black transition font-semibold">Learn More</Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ================= STATS SECTION ================= */}
+      <section className="py-20 bg-white text-center">
+        <div className="max-w-6xl mx-auto grid md:grid-cols-3 gap-10 px-10">
+          <div>
+            <h2 className="text-4xl font-bold text-blue-600">1,230+</h2>
+            <p className="text-gray-600 mt-2">Books Available</p>
+          </div>
+          <div>
+            <h2 className="text-4xl font-bold text-blue-600">12</h2>
+            <p className="text-gray-600 mt-2">Genres</p>
+          </div>
+          <div>
+            <h2 className="text-4xl font-bold text-blue-600">98%</h2>
+            <p className="text-gray-600 mt-2">User Satisfaction</p>
+          </div>
+        </div>
+      </section>
+
+      {/* ================= CTA SECTION ================= */}
+      <section className="bg-blue-600 text-white text-center py-16">
+        <h2 className="text-3xl font-bold mb-6">Ready to Start Reading?</h2>
+        <Link href="/register" className="px-8 py-3 rounded-full bg-white text-blue-600 font-semibold hover:bg-gray-200 transition">
+          Create Account Now
+        </Link>
+      </section>
+
+      {/* ================= FOOTER ================= */}
+      <footer className="bg-white border-t text-center py-6 text-gray-500 text-sm">
+        © {new Date().getFullYear()} SCSIT Library. All rights reserved.
+      </footer>
+
     </div>
   );
 }

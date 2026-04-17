@@ -1,78 +1,77 @@
-// app/dashboard/page.tsx
+import Image from "next/image";
 import Link from "next/link";
 
 export default function DashboardHome() {
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="flex flex-col min-h-screen font-sans bg-gray-50">
 
-      {/* Header */}
-      <div className="bg-teal-600 text-white flex items-center justify-between px-4 py-3">
-        {/* Left: Logo + App Name */}
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-white rounded-full overflow-hidden shadow-sm">
-            <img
-              src="/headerpicture.png"
-              alt="EJO Logo"
-              className="w-full h-full object-contain"
-            />
-          </div>
-          <span className="font-semibold text-lg md:text-xl">EJO HEALTH MANAGEMENT</span>
+      {/* ================= NAVBAR ================= */}
+      <nav className="w-full bg-white shadow-md py-4 px-10 flex justify-between items-center">
+        <div className="flex items-center gap-2">
+          <Image src="/headerpicture.png" alt="Library Logo" width={40} height={40} />
+          <span className="text-xl font-bold text-blue-700">SCSIT Library</span>
         </div>
 
-        {/* Right: Logout */}
-        <div className="text-sm md:text-base cursor-pointer hover:underline">
-          &gt; Logout
+        <div className="hidden md:flex gap-8 font-medium text-gray-700">
+          <Link href="/dashboard" className="hover:text-blue-600 transition">Home</Link>
+          <Link href="/borrowbook" className="hover:text-blue-600 transition">Borrow Book</Link>
+          <Link href="/profile" className="hover:text-blue-600 transition">Profile</Link>
         </div>
-      </div>
 
-      {/* Greeting Section */}
-      <div className="px-4 py-6">
-        <h2 className="text-2xl font-semibold">Hello, ejoenz! 👋</h2>
-        <p className="text-base mt-1 text-gray-700">Stay Healthy Today</p>
-      </div>
+        <div className="flex gap-4">
+          <Link href="/login" className="px-5 py-2 rounded-full border border-blue-600 text-blue-600 hover:bg-blue-50 transition">
+            Log Out
+          </Link>
+        </div>
+      </nav>
 
-      {/* Main Cards */}
-      <div className="px-4 py-2 grid grid-cols-1 sm:grid-cols-2 gap-4 flex-1">
-        <Link href="/heart-rate" className="cursor-pointer">
-          <div className="bg-red-500 text-white rounded-2xl p-6 shadow-lg flex flex-col items-center justify-center">
-            <div className="text-5xl mb-3">❤️</div>
-            <p className="text-lg font-medium">Heart Rate</p>
-            <p className="text-2xl font-bold mt-1">76 BPM</p>
+      {/* ================= GREETING ================= */}
+      <section className="px-10 py-8">
+        <h2 className="text-3xl font-bold text-gray-800">Hello, Ellajoy! 👋</h2>
+        <p className="text-gray-600 mt-1">What would you like to read today?</p>
+      </section>
+
+      {/* ================= BOOK CARDS ================= */}
+      <section className="px-10 pb-10 grid md:grid-cols-2 gap-6 flex-1">
+
+        <Link href="/borrowbook">
+          <div className="bg-blue-600 text-white rounded-2xl p-6 shadow-lg flex flex-col items-center justify-center cursor-pointer hover:bg-blue-700 transition">
+            <div className="text-6xl mb-4">📚</div>
+            <p className="text-lg font-medium">Borrow a Book</p>
+            <p className="text-sm mt-2 opacity-90">Browse and borrow from our collection</p>
           </div>
         </Link>
 
-        <Link href="/bp-rate" className="cursor-pointer">
-          <div className="bg-orange-400 text-white rounded-2xl p-6 shadow-lg flex flex-col items-center justify-center">
-            <div className="text-5xl mb-3">💉</div>
-            <p className="text-lg font-medium">BP Rate</p>
-            <p className="text-2xl font-bold mt-1">120/80</p>
+        <Link href="/mybooks">
+          <div className="bg-green-500 text-white rounded-2xl p-6 shadow-lg flex flex-col items-center justify-center cursor-pointer hover:bg-green-600 transition">
+            <div className="text-6xl mb-4">📖</div>
+            <p className="text-lg font-medium">My Borrowed Books</p>
+            <p className="text-sm mt-2 opacity-90">View your currently borrowed books</p>
           </div>
         </Link>
 
-        <Link href="/sugar" className="cursor-pointer">
-          <div className="bg-yellow-400 text-white rounded-2xl p-6 shadow-lg flex flex-col items-center justify-center">
-            <div className="text-5xl mb-3">🩸</div>
-            <p className="text-lg font-medium">Sugar</p>
-            <p className="text-2xl font-bold mt-1">95 mg/dL</p>
+        <Link href="/returnbook">
+          <div className="bg-orange-400 text-white rounded-2xl p-6 shadow-lg flex flex-col items-center justify-center cursor-pointer hover:bg-orange-500 transition">
+            <div className="text-6xl mb-4">🔄</div>
+            <p className="text-lg font-medium">Return a Book</p>
+            <p className="text-sm mt-2 opacity-90">Return books before the due date</p>
           </div>
         </Link>
 
-        <Link href="/steps" className="cursor-pointer">
-          <div className="bg-blue-400 text-white rounded-2xl p-6 shadow-lg flex flex-col items-center justify-center">
-            <div className="text-5xl mb-3">👣</div>
-            <p className="text-lg font-medium">Steps</p>
-            <p className="text-2xl font-bold mt-1">8,532</p>
+        <Link href="/profile">
+          <div className="bg-purple-500 text-white rounded-2xl p-6 shadow-lg flex flex-col items-center justify-center cursor-pointer hover:bg-purple-600 transition">
+            <div className="text-6xl mb-4">👤</div>
+            <p className="text-lg font-medium">My Profile</p>
+            <p className="text-sm mt-2 opacity-90">View and edit your account details</p>
           </div>
         </Link>
-      </div>
 
-      {/* Bottom Navigation */}
-      <div className="bg-teal-600 text-white py-4 flex justify-around items-center mt-auto">
-        <Link href="/dashboard" className="text-2xl cursor-pointer">🏠</Link>
-        <Link href="/appointment" className="text-2xl cursor-pointer">📅</Link>
-        <Link href="/records" className="text-2xl cursor-pointer">📋</Link>
-        <Link href="/profile" className="text-2xl cursor-pointer">👤</Link>
-      </div>
+      </section>
+
+      {/* ================= FOOTER ================= */}
+      <footer className="bg-white border-t text-center py-6 text-gray-500 text-sm">
+        © {new Date().getFullYear()} SCSIT Library. All rights reserved.
+      </footer>
 
     </div>
   );

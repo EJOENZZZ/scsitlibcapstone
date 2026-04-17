@@ -1,67 +1,87 @@
-// app/page.tsx
-import Link from 'next/link';
+import Image from "next/image";
+import Link from "next/link";
 
-export default function WelcomePage() {
+export default function Home() {
   return (
-    <div className="min-h-screen bg-gradient-to-r from-blue-500 to-indigo-600 flex flex-col items-center justify-center px-6 text-center text-white">
-      
-      {/* App Name */}
-      <h3 className="text-xl md:text-2xl font-semibold mb-4 tracking-wide">
-        EJO Booking System
-      </h3>
+    <div className="flex flex-col min-h-screen font-sans bg-gray-50">
 
-      {/* ICON (Airplane) */}
-      <div className="mb-10">
-        <div className="w-40 h-40 md:w-48 md:h-48 bg-white rounded-full flex items-center justify-center shadow-2xl mx-auto">
-          <svg
-            className="w-24 h-24 text-blue-600"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M2.5 19l19-7-19-7v5l15 2-15 2v5z"
-            />
-          </svg>
+      {/* ================= NAVBAR ================= */}
+      <nav className="w-full bg-white shadow-md py-4 px-10 flex justify-between items-center">
+        <div className="flex items-center gap-2">
+          <Image src="/headerpicture.png" alt="Library Logo" width={40} height={40} />
+          <span className="text-xl font-bold text-blue-700">SCSIT Library</span>
         </div>
-      </div>
 
-      {/* TITLE */}
-      <h1 className="text-4xl md:text-5xl font-bold mb-3 tracking-tight">
-        EJO ONLINE BOOKING
-      </h1>
+        <div className="hidden md:flex gap-8 font-medium text-gray-700">
+          <Link href="/" className="hover:text-blue-600 transition">Home</Link>
+          <Link href="/about" className="hover:text-blue-600 transition">About</Link>
+        </div>
 
-      {/* TAGLINE */}
-      <p className="text-xl md:text-2xl font-medium mb-12">
-        Book Your Trip Anytime, Anywhere
-      </p>
+        <div className="flex gap-4">
+          <Link href="/login" className="px-5 py-2 rounded-full border border-blue-600 text-blue-600 hover:bg-blue-50 transition">
+            Login
+          </Link>
+          <Link href="/register" className="px-5 py-2 rounded-full bg-blue-600 text-white hover:bg-blue-700 transition">
+            Sign Up
+          </Link>
+          <Link href="/admin" className="px-5 py-2 rounded-full border border-gray-400 text-gray-600 hover:bg-gray-100 transition">
+            Admin
+          </Link>
+        </div>
+      </nav>
 
-      {/* BUTTONS */}
-      <div className="flex flex-col sm:flex-row gap-6 w-full max-w-sm">
-        
-        <Link
-          href="/login"
-          className="bg-white text-blue-600 font-bold text-lg py-5 px-12 rounded-full shadow-xl hover:bg-gray-100 active:scale-95 transition transform"
-        >
-          Log In
+      {/* ================= HERO SECTION ================= */}
+      <section className="relative flex items-center justify-center text-center text-white h-[80vh]">
+        <Image src="/headerpicture.png" alt="Library Background" fill className="object-cover" />
+        <div className="absolute inset-0 bg-black/60"></div>
+
+        <div className="relative z-10 max-w-3xl px-6">
+          <h1 className="text-5xl font-bold mb-6">Welcome to SCSIT Library</h1>
+          <p className="text-lg mb-8 text-gray-200">
+            Browse our collection and find the perfect book for your studies and leisure.
+          </p>
+          <div className="flex justify-center gap-6">
+            <Link href="/dashboard" className="px-8 py-3 rounded-full bg-blue-600 hover:bg-blue-700 transition font-semibold">
+              Get Started
+            </Link>
+            <Link href="/about" className="px-8 py-3 rounded-full border border-white hover:bg-white hover:text-black transition font-semibold">
+              Learn More
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ================= STATS SECTION ================= */}
+      <section className="py-20 bg-white text-center">
+        <div className="max-w-6xl mx-auto grid md:grid-cols-3 gap-10 px-10">
+          <div>
+            <h2 className="text-4xl font-bold text-blue-600">1,230+</h2>
+            <p className="text-gray-600 mt-2">Books Available</p>
+          </div>
+          <div>
+            <h2 className="text-4xl font-bold text-blue-600">12</h2>
+            <p className="text-gray-600 mt-2">Genres</p>
+          </div>
+          <div>
+            <h2 className="text-4xl font-bold text-blue-600">98%</h2>
+            <p className="text-gray-600 mt-2">User Satisfaction</p>
+          </div>
+        </div>
+      </section>
+
+      {/* ================= CTA SECTION ================= */}
+      <section className="bg-blue-600 text-white text-center py-16">
+        <h2 className="text-3xl font-bold mb-6">Ready to Start Reading?</h2>
+        <Link href="/register" className="px-8 py-3 rounded-full bg-white text-blue-600 font-semibold hover:bg-gray-200 transition">
+          Create Account Now
         </Link>
+      </section>
 
-        <Link
-          href="/register"
-          className="bg-blue-800 text-white font-bold text-lg py-5 px-12 rounded-full shadow-xl hover:bg-blue-900 active:scale-95 transition transform"
-        >
-          Register
-        </Link>
+      {/* ================= FOOTER ================= */}
+      <footer className="bg-white border-t text-center py-6 text-gray-500 text-sm">
+        © {new Date().getFullYear()} SCSIT Library. All rights reserved.
+      </footer>
 
-      </div>
-
-      {/* FOOTER TEXT */}
-      <p className="mt-10 text-sm opacity-90">
-        Book flights or ferry tickets بسهولة 🚢✈️
-      </p>
     </div>
   );
 }
