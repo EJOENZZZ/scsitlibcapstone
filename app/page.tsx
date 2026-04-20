@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 
 const features = [
@@ -17,10 +16,33 @@ const genres = [
   "Algorithms", "Artificial Intelligence", "Mobile Development",
 ];
 
+const featuredBooks = [
+  { title: "Introduction to Algorithms", author: "Cormen, Leiserson, Rivest, Stein", genre: "Computer Science", available: true },
+  { title: "Clean Code", author: "Robert C. Martin", genre: "Software Engineering", available: true },
+  { title: "Design Patterns", author: "Gang of Four", genre: "Computer Science", available: true },
+  { title: "You Don't Know JS", author: "Kyle Simpson", genre: "Web Development", available: true },
+  { title: "Operating System Concepts", author: "Silberschatz, Galvin, Gagne", genre: "Computer Science", available: true },
+  { title: "Computer Networks", author: "Andrew S. Tanenbaum", genre: "Networking", available: true },
+  { title: "Artificial Intelligence: A Modern Approach", author: "Stuart Russell, Peter Norvig", genre: "Artificial Intelligence", available: true },
+  { title: "The Art of Computer Programming", author: "Donald E. Knuth", genre: "Computer Science", available: true },
+  { title: "Machine Learning", author: "Tom M. Mitchell", genre: "Machine Learning", available: true },
+  { title: "Data Structures and Algorithms in Java", author: "Robert Lafore", genre: "Computer Science", available: true },
+  { title: "Head First Design Patterns", author: "Freeman, Robson, Bates, Sierra", genre: "Software Engineering", available: true },
+  { title: "JavaScript: The Good Parts", author: "Douglas Crockford", genre: "Web Development", available: true },
+  { title: "Python Crash Course", author: "Eric Matthes", genre: "Programming", available: true },
+  { title: "Learning React", author: "Alex Banks, Eve Porcello", genre: "Web Development", available: true },
+  { title: "Pro Git", author: "Scott Chacon, Ben Straub", genre: "Software Engineering", available: true },
+  { title: "The Mythical Man-Month", author: "Frederick P. Brooks Jr.", genre: "Software Engineering", available: true },
+  { title: "Code Complete", author: "Steve McConnell", genre: "Software Engineering", available: true },
+  { title: "Refactoring", author: "Martin Fowler", genre: "Software Engineering", available: true },
+  { title: "Cracking the Coding Interview", author: "Gayle Laakmann McDowell", genre: "Programming", available: true },
+  { title: "Elements of Programming Interviews", author: "Aziz, Lee, Prakash", genre: "Programming", available: true },
+];
+
 const testimonials = [
-  { name: "Maria Santos", course: "BSIT — 3rd Year", text: "The SCSIT Library system made it so easy to find and borrow books for my thesis. Highly recommended!", avatar: "👩‍🎓" },
-  { name: "Carlo Reyes", course: "BSCS — 2nd Year", text: "I love how I can check book availability online before going to the library. Saves so much time.", avatar: "👨‍💻" },
-  { name: "Ana Dela Cruz", course: "BSIT — 4th Year", text: "The due date reminders are a lifesaver. I've never returned a book late since I started using this.", avatar: "👩‍💻" },
+  { name: "Maria Santos", course: "BSIT — 3rd Year", text: "The SCSIT Library system made it so easy to find and borrow books for my thesis. Highly recommended!", avatar: "👩🎓" },
+  { name: "Carlo Reyes", course: "BSCS — 2nd Year", text: "I love how I can check book availability online before going to the library. Saves so much time.", avatar: "👨💻" },
+  { name: "Ana Dela Cruz", course: "BSIT — 4th Year", text: "The due date reminders are a lifesaver. I've never returned a book late since I started using this.", avatar: "👩💻" },
 ];
 
 export default function Home() {
@@ -30,7 +52,7 @@ export default function Home() {
       {/* ── NAVBAR ── */}
       <nav className="w-full bg-white/90 backdrop-blur-md border-b border-slate-100 py-4 px-10 flex justify-between items-center sticky top-0 z-50">
         <div className="flex items-center gap-3">
-          <Image src="/headerpicture.png" alt="Library Logo" width={38} height={38} className="rounded-lg" />
+          <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center text-xl">📚</div>
           <div>
             <span className="text-lg font-bold text-slate-800 tracking-tight">SCSIT Library</span>
             <span className="hidden sm:inline ml-2 text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full font-medium">Digital System</span>
@@ -40,7 +62,7 @@ export default function Home() {
         <div className="hidden md:flex gap-8 text-sm font-medium text-slate-500">
           <Link href="/" className="text-blue-600 font-semibold">Home</Link>
           <Link href="#features" className="hover:text-slate-800 transition">Features</Link>
-          <Link href="#genres" className="hover:text-slate-800 transition">Catalog</Link>
+          <Link href="#books" className="hover:text-slate-800 transition">Books</Link>
           <Link href="#testimonials" className="hover:text-slate-800 transition">Reviews</Link>
         </div>
 
@@ -59,8 +81,13 @@ export default function Home() {
 
       {/* ── HERO ── */}
       <section className="relative flex items-center justify-center text-center text-white min-h-[90vh]">
-        <Image src="/headerpicture.png" alt="Library" fill className="object-cover" priority />
-        <div className="absolute inset-0 bg-gradient-to-b from-slate-900/75 via-slate-900/65 to-slate-900/80" />
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-700 via-blue-800 to-slate-900" />
+        
+        {/* Decorative elements */}
+        <div className="absolute top-20 left-20 text-8xl opacity-10 rotate-12 select-none">📚</div>
+        <div className="absolute bottom-20 right-20 text-8xl opacity-10 -rotate-12 select-none">📖</div>
+        <div className="absolute top-1/2 left-10 text-6xl opacity-5 rotate-6 select-none">📕</div>
+        <div className="absolute top-1/2 right-10 text-6xl opacity-5 -rotate-6 select-none">📗</div>
 
         <div className="relative z-10 max-w-4xl px-6 py-20">
           <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 text-white text-xs font-semibold px-4 py-2 rounded-full mb-8 uppercase tracking-widest">
@@ -116,20 +143,61 @@ export default function Home() {
           <div className="flex items-center gap-8 text-slate-500 text-sm font-semibold">
             <span>BSIT</span>
             <span className="text-slate-200">|</span>
-            <span>BSCS</span>
+            <span>BSCE</span>
             <span className="text-slate-200">|</span>
-            <span>BSIS</span>
+            <span>BSCRIM</span>
             <span className="text-slate-200">|</span>
-            <span>ACT</span>
+            <span>BSHM</span>
             <span className="text-slate-200">|</span>
-            <span>HRS</span>
+            <span>BSBA</span>
+            <span className="text-slate-200">|</span>
+            <span>BSN</span>
           </div>
           <p className="text-xs text-slate-400">School of Computer Studies & Information Technology</p>
         </div>
       </section>
 
+      {/* ── FEATURED BOOKS ── */}
+      <section id="books" className="py-24 bg-white">
+        <div className="max-w-6xl mx-auto px-10">
+          <div className="text-center mb-16">
+            <span className="text-xs font-semibold text-blue-600 uppercase tracking-widest">Our Collection</span>
+            <h2 className="text-4xl font-bold text-slate-800 mt-3 mb-4 tracking-tight">Featured Books</h2>
+            <p className="text-slate-400 max-w-md mx-auto text-sm leading-relaxed">
+              Explore some of our most popular books available for borrowing right now.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
+            {featuredBooks.slice(0, 12).map((book) => (
+              <div key={book.title} className="bg-white border border-slate-100 rounded-2xl p-5 hover:border-blue-200 hover:shadow-lg hover:shadow-blue-50 transition-all duration-300 group">
+                <div className="flex justify-between items-start mb-3">
+                  <span className="bg-blue-50 text-blue-700 text-xs px-2.5 py-1 rounded-full font-medium group-hover:bg-blue-100 transition">
+                    {book.genre}
+                  </span>
+                  <span className="bg-emerald-50 text-emerald-700 text-xs px-2.5 py-1 rounded-full font-semibold">
+                    Available
+                  </span>
+                </div>
+                <h3 className="font-semibold text-slate-800 text-sm mb-2 line-clamp-2 leading-tight">{book.title}</h3>
+                <p className="text-slate-500 text-xs mb-4">{book.author}</p>
+                <Link href="/login" className="text-xs text-blue-600 font-medium hover:underline">
+                  Sign in to borrow →
+                </Link>
+              </div>
+            ))}
+          </div>
+
+          <div className="text-center">
+            <Link href="/login" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl border border-blue-200 text-blue-600 font-medium hover:bg-blue-50 transition text-sm">
+              View All {featuredBooks.length}+ Books →
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* ── FEATURES ── */}
-      <section id="features" className="py-24 bg-white">
+      <section id="features" className="py-24 bg-slate-50 border-y border-slate-100">
         <div className="max-w-6xl mx-auto px-10">
           <div className="text-center mb-16">
             <span className="text-xs font-semibold text-blue-600 uppercase tracking-widest">Why Choose Us</span>
@@ -154,7 +222,7 @@ export default function Home() {
       </section>
 
       {/* ── HOW IT WORKS ── */}
-      <section className="py-24 bg-slate-50 border-y border-slate-100">
+      <section className="py-24 bg-white">
         <div className="max-w-5xl mx-auto px-10">
           <div className="text-center mb-16">
             <span className="text-xs font-semibold text-blue-600 uppercase tracking-widest">Simple Process</span>
@@ -182,11 +250,11 @@ export default function Home() {
       </section>
 
       {/* ── GENRES ── */}
-      <section id="genres" className="py-24 bg-white">
+      <section id="genres" className="py-24 bg-slate-50 border-y border-slate-100">
         <div className="max-w-5xl mx-auto px-10">
           <div className="text-center mb-12">
-            <span className="text-xs font-semibold text-blue-600 uppercase tracking-widest">Our Collection</span>
-            <h2 className="text-4xl font-bold text-slate-800 mt-3 mb-4 tracking-tight">Browse by Genre</h2>
+            <span className="text-xs font-semibold text-blue-600 uppercase tracking-widest">Browse Categories</span>
+            <h2 className="text-4xl font-bold text-slate-800 mt-3 mb-4 tracking-tight">Book Genres</h2>
             <p className="text-slate-400 text-sm">12 curated categories covering everything in your curriculum and beyond.</p>
           </div>
 
@@ -207,7 +275,7 @@ export default function Home() {
       </section>
 
       {/* ── TESTIMONIALS ── */}
-      <section id="testimonials" className="py-24 bg-slate-50 border-y border-slate-100">
+      <section id="testimonials" className="py-24 bg-white">
         <div className="max-w-5xl mx-auto px-10">
           <div className="text-center mb-16">
             <span className="text-xs font-semibold text-blue-600 uppercase tracking-widest">Student Reviews</span>
@@ -264,7 +332,7 @@ export default function Home() {
       <footer className="bg-white border-t border-slate-100 py-10 px-10">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="flex items-center gap-3">
-            <Image src="/headerpicture.png" alt="Logo" width={32} height={32} className="rounded-lg" />
+            <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center text-lg">📚</div>
             <div>
               <p className="font-bold text-slate-800 text-sm">SCSIT Library</p>
               <p className="text-xs text-slate-400">Digital Library Management System</p>

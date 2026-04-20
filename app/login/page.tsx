@@ -12,7 +12,15 @@ export default function Login() {
   const handleLogin = () => {
     if (!username || !password) { setError("Please fill in all fields."); return; }
     setError("");
-    router.push(username === "admin" && password === "123456" ? "/dashboard?admin=true" : "/dashboard");
+    
+    // Pass username to dashboard
+    const params = new URLSearchParams();
+    params.set('user', username);
+    if (username === "admin" && password === "1234") {
+      params.set('admin', 'true');
+    }
+    
+    router.push(`/dashboard?${params.toString()}`);
   };
 
   return (
@@ -41,7 +49,6 @@ export default function Login() {
         </div>
 
         <div className="relative z-10">
-          {/* Big book icon */}
           <div className="text-7xl mb-6 select-none">📚</div>
           <h2 className="text-4xl font-bold text-white leading-tight mb-4">
             Your gateway to<br />knowledge starts here.
@@ -81,6 +88,7 @@ export default function Login() {
               <label className="text-sm font-medium text-slate-700 mb-1.5 block">Username</label>
               <input
                 placeholder="Enter your username"
+                value={username}
                 className="border border-slate-200 p-3 w-full rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
                 onChange={(e) => setUsername(e.target.value)}
               />
@@ -93,8 +101,10 @@ export default function Login() {
               <input
                 type="password"
                 placeholder="Enter your password"
+                value={password}
                 className="border border-slate-200 p-3 w-full rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
                 onChange={(e) => setPassword(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleLogin()}
               />
             </div>
           </div>

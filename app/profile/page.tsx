@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 
 const borrowHistory = [
@@ -14,7 +13,7 @@ export default function Profile() {
       {/* NAVBAR */}
       <nav className="w-full bg-white border-b border-slate-200 py-4 px-10 flex justify-between items-center sticky top-0 z-50">
         <div className="flex items-center gap-3">
-          <Image src="/headerpicture.png" alt="Library Logo" width={38} height={38} className="rounded-lg" />
+          <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center text-xl">📚</div>
           <span className="text-lg font-bold text-slate-800">SCSIT Library</span>
         </div>
         <div className="hidden md:flex gap-8 font-medium text-slate-500 text-sm">
