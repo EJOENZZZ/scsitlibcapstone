@@ -8,63 +8,101 @@ export default function Login() {
   const router = useRouter();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
   const handleLogin = () => {
-    if (username === "admin" && password === "123456") {
-      router.push("/dashboard?admin=true");
-    } else {
-      router.push("/dashboard");
-    }
+    if (!username || !password) { setError("Please fill in all fields."); return; }
+    setError("");
+    router.push(username === "admin" && password === "123456" ? "/dashboard?admin=true" : "/dashboard");
   };
 
   return (
-    <div className="flex flex-col min-h-screen font-sans bg-gray-50">
+    <div className="flex min-h-screen font-sans">
 
-      {/* ================= NAVBAR ================= */}
-      <nav className="w-full bg-white shadow-md py-4 px-10 flex justify-between items-center">
-        <div className="flex items-center gap-2">
-          <Image src="/headerpicture.png" alt="Library Logo" width={40} height={40} />
-          <span className="text-xl font-bold text-blue-700">SCSIT Library</span>
+      {/* LEFT PANEL */}
+      <div className="hidden lg:flex w-1/2 bg-slate-900 flex-col justify-between p-12 relative overflow-hidden">
+        <div className="absolute inset-0 opacity-10">
+          <Image src="/headerpicture.png" alt="bg" fill className="object-cover" />
         </div>
-        <div className="flex gap-4">
-          <Link href="/login" className="px-5 py-2 rounded-full border border-blue-600 text-blue-600 hover:bg-blue-50 transition">Login</Link>
-          <Link href="/register" className="px-5 py-2 rounded-full bg-blue-600 text-white hover:bg-blue-700 transition">Sign Up</Link>
-          <Link href="/admin" className="px-5 py-2 rounded-full border border-gray-400 text-gray-600 hover:bg-gray-100 transition">Admin</Link>
+        <div className="relative z-10 flex items-center gap-3">
+          <Image src="/headerpicture.png" alt="Logo" width={40} height={40} className="rounded-xl" />
+          <span className="text-white font-bold text-lg">SCSIT Library</span>
         </div>
-      </nav>
+        <div className="relative z-10">
+          <h2 className="text-4xl font-bold text-white leading-tight mb-4">
+            Your gateway to<br />knowledge starts here.
+          </h2>
+          <p className="text-slate-400 text-sm leading-relaxed">
+            Access thousands of books, manage your borrowing history, and stay on top of your reading — all in one place.
+          </p>
+          <div className="flex gap-6 mt-8">
+            {[["1,230+", "Books"], ["12", "Genres"], ["98%", "Satisfaction"]].map(([v, l]) => (
+              <div key={l}>
+                <p className="text-2xl font-bold text-white">{v}</p>
+                <p className="text-xs text-slate-400">{l}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+        <p className="relative z-10 text-xs text-slate-600">© {new Date().getFullYear()} SCSIT Library</p>
+      </div>
 
-      {/* ================= LOGIN FORM ================= */}
-      <section className="flex flex-1 items-center justify-center py-20">
-        <div className="bg-white p-8 rounded-2xl shadow-lg w-80">
-          <h1 className="text-2xl font-bold text-center mb-2">Login</h1>
-          <p className="text-center text-gray-500 text-sm mb-5">Welcome back to SCSIT Library</p>
-          <input
-            placeholder="Username"
-            className="border p-2 w-full mb-3 rounded-lg"
-            onChange={(e) => setUsername(e.target.value)}
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            className="border p-2 w-full mb-3 rounded-lg"
-            onChange={(e) => setPassword(e.target.value)}
-          />
+      {/* RIGHT PANEL */}
+      <div className="flex-1 flex flex-col justify-center items-center bg-slate-50 px-8 py-12">
+        <div className="w-full max-w-sm">
+          <div className="mb-8">
+            <h1 className="text-2xl font-bold text-slate-800">Sign in to your account</h1>
+            <p className="text-slate-400 text-sm mt-1">Welcome back to SCSIT Library</p>
+          </div>
+
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-3 rounded-xl mb-5">
+              {error}
+            </div>
+          )}
+
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium text-slate-700 mb-1.5 block">Username</label>
+              <input
+                placeholder="Enter your username"
+                className="border border-slate-200 p-3 w-full rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                onChange={(e) => setUsername(e.target.value)}
+              />
+            </div>
+            <div>
+              <div className="flex justify-between mb-1.5">
+                <label className="text-sm font-medium text-slate-700">Password</label>
+                <span className="text-xs text-blue-600 cursor-pointer hover:underline">Forgot password?</span>
+              </div>
+              <input
+                type="password"
+                placeholder="Enter your password"
+                className="border border-slate-200 p-3 w-full rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </div>
+          </div>
+
           <button
             onClick={handleLogin}
-            className="bg-blue-600 hover:bg-blue-700 text-white w-full p-2 rounded-lg transition font-semibold"
+            className="bg-blue-600 hover:bg-blue-700 text-white w-full py-3 rounded-xl transition font-semibold mt-6 text-sm shadow-sm"
           >
-            Login
+            Sign In
           </button>
-          <p className="text-center text-blue-500 mt-3 cursor-pointer text-sm" onClick={() => router.push("/register")}>
-            Don&apos;t have an account? Sign Up
-          </p>
-        </div>
-      </section>
 
-      {/* ================= FOOTER ================= */}
-      <footer className="bg-white border-t text-center py-6 text-gray-500 text-sm">
-        © {new Date().getFullYear()} SCSIT Library. All rights reserved.
-      </footer>
+          <p className="text-center text-sm text-slate-400 mt-6">
+            Don&apos;t have an account?{" "}
+            <Link href="/register" className="text-blue-600 font-medium hover:underline">Create one</Link>
+          </p>
+
+          <div className="mt-6 pt-6 border-t border-slate-200 text-center">
+            <Link href="/admin" className="text-xs text-slate-400 hover:text-slate-600 transition">
+              Admin Portal →
+            </Link>
+          </div>
+        </div>
+      </div>
 
     </div>
   );

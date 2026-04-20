@@ -2,56 +2,89 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 export default function Register() {
   const router = useRouter();
+  const [form, setForm] = useState({ name: "", email: "", username: "", password: "" });
 
   const handleRegister = () => {
-    alert("Registered Successfully!");
+    if (!form.name || !form.email || !form.username || !form.password) {
+      alert("Please fill in all fields.");
+      return;
+    }
+    alert("Account created successfully! Welcome to SCSIT Library 🎉");
     router.push("/login");
   };
 
   return (
-    <div className="flex flex-col min-h-screen font-sans bg-gray-50">
+    <div className="flex min-h-screen font-sans">
 
-      {/* ================= NAVBAR ================= */}
-      <nav className="w-full bg-white shadow-md py-4 px-10 flex justify-between items-center">
-        <div className="flex items-center gap-2">
-          <Image src="/headerpicture.png" alt="Library Logo" width={40} height={40} />
-          <span className="text-xl font-bold text-blue-700">SCSIT Library</span>
+      {/* LEFT PANEL */}
+      <div className="hidden lg:flex w-1/2 bg-slate-900 flex-col justify-between p-12 relative overflow-hidden">
+        <div className="absolute inset-0 opacity-10">
+          <Image src="/headerpicture.png" alt="bg" fill className="object-cover" />
         </div>
-        <div className="flex gap-4">
-          <Link href="/login" className="px-5 py-2 rounded-full border border-blue-600 text-blue-600 hover:bg-blue-50 transition">Login</Link>
-          <Link href="/register" className="px-5 py-2 rounded-full bg-blue-600 text-white hover:bg-blue-700 transition">Sign Up</Link>
-          <Link href="/admin" className="px-5 py-2 rounded-full border border-gray-400 text-gray-600 hover:bg-gray-100 transition">Admin</Link>
+        <div className="relative z-10 flex items-center gap-3">
+          <Image src="/headerpicture.png" alt="Logo" width={40} height={40} className="rounded-xl" />
+          <span className="text-white font-bold text-lg">SCSIT Library</span>
         </div>
-      </nav>
+        <div className="relative z-10">
+          <h2 className="text-4xl font-bold text-white leading-tight mb-4">
+            Join thousands of<br />students reading smarter.
+          </h2>
+          <p className="text-slate-400 text-sm leading-relaxed">
+            Create your free account and get instant access to our full catalog of books, journals, and academic resources.
+          </p>
+          <div className="mt-8 space-y-3">
+            {["✅ Free access to 1,230+ books", "✅ Track your borrowing history", "✅ Get due date reminders"].map((f) => (
+              <p key={f} className="text-sm text-slate-300">{f}</p>
+            ))}
+          </div>
+        </div>
+        <p className="relative z-10 text-xs text-slate-600">© {new Date().getFullYear()} SCSIT Library</p>
+      </div>
 
-      {/* ================= REGISTER FORM ================= */}
-      <section className="flex flex-1 items-center justify-center py-20">
-        <div className="bg-white p-8 rounded-2xl shadow-lg w-80">
-          <h1 className="text-2xl font-bold text-center mb-2">Sign Up</h1>
-          <p className="text-center text-gray-500 text-sm mb-5">Create your SCSIT Library account</p>
-          <input placeholder="Full Name" className="border p-2 w-full mb-2 rounded-lg" />
-          <input placeholder="Email" className="border p-2 w-full mb-2 rounded-lg" />
-          <input placeholder="Username" className="border p-2 w-full mb-2 rounded-lg" />
-          <input type="password" placeholder="Password" className="border p-2 w-full mb-4 rounded-lg" />
+      {/* RIGHT PANEL */}
+      <div className="flex-1 flex flex-col justify-center items-center bg-slate-50 px-8 py-12">
+        <div className="w-full max-w-sm">
+          <div className="mb-8">
+            <h1 className="text-2xl font-bold text-slate-800">Create your account</h1>
+            <p className="text-slate-400 text-sm mt-1">Join the SCSIT Library community today</p>
+          </div>
+
+          <div className="space-y-4">
+            {[
+              { key: "name", label: "Full Name", placeholder: "e.g. Ellajoy Orcine", type: "text" },
+              { key: "email", label: "Email Address", placeholder: "you@example.com", type: "email" },
+              { key: "username", label: "Username", placeholder: "Choose a username", type: "text" },
+              { key: "password", label: "Password", placeholder: "Create a strong password", type: "password" },
+            ].map((f) => (
+              <div key={f.key}>
+                <label className="text-sm font-medium text-slate-700 mb-1.5 block">{f.label}</label>
+                <input
+                  type={f.type}
+                  placeholder={f.placeholder}
+                  className="border border-slate-200 p-3 w-full rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                  onChange={(e) => setForm({ ...form, [f.key]: e.target.value })}
+                />
+              </div>
+            ))}
+          </div>
+
           <button
             onClick={handleRegister}
-            className="bg-blue-600 hover:bg-blue-700 text-white w-full p-2 rounded-lg transition font-semibold"
+            className="bg-blue-600 hover:bg-blue-700 text-white w-full py-3 rounded-xl transition font-semibold mt-6 text-sm shadow-sm"
           >
             Create Account
           </button>
-          <p className="text-center text-blue-500 mt-3 cursor-pointer text-sm" onClick={() => router.push("/login")}>
-            Already have an account? Login
+
+          <p className="text-center text-sm text-slate-400 mt-6">
+            Already have an account?{" "}
+            <Link href="/login" className="text-blue-600 font-medium hover:underline">Sign in</Link>
           </p>
         </div>
-      </section>
-
-      {/* ================= FOOTER ================= */}
-      <footer className="bg-white border-t text-center py-6 text-gray-500 text-sm">
-        © {new Date().getFullYear()} SCSIT Library. All rights reserved.
-      </footer>
+      </div>
 
     </div>
   );
