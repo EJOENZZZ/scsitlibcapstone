@@ -1,5 +1,4 @@
 "use client";
-import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -33,6 +32,21 @@ const borrowers = [
 ];
 
 export default function AdminPage() {
+  // ── Auth state ──
+  const [authed, setAuthed] = useState(false);
+  const [loginForm, setLoginForm] = useState({ username: "", password: "" });
+  const [loginError, setLoginError] = useState("");
+
+  const handleAdminLogin = () => {
+    if (loginForm.username === "admin" && loginForm.password === "1234") {
+      setLoginError("");
+      setAuthed(true);
+    } else {
+      setLoginError("Invalid username or password.");
+    }
+  };
+
+  // ── Dashboard state ──
   const [books, setBooks] = useState<Book[]>(initialBooks);
   const [search, setSearch] = useState("");
   const [modal, setModal] = useState<"add" | "edit" | "delete" | null>(null);
@@ -57,13 +71,11 @@ export default function AdminPage() {
     setBooks([...books, { ...form, id: Date.now() }]);
     closeModal();
   };
-
   const handleEdit = () => {
     if (!selected) return;
     setBooks(books.map((b) => (b.id === selected.id ? { ...b, ...form } : b)));
     closeModal();
   };
-
   const handleDelete = () => {
     if (!selected) return;
     setBooks(books.filter((b) => b.id !== selected.id));
@@ -77,13 +89,112 @@ export default function AdminPage() {
     { label: "Total Copies", value: books.reduce((s, b) => s + b.copies, 0), icon: "🗂️", color: "bg-purple-50 text-purple-700" },
   ];
 
+  // ════════════════════════════════════════
+  // ADMIN LOGIN SCREEN
+  // ════════════════════════════════════════
+  if (!authed) {
+    return (
+      <div className="flex min-h-screen font-sans">
+
+        {/* LEFT PANEL */}
+        <div className="hidden lg:flex w-1/2 bg-gradient-to-br from-slate-800 via-slate-900 to-black flex-col justify-between p-12 relative overflow-hidden">
+          <div className="absolute top-16 right-10 text-8xl opacity-10 rotate-12 select-none">🔐</div>
+          <div className="absolute bottom-32 right-20 text-6xl opacity-10 -rotate-6 select-none">📊</div>
+          <div className="absolute top-1/2 left-6 text-5xl opacity-10 rotate-3 select-none">📚</div>
+
+          <div className="relative z-10 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-xl">📚</div>
+            <span className="text-white font-bold text-lg">SCSIT Library</span>
+          </div>
+
+          <div className="relative z-10">
+            <div className="text-6xl mb-6 select-none">🛡️</div>
+            <h2 className="text-4xl font-bold text-white leading-tight mb-4">
+              Admin Portal<br />Access Only.
+            </h2>
+            <p className="text-slate-400 text-sm leading-relaxed">
+              This area is restricted to authorized library administrators. Please sign in with your admin credentials to continue.
+            </p>
+            <div className="mt-8 space-y-3">
+              {["✅ Manage book catalog", "✅ View borrower records", "✅ Add, edit & delete books"].map((f) => (
+                <p key={f} className="text-sm text-slate-300">{f}</p>
+              ))}
+            </div>
+          </div>
+
+          <p className="relative z-10 text-xs text-slate-600">© {new Date().getFullYear()} SCSIT Library</p>
+        </div>
+
+        {/* RIGHT PANEL */}
+        <div className="flex-1 flex flex-col justify-center items-center bg-slate-50 px-8 py-12">
+          <div className="w-full max-w-sm">
+            <div className="mb-8">
+              <span className="inline-block bg-red-50 text-red-600 text-xs font-semibold px-3 py-1 rounded-full mb-4 uppercase tracking-wider">
+                Restricted Access
+              </span>
+              <h1 className="text-2xl font-bold text-slate-800">Admin Sign In</h1>
+              <p className="text-slate-400 text-sm mt-1">Enter your admin credentials to continue</p>
+            </div>
+
+            {loginError && (
+              <div className="bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-3 rounded-xl mb-5">
+                {loginError}
+              </div>
+            )}
+
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium text-slate-700 mb-1.5 block">Username</label>
+                <input
+                  placeholder="Enter admin username"
+                  value={loginForm.username}
+                  onChange={(e) => setLoginForm({ ...loginForm, username: e.target.value })}
+                  onKeyDown={(e) => e.key === "Enter" && handleAdminLogin()}
+                  className="border border-slate-200 p-3 w-full rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-slate-500 transition"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-slate-700 mb-1.5 block">Password</label>
+                <input
+                  type="password"
+                  placeholder="Enter admin password"
+                  value={loginForm.password}
+                  onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
+                  onKeyDown={(e) => e.key === "Enter" && handleAdminLogin()}
+                  className="border border-slate-200 p-3 w-full rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-slate-500 transition"
+                />
+              </div>
+            </div>
+
+            <button
+              onClick={handleAdminLogin}
+              className="bg-slate-900 hover:bg-slate-700 text-white w-full py-3 rounded-xl transition font-semibold mt-6 text-sm shadow-sm"
+            >
+              Sign In to Admin Panel
+            </button>
+
+            <div className="mt-6 pt-6 border-t border-slate-200 text-center">
+              <Link href="/" className="text-xs text-slate-400 hover:text-slate-600 transition">
+                ← Back to main site
+              </Link>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    );
+  }
+
+  // ════════════════════════════════════════
+  // ADMIN DASHBOARD
+  // ════════════════════════════════════════
   return (
     <div className="flex min-h-screen font-sans bg-slate-50">
 
       {/* SIDEBAR */}
       <aside className="w-64 bg-slate-900 text-white flex flex-col fixed h-full z-40">
         <div className="px-6 py-6 border-b border-slate-700 flex items-center gap-3">
-          <Image src="/headerpicture.png" alt="Logo" width={36} height={36} className="rounded-lg" />
+          <div className="w-9 h-9 rounded-lg bg-blue-600 flex items-center justify-center text-lg">📚</div>
           <div>
             <p className="font-bold text-sm">SCSIT Library</p>
             <p className="text-xs text-slate-400">Admin Panel</p>
@@ -117,9 +228,12 @@ export default function AdminPage() {
               <p className="text-xs text-slate-400">admin@scsit.edu</p>
             </div>
           </div>
-          <Link href="/login" className="flex items-center gap-2 text-sm text-slate-400 hover:text-red-400 transition">
+          <button
+            onClick={() => { setAuthed(false); setLoginForm({ username: "", password: "" }); }}
+            className="flex items-center gap-2 text-sm text-slate-400 hover:text-red-400 transition w-full"
+          >
             <span>🚪</span> Sign Out
-          </Link>
+          </button>
         </div>
       </aside>
 
@@ -288,7 +402,6 @@ export default function AdminPage() {
             <p className="text-sm text-slate-400 mb-6">
               {modal === "add" ? "Fill in the details to add a book to the catalog." : "Update the book information below."}
             </p>
-
             <div className="space-y-4">
               {[
                 { key: "title", label: "Book Title", placeholder: "e.g. Introduction to Algorithms" },
@@ -305,7 +418,6 @@ export default function AdminPage() {
                   />
                 </div>
               ))}
-
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium text-slate-600 mb-1 block">Copies</label>
@@ -330,7 +442,6 @@ export default function AdminPage() {
                 </div>
               </div>
             </div>
-
             <div className="flex gap-3 mt-8">
               <button onClick={closeModal} className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 text-sm font-medium hover:bg-slate-50 transition">
                 Cancel
