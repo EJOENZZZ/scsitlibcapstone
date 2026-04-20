@@ -1,5 +1,4 @@
 "use client";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -13,36 +12,50 @@ export default function Register() {
       alert("Please fill in all fields.");
       return;
     }
-    alert("Account created successfully! Welcome to SCSIT Library 🎉");
-    router.push("/login");
+    router.push("/dashboard");
   };
 
   return (
     <div className="flex min-h-screen font-sans">
 
       {/* LEFT PANEL */}
-      <div className="hidden lg:flex w-1/2 bg-slate-900 flex-col justify-between p-12 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <Image src="/headerpicture.png" alt="bg" fill className="object-cover" />
+      <div className="hidden lg:flex w-1/2 bg-gradient-to-br from-blue-700 via-blue-800 to-slate-900 flex-col justify-between p-12 relative overflow-hidden">
+
+        {/* Decorative book grid background */}
+        <div className="absolute inset-0 opacity-5 grid grid-cols-6 gap-2 p-4">
+          {Array.from({ length: 48 }).map((_, i) => (
+            <div key={i} className="bg-white rounded h-full" />
+          ))}
         </div>
+
+        {/* Floating book illustrations */}
+        <div className="absolute top-16 right-10 text-8xl opacity-20 rotate-12 select-none">📖</div>
+        <div className="absolute top-40 right-32 text-5xl opacity-15 -rotate-6 select-none">📚</div>
+        <div className="absolute bottom-40 right-8 text-6xl opacity-20 rotate-6 select-none">📕</div>
+        <div className="absolute bottom-20 right-28 text-4xl opacity-15 -rotate-12 select-none">📗</div>
+        <div className="absolute top-1/2 left-6 text-5xl opacity-10 rotate-3 select-none">📘</div>
+
         <div className="relative z-10 flex items-center gap-3">
-          <Image src="/headerpicture.png" alt="Logo" width={40} height={40} className="rounded-xl" />
+          <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-xl">📚</div>
           <span className="text-white font-bold text-lg">SCSIT Library</span>
         </div>
+
         <div className="relative z-10">
+          <div className="text-7xl mb-6 select-none">🎓</div>
           <h2 className="text-4xl font-bold text-white leading-tight mb-4">
             Join thousands of<br />students reading smarter.
           </h2>
-          <p className="text-slate-400 text-sm leading-relaxed">
+          <p className="text-blue-200 text-sm leading-relaxed">
             Create your free account and get instant access to our full catalog of books, journals, and academic resources.
           </p>
           <div className="mt-8 space-y-3">
             {["✅ Free access to 1,230+ books", "✅ Track your borrowing history", "✅ Get due date reminders"].map((f) => (
-              <p key={f} className="text-sm text-slate-300">{f}</p>
+              <p key={f} className="text-sm text-blue-100">{f}</p>
             ))}
           </div>
         </div>
-        <p className="relative z-10 text-xs text-slate-600">© {new Date().getFullYear()} SCSIT Library</p>
+
+        <p className="relative z-10 text-xs text-blue-400">© {new Date().getFullYear()} SCSIT Library</p>
       </div>
 
       {/* RIGHT PANEL */}
