@@ -95,7 +95,7 @@ export default function DashboardHome() {
         <div className="hidden md:flex gap-8 font-medium text-slate-500 text-sm">
           <Link href="/dashboard" className="text-blue-600 font-semibold">Home</Link>
           <Link href="/borrowbook" className="hover:text-blue-600 transition">Borrow Book</Link>
-          <Link href="/profile" className="hover:text-blue-600 transition">Profile</Link>
+          <Link href={`/profile?user=${encodeURIComponent(username)}`} className="hover:text-blue-600 transition">Profile</Link>
         </div>
         <div className="flex items-center gap-3">
           <span className="text-sm text-slate-600">Hello, <span className="font-semibold">{username}</span></span>
