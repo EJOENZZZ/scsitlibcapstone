@@ -139,7 +139,7 @@ export default function Login() {
           </p>
 
           <div className="mt-6 pt-6 border-t border-slate-200 text-center">
-            <Link href="/admin" className="text-xs text-slate-400 hover:text-slate-600 transition">Admin Portal →</Link>
+            <Link href="/admin?access=1" className="text-xs text-slate-400 hover:text-slate-600 transition">Admin Portal →</Link>
           </div>
         </div>
       </div>

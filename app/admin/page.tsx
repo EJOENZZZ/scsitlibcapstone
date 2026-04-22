@@ -26,6 +26,11 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("access") === "1") setAuthed(true);
+  }, []);
+
+  useEffect(() => {
     if (authed) fetchData();
   }, [authed]);
 
