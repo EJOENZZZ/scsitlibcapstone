@@ -88,11 +88,7 @@ export default async function Home() {
           <p className="text-xl text-blue-100 max-w-3xl mx-auto mb-10 leading-relaxed">
             The official digital library of SCSIT — browse, borrow, and manage books from anywhere.
           </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-4 mb-16">
-            <Link href="/register" className="px-8 py-4 rounded-xl bg-white text-blue-600 hover:bg-blue-50 transition font-bold text-sm shadow-2xl">Create Free Account</Link>
-            <Link href="/login" className="px-8 py-4 rounded-xl border-2 border-white/30 hover:bg-white/10 backdrop-blur-sm transition font-semibold text-sm">Sign In →</Link>
-          </div>
-          <div className="grid grid-cols-2 gap-6 max-w-2xl mx-auto">
+          <div className="grid grid-cols-2 gap-6 max-w-2xl mx-auto mt-10">
             {[
               { value: `${totalBooks || 0}+`, label: "Total Books", icon: "📚" },
               { value: `${totalUsers || 0}`, label: "Registered Users", icon: "👥" },
