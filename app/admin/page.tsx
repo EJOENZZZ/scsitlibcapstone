@@ -34,6 +34,8 @@ export default function AdminPage() {
     if (authed) {
       sessionStorage.setItem("adminAuthed", "1");
       fetchData();
+      const interval = setInterval(fetchData, 10000);
+      return () => clearInterval(interval);
     }
   }, [authed]);
 
