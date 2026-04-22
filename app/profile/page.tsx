@@ -69,17 +69,33 @@ function ProfileContent() {
     setUploading(true);
 
     const fileExt = file.name.split(".").pop();
-    const filePath = `avatars/${userId}.${fileExt}`;
+    const filePath = `${userId}.${fileExt}`;
 
-    const { error: uploadError } = await supabase.storage.from("avatars").upload(filePath, file, { upsert: true });
-    if (uploadError) { setUploading(false); return; }
+    // Convert to base64 and store as data URL if storage fails
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      const dataUrl = event.target?.result as string;
 
-    const { data: { publicUrl } } = supabase.storage.from("avatars").getPublicUrl(filePath);
-    await supabase.from("profiles").upsert({ id: userId, avatar_url: publicUrl });
-    setAvatarUrl(publicUrl);
-    setUploading(false);
-    setSaveMsg("Profile picture updated! ✅");
-    setTimeout(() => setSaveMsg(""), 3000);
+      // Try Supabase storage first
+      const { error: uploadError } = await supabase.storage
+        .from("avatars")
+        .upload(filePath, file, { upsert: true });
+
+      let finalUrl = dataUrl;
+
+      if (!uploadError) {
+        const { data: { publicUrl } } = supabase.storage.from("avatars").getPublicUrl(filePath);
+        finalUrl = publicUrl;
+      }
+
+      // Save to profiles table
+      await supabase.from("profiles").upsert({ id: userId, avatar_url: finalUrl });
+      setAvatarUrl(finalUrl);
+      setUploading(false);
+      setSaveMsg("Profile picture updated! ✅");
+      setTimeout(() => setSaveMsg(""), 3000);
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleSaveNickname = async () => {
