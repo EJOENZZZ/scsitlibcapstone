@@ -4,14 +4,16 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
+const courses = ["BSIT", "BSCS", "BSCE", "BSBA", "BSN", "BSHM", "BSCRIM", "BSED", "BSPSYCH"];
+
 export default function Register() {
   const router = useRouter();
-  const [form, setForm] = useState({ name: "", email: "", username: "", password: "" });
+  const [form, setForm] = useState({ name: "", email: "", username: "", password: "", course: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleRegister = async () => {
-    if (!form.name || !form.email || !form.username || !form.password) {
+    if (!form.name || !form.email || !form.username || !form.password || !form.course) {
       setError("Please fill in all fields.");
       return;
     }
@@ -21,20 +23,16 @@ export default function Register() {
     const { error: authError } = await supabase.auth.signUp({
       email: form.email,
       password: form.password,
-      options: { data: { username: form.username, full_name: form.name } },
+      options: { data: { username: form.username, full_name: form.name, course: form.course } },
     });
 
-    if (authError) {
-      setError(authError.message);
-      setLoading(false);
-      return;
-    }
-
+    if (authError) { setError(authError.message); setLoading(false); return; }
     router.push(`/dashboard?user=${encodeURIComponent(form.username)}`);
   };
 
   return (
     <div className="flex min-h-screen font-sans">
+      {/* LEFT PANEL */}
       <div className="hidden lg:flex w-1/2 bg-gradient-to-br from-blue-700 via-blue-800 to-slate-900 flex-col justify-between p-12 relative overflow-hidden">
         <div className="absolute inset-0 opacity-5 grid grid-cols-6 gap-2 p-4">
           {Array.from({ length: 48 }).map((_, i) => <div key={i} className="bg-white rounded h-full" />)}
@@ -62,6 +60,7 @@ export default function Register() {
         <p className="relative z-10 text-xs text-blue-400">© {new Date().getFullYear()} SCSIT Library</p>
       </div>
 
+      {/* RIGHT PANEL */}
       <div className="flex-1 flex flex-col justify-center items-center bg-slate-50 px-8 py-12">
         <div className="w-full max-w-sm">
           <div className="mb-8">
@@ -74,29 +73,45 @@ export default function Register() {
           )}
 
           <div className="space-y-4">
-            {[
-              { key: "name", label: "Full Name", placeholder: "e.g. Ellajoy Orcine", type: "text" },
-              { key: "email", label: "Email Address", placeholder: "you@example.com", type: "email" },
-              { key: "username", label: "Username", placeholder: "Choose a username", type: "text" },
-              { key: "password", label: "Password", placeholder: "Create a strong password", type: "password" },
-            ].map((f) => (
-              <div key={f.key}>
-                <label className="text-sm font-medium text-slate-700 mb-1.5 block">{f.label}</label>
-                <input
-                  type={f.type}
-                  placeholder={f.placeholder}
-                  className="border border-slate-200 p-3 w-full rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-                  onChange={(e) => setForm({ ...form, [f.key]: e.target.value })}
-                />
-              </div>
-            ))}
+            <div>
+              <label className="text-sm font-medium text-slate-700 mb-1.5 block">Full Name</label>
+              <input type="text" placeholder="e.g. Ellajoy Orcine"
+                className="border border-slate-200 p-3 w-full rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                onChange={(e) => setForm({ ...form, name: e.target.value })} />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-slate-700 mb-1.5 block">Email Address</label>
+              <input type="email" placeholder="you@example.com"
+                className="border border-slate-200 p-3 w-full rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                onChange={(e) => setForm({ ...form, email: e.target.value })} />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-slate-700 mb-1.5 block">Username</label>
+              <input type="text" placeholder="Choose a username"
+                className="border border-slate-200 p-3 w-full rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                onChange={(e) => setForm({ ...form, username: e.target.value })} />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-slate-700 mb-1.5 block">Course</label>
+              <select
+                value={form.course}
+                onChange={(e) => setForm({ ...form, course: e.target.value })}
+                className="border border-slate-200 p-3 w-full rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+              >
+                <option value="">Select your course</option>
+                {courses.map((c) => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-slate-700 mb-1.5 block">Password</label>
+              <input type="password" placeholder="Create a strong password"
+                className="border border-slate-200 p-3 w-full rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                onChange={(e) => setForm({ ...form, password: e.target.value })} />
+            </div>
           </div>
 
-          <button
-            onClick={handleRegister}
-            disabled={loading}
-            className="bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white w-full py-3 rounded-xl transition font-semibold mt-6 text-sm shadow-sm"
-          >
+          <button onClick={handleRegister} disabled={loading}
+            className="bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white w-full py-3 rounded-xl transition font-semibold mt-6 text-sm shadow-sm">
             {loading ? "Creating account..." : "Create Account"}
           </button>
 

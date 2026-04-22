@@ -275,23 +275,8 @@ export default async function Home() {
       </section>
 
       {/* FOOTER */}
-      <footer className="bg-white border-t border-slate-200 py-12 px-10">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
-          <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-xl shadow-lg">📚</div>
-            <div>
-              <p className="font-bold text-slate-800 text-lg">SCSIT Library</p>
-              <p className="text-sm text-slate-500">Digital Library Management System</p>
-            </div>
-          </div>
-          <div className="flex gap-8 text-slate-500">
-            <Link href="/" className="hover:text-slate-800 transition font-medium">Home</Link>
-            <Link href="/login" className="hover:text-slate-800 transition font-medium">Sign In</Link>
-            <Link href="/register" className="hover:text-slate-800 transition font-medium">Sign Up</Link>
-            <Link href="/admin" className="hover:text-slate-800 transition font-medium">Admin</Link>
-          </div>
-          <p className="text-sm text-slate-400">© {new Date().getFullYear()} SCSIT Library. All rights reserved.</p>
-        </div>
+      <footer className="bg-white border-t border-slate-200 py-6 text-center">
+        <p className="text-sm text-slate-400">© {new Date().getFullYear()} SCSIT Library. All rights reserved.</p>
       </footer>
 
     </div>
