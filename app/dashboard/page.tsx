@@ -269,11 +269,10 @@ function DashboardContent() {
           </div>
 
           {/* STATS */}
-          <div className="grid grid-cols-3 gap-6 max-w-2xl mx-auto mt-12">
+          <div className="grid grid-cols-2 gap-6 max-w-2xl mx-auto mt-12">
             {[
               { value: loading ? "..." : `${totalBooks}+`, label: "Total Books", icon: "📚" },
               { value: loading ? "..." : `${totalUsers}`, label: "Users Online", icon: "🟢" },
-              { value: loading ? "..." : `${satisfactionPct}%`, label: "Satisfaction", icon: "⭐" },
             ].map((s) => (
               <div key={s.label} className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl py-6 px-4 shadow-xl">
                 <div className="text-3xl mb-2">{s.icon}</div>
