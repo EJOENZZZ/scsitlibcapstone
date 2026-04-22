@@ -238,30 +238,55 @@ export default function Home() {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-12">
             {featuredBooks.map((book) => (
-              <div key={book.title} className="group bg-white rounded-3xl p-6 border border-slate-200/50 hover:border-blue-300 hover:shadow-2xl hover:shadow-blue-100 transition-all duration-500 transform hover:-translate-y-2">
-                <div className="relative mb-4 overflow-hidden rounded-2xl">
-                  <img 
-                    src={book.image} 
+              <div key={book.title} className="group relative bg-white rounded-3xl overflow-hidden border border-slate-200/50 hover:border-blue-300 hover:shadow-2xl hover:shadow-blue-100 transition-all duration-500 transform hover:-translate-y-3 cursor-pointer">
+                
+                {/* BOOK COVER IMAGE */}
+                <div className="relative overflow-hidden h-56">
+                  <img
+                    src={book.image}
                     alt={book.title}
-                    className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500"
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                   />
-                  <div className="absolute top-3 right-3">
+                  {/* Dark gradient overlay always visible at bottom */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+
+                  {/* Available badge */}
+                  <div className="absolute top-3 left-3">
                     <span className="bg-emerald-500 text-white text-xs px-3 py-1 rounded-full font-bold shadow-lg">
-                      Available
+                      ✓ Available
                     </span>
                   </div>
+
+                  {/* Genre badge top right */}
+                  <div className="absolute top-3 right-3">
+                    <span className="bg-blue-600/90 backdrop-blur-sm text-white text-xs px-2.5 py-1 rounded-full font-semibold shadow">
+                      {book.genre}
+                    </span>
+                  </div>
+
+                  {/* HOVER OVERLAY — slides up on hover */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-blue-900/95 via-blue-800/80 to-blue-600/40 opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col justify-end p-5">
+                    <p className="text-white font-bold text-sm leading-tight mb-1">{book.title}</p>
+                    <p className="text-blue-200 text-xs mb-4">{book.author}</p>
+                    <Link
+                      href="/login"
+                      className="w-full text-center bg-white text-blue-700 hover:bg-blue-50 font-bold text-xs py-2.5 rounded-xl transition shadow-lg"
+                    >
+                      📚 Borrow This Book
+                    </Link>
+                  </div>
                 </div>
-                
-                <div className="space-y-3">
-                  <span className="bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 text-xs px-3 py-1 rounded-full font-semibold">
-                    {book.genre}
-                  </span>
-                  <h3 className="font-bold text-slate-800 text-sm leading-tight line-clamp-2 group-hover:text-blue-600 transition-colors">{book.title}</h3>
-                  <p className="text-slate-500 text-xs">{book.author}</p>
-                  <Link href="/login" className="inline-flex items-center gap-2 text-xs text-blue-600 font-semibold hover:text-blue-700 transition group-hover:underline">
-                    Sign in to borrow →
-                  </Link>
+
+                {/* CARD BODY */}
+                <div className="p-5 space-y-2">
+                  <h3 className="font-bold text-slate-800 text-sm leading-tight line-clamp-2 group-hover:text-blue-600 transition-colors duration-300">{book.title}</h3>
+                  <p className="text-slate-400 text-xs">{book.author}</p>
+                  <div className="flex items-center justify-between pt-1">
+                    <span className="text-xs text-slate-400">📖 {book.genre}</span>
+                    <span className="text-xs text-emerald-600 font-semibold">Free to borrow</span>
+                  </div>
                 </div>
+
               </div>
             ))}
           </div>
