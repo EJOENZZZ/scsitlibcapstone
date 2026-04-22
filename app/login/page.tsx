@@ -12,6 +12,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [totalBooks, setTotalBooks] = useState(0);
   const [satisfaction, setSatisfaction] = useState(98);
+  const [totalUsers, setTotalUsers] = useState(0);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -23,6 +24,9 @@ export default function Login() {
       if (totalBorrows && totalBorrows > 0) {
         setSatisfaction(Math.round(((returned || 0) / totalBorrows) * 100));
       }
+
+      const { count: users } = await supabase.from("profiles").select("*", { count: "exact", head: true });
+      setTotalUsers(users || 0);
     };
     fetchStats();
   }, []);
@@ -70,12 +74,12 @@ export default function Login() {
             Access thousands of books, manage your borrowing history, and stay on top of your reading — all in one place.
           </p>
 
-          {/* REAL STATS */}
+          {/* REAL STATS - same as homepage */}
           <div className="flex gap-4 mt-8">
             {[
-              { value: `${totalBooks}+`, label: "Books" },
-              { value: "12", label: "Genres" },
+              { value: `${totalBooks}+`, label: "Total Books" },
               { value: `${satisfaction}%`, label: "Satisfaction" },
+              { value: `${totalUsers}`, label: "Registered Users" },
             ].map(([v, l]) => (
               <div key={l} className="bg-white/10 backdrop-blur-sm rounded-2xl px-4 py-3 text-center flex-1">
                 <p className="text-2xl font-bold text-white">{v}</p>
