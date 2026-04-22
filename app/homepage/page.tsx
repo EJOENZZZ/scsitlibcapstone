@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 const features = [
   { icon: "🔍", title: "Search & Browse", desc: "Easily search through our catalog of 1,230+ books across 12 genres." },

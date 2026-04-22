@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
 const borrowHistory = [
   { title: "Introduction to Algorithms", borrowed: "Dec 1, 2025", returned: "Dec 15, 2025", status: "Returned" },
@@ -8,19 +9,17 @@ const borrowHistory = [
   { title: "The Pragmatic Programmer", borrowed: "Nov 20, 2025", returned: "Dec 5, 2025", status: "Returned" },
 ];
 
-export default function Profile() {
+function ProfileContent() {
   const searchParams = useSearchParams();
-  const username = searchParams.get('user') || 'Student';
+  const username = searchParams.get("user") || "Student";
 
   return (
     <div className="flex flex-col min-h-screen font-sans bg-gradient-to-br from-slate-50 to-blue-50">
-
-      {/* NAVBAR */}
       <nav className="w-full bg-white/80 backdrop-blur-lg border-b border-slate-200/50 py-4 px-10 flex justify-between items-center sticky top-0 z-50 shadow-sm">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-xl shadow-lg">📚</div>
           <div>
-            <span className="text-lg font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">SCSIT Library</span>
+            <span className="text-lg font-bold text-slate-800">SCSIT Library</span>
             <span className="ml-2 text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">Student Portal</span>
           </div>
         </div>
@@ -39,13 +38,11 @@ export default function Profile() {
 
       <main className="flex-1 max-w-6xl mx-auto w-full px-6 py-10">
         <div className="mb-8">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">My Profile</h1>
+          <h1 className="text-4xl font-bold text-slate-800">My Profile</h1>
           <p className="text-slate-500 text-sm mt-2">Manage your account and view your borrowing history.</p>
         </div>
 
         <div className="grid lg:grid-cols-3 gap-8">
-
-          {/* PROFILE CARD */}
           <div className="lg:col-span-1 space-y-6">
             <div className="bg-white/70 backdrop-blur-sm rounded-3xl border border-white/50 shadow-xl p-8 text-center">
               <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-5xl mx-auto mb-6 shadow-lg">👤</div>
@@ -54,7 +51,6 @@ export default function Profile() {
               <span className="inline-block mt-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-xs px-4 py-2 rounded-full font-medium shadow-md">
                 Active Student
               </span>
-
               <div className="mt-8 space-y-4 text-left border-t border-slate-100 pt-6">
                 {[
                   { icon: "📧", label: "Email", value: `${username.toLowerCase()}@scsit.edu` },
@@ -71,13 +67,11 @@ export default function Profile() {
                   </div>
                 ))}
               </div>
-
               <button className="mt-8 w-full py-3 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 text-white text-sm font-medium hover:from-blue-600 hover:to-blue-700 transition shadow-lg">
                 Edit Profile
               </button>
             </div>
 
-            {/* STATS */}
             <div className="grid grid-cols-2 gap-4">
               {[
                 { label: "Total Borrowed", value: "8", color: "from-blue-500 to-blue-600", icon: "📚" },
@@ -96,7 +90,6 @@ export default function Profile() {
             </div>
           </div>
 
-          {/* HISTORY TABLE */}
           <div className="lg:col-span-2">
             <div className="bg-white/70 backdrop-blur-sm rounded-3xl border border-white/50 shadow-xl overflow-hidden">
               <div className="px-8 py-6 border-b border-slate-100/50 bg-gradient-to-r from-slate-50 to-blue-50">
@@ -120,9 +113,9 @@ export default function Profile() {
                         <td className="px-8 py-5 text-slate-600">{b.returned}</td>
                         <td className="px-8 py-5">
                           <span className={`px-4 py-2 rounded-full text-xs font-semibold shadow-sm ${
-                            b.status === "Active" 
-                              ? "bg-gradient-to-r from-emerald-100 to-emerald-200 text-emerald-800 border border-emerald-300" 
-                              : "bg-gradient-to-r from-slate-100 to-slate-200 text-slate-600 border border-slate-300"
+                            b.status === "Active"
+                              ? "bg-emerald-100 text-emerald-800 border border-emerald-300"
+                              : "bg-slate-100 text-slate-600 border border-slate-300"
                           }`}>
                             {b.status}
                           </span>
@@ -134,7 +127,6 @@ export default function Profile() {
               </div>
             </div>
           </div>
-
         </div>
       </main>
 
@@ -142,5 +134,13 @@ export default function Profile() {
         © {new Date().getFullYear()} SCSIT Library. All rights reserved.
       </footer>
     </div>
+  );
+}
+
+export default function Profile() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center min-h-screen text-slate-400">Loading...</div>}>
+      <ProfileContent />
+    </Suspense>
   );
 }
