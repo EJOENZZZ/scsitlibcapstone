@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase";
 
 type Book = { id: string; title: string; author: string; genre: string; available: boolean; copies: number; image?: string; };
 type BorrowRecord = { id: string; book_title: string; book_author: string; borrow_date: string; due_date: string; status: string; };
+type Review = { id: string; username: string; course: string; comment: string; rating: number; created_at: string; };
 
 const features = [
   { icon: "🔍", title: "Smart Search", desc: "Find any book instantly by title, author, or genre across our entire catalog." },
@@ -13,6 +14,122 @@ const features = [
   { icon: "🔔", title: "Due Date Alerts", desc: "Never miss a return date with automatic reminders sent before your deadline." },
   { icon: "📊", title: "Reading History", desc: "Track every book you've borrowed and manage your active loans in one place." },
 ];
+
+function ReviewForm({ username, onSubmit }: { username: string; onSubmit: () => void }) {
+  const [comment, setComment] = useState("");
+  const [course, setCourse] = useState("BSIT");
+  const [rating, setRating] = useState(5);
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleSubmit = async () => {
+    if (!comment.trim()) { setError("Please write a comment."); return; }
+    setLoading(true);
+    setError("");
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { setError("Please log in first."); setLoading(false); return; }
+
+    const { error: insertError } = await supabase.from("reviews").insert({
+      user_id: user.id,
+      username,
+      course,
+      comment,
+      rating,
+    });
+
+    if (insertError) { setError(insertError.message); setLoading(false); return; }
+    setSuccess(true);
+    setComment("");
+    setLoading(false);
+    setTimeout(() => { setSuccess(false); onSubmit(); }, 1500);
+  };
+
+  return (
+    <div className="bg-white rounded-3xl border border-slate-200 shadow-lg p-8 mb-10 max-w-2xl mx-auto">
+      <h3 className="font-bold text-slate-800 text-lg mb-5">✍️ Leave a Review</h3>
+      {success && <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm px-4 py-3 rounded-xl mb-4">✅ Review submitted! Thank you.</div>}
+      {error && <div className="bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-3 rounded-xl mb-4">{error}</div>}
+      <div className="space-y-4">
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="text-sm font-medium text-slate-700 mb-1.5 block">Course</label>
+            <select value={course} onChange={(e) => setCourse(e.target.value)}
+              className="border border-slate-200 p-3 w-full rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 transition">
+              {["BSIT", "BSCS", "BSCE", "BSBA", "BSN", "BSHM", "BSCRIM"].map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="text-sm font-medium text-slate-700 mb-1.5 block">Rating</label>
+            <div className="flex gap-1 mt-2">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button key={star} onClick={() => setRating(star)}
+                  className={`text-2xl transition ${star <= rating ? "text-amber-400" : "text-slate-200"}`}>
+                  ★
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+        <div>
+          <label className="text-sm font-medium text-slate-700 mb-1.5 block">Your Comment</label>
+          <textarea
+            placeholder="Share your experience with the SCSIT Library..."
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+            rows={3}
+            className="border border-slate-200 p-3 w-full rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 transition resize-none"
+          />
+        </div>
+      </div>
+      <button onClick={handleSubmit} disabled={loading}
+        className="mt-4 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white px-6 py-2.5 rounded-xl text-sm font-semibold transition shadow-sm">
+        {loading ? "Submitting..." : "Submit Review"}
+      </button>
+    </div>
+  );
+}
+
+function ReviewsList() {
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    supabase.from("reviews").select("*").order("created_at", { ascending: false }).limit(6)
+      .then(({ data }) => { if (data) setReviews(data); setLoading(false); });
+  }, []);
+
+  if (loading) return <div className="text-center py-8 text-slate-400">Loading reviews...</div>;
+  if (reviews.length === 0) return (
+    <div className="text-center py-8 text-slate-400">No reviews yet. Be the first to leave one! 😊</div>
+  );
+
+  return (
+    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {reviews.map((r) => (
+        <div key={r.id} className="bg-white rounded-3xl p-6 border border-slate-200/50 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
+          <div className="flex gap-1 mb-4">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <span key={i} className={`text-lg ${i < r.rating ? "text-amber-400" : "text-slate-200"}`}>★</span>
+            ))}
+          </div>
+          <p className="text-slate-600 leading-relaxed mb-6 text-sm">&ldquo;{r.comment}&rdquo;</p>
+          <div className="flex items-center gap-3 border-t border-slate-100 pt-4">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center text-lg font-bold text-blue-600">
+              {r.username.charAt(0).toUpperCase()}
+            </div>
+            <div>
+              <p className="font-bold text-slate-800 text-sm">{r.username}</p>
+              <p className="text-xs text-slate-500">{r.course}</p>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 function DashboardContent() {
   const searchParams = useSearchParams();
@@ -252,6 +369,23 @@ function DashboardContent() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* LEAVE A REVIEW */}
+      <section className="py-16 bg-gradient-to-b from-slate-50 to-blue-50">
+        <div className="max-w-6xl mx-auto px-10">
+          <div className="text-center mb-10">
+            <span className="text-xs font-bold text-blue-600 uppercase tracking-widest">Share Your Experience</span>
+            <h2 className="text-4xl font-bold text-slate-800 mt-3 mb-2">What Students Say</h2>
+            <p className="text-slate-500 text-sm">Leave a review and help other students know about the library!</p>
+          </div>
+
+          {/* REVIEW FORM */}
+          <ReviewForm username={username} onSubmit={() => window.location.reload()} />
+
+          {/* REVIEWS LIST */}
+          <ReviewsList />
         </div>
       </section>
 
