@@ -76,14 +76,16 @@ export default function Login() {
 
           {/* REAL STATS - same as homepage */}
           <div className="flex gap-4 mt-8">
-            {[
-              { value: `${totalBooks}+`, label: "Total Books" },
-              { value: `${satisfaction}%`, label: "Satisfaction" },
-              { value: `${totalUsers}`, label: "Registered Users" },
-            ].map(([v, l]) => (
-              <div key={l} className="bg-white/10 backdrop-blur-sm rounded-2xl px-4 py-3 text-center flex-1">
-                <p className="text-2xl font-bold text-white">{v}</p>
-                <p className="text-xs text-blue-300">{l}</p>
+            {(
+              [
+                { value: `${totalBooks}+`, label: "Total Books" },
+                { value: `${satisfaction}%`, label: "Satisfaction" },
+                { value: `${totalUsers}`, label: "Registered Users" },
+              ] as { value: string; label: string }[]
+            ).map((s) => (
+              <div key={s.label} className="bg-white/10 backdrop-blur-sm rounded-2xl px-4 py-3 text-center flex-1">
+                <p className="text-2xl font-bold text-white">{s.value}</p>
+                <p className="text-xs text-blue-300">{s.label}</p>
               </div>
             ))}
           </div>
