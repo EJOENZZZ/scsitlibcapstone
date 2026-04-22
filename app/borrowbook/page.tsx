@@ -1,11 +1,15 @@
 "use client";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
 type Book = { id: string; title: string; author: string; genre: string; available: boolean; };
 
-export default function BorrowBook() {
+function BorrowBookContent() {
+  const searchParams = useSearchParams();
+  const bookId = searchParams.get("bookId");
+
   const [books, setBooks] = useState<Book[]>([]);
   const [selected, setSelected] = useState<Book | null>(null);
   const [borrowDate, setBorrowDate] = useState("");
@@ -16,13 +20,19 @@ export default function BorrowBook() {
 
   useEffect(() => {
     supabase.from("books").select("*").order("title").then(({ data }) => {
-      if (data) setBooks(data);
+      if (data) {
+        setBooks(data);
+        if (bookId) {
+          const match = data.find((b) => b.id === bookId);
+          if (match && match.available) setSelected(match);
+        }
+      }
     });
     const today = new Date().toISOString().split("T")[0];
     const due = new Date(Date.now() + 14 * 86400000).toISOString().split("T")[0];
     setBorrowDate(today);
     setDueDate(due);
-  }, []);
+  }, [bookId]);
 
   const handleBorrow = async () => {
     if (!selected) { setError("Please select a book."); return; }
@@ -47,7 +57,6 @@ export default function BorrowBook() {
 
     if (borrowError) { setError(borrowError.message); setLoading(false); return; }
 
-    // Mark book as unavailable
     await supabase.from("books").update({ available: false }).eq("id", selected.id);
     setBooks((prev) => prev.map((b) => b.id === selected.id ? { ...b, available: false } : b));
 
@@ -164,5 +173,13 @@ export default function BorrowBook() {
         © {new Date().getFullYear()} SCSIT Library. All rights reserved.
       </footer>
     </div>
+  );
+}
+
+export default function BorrowBook() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center min-h-screen text-slate-400">Loading...</div>}>
+      <BorrowBookContent />
+    </Suspense>
   );
 }
