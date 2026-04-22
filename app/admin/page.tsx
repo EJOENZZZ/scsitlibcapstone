@@ -24,6 +24,7 @@ export default function AdminPage() {
   const [form, setForm] = useState(emptyForm);
   const [activeTab, setActiveTab] = useState<"books" | "borrowers" | "reviews" | "users">("books");
   const [loading, setLoading] = useState(false);
+  const [returningId, setReturningId] = useState<string | null>(null);
 
   useEffect(() => {
     const session = sessionStorage.getItem("adminAuthed");
@@ -94,13 +95,13 @@ export default function AdminPage() {
   };
 
   const handleReturn = async (b: Borrower) => {
-    setLoading(true);
+    setReturningId(b.id);
     if (b.book_id) {
       await supabase.from("books").update({ available: true }).eq("id", b.book_id);
     }
     await supabase.from("borrow_records").delete().eq("id", b.id);
     await fetchData();
-    setLoading(false);
+    setReturningId(null);
   };
 
   const handleRemoveBorrowRecord = async (id: string) => {
@@ -394,9 +395,9 @@ export default function AdminPage() {
                         <td className="px-6 py-4">
                           <div className="flex gap-2">
                             {b.status === "Pending Return" && (
-                              <button onClick={() => handleReturn(b)} disabled={loading}
+                              <button onClick={() => handleReturn(b)} disabled={returningId === b.id}
                                 className="px-3 py-1.5 text-xs font-medium border border-emerald-200 text-emerald-600 rounded-lg hover:bg-emerald-50 transition disabled:opacity-50">
-                                {loading ? "Processing..." : "✅ Confirm Return"}
+                                {returningId === b.id ? "Processing..." : "✅ Confirm Return"}
                               </button>
                             )}
                             {b.status === "Active" && (
