@@ -1,197 +1,150 @@
 "use client";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase";
 
-type Book = {
-  id: number;
-  title: string;
-  author: string;
-  genre: string;
-  copies: number;
-  available: boolean;
-};
-
-const initialBooks: Book[] = [
-  { id: 1, title: "Introduction to Algorithms", author: "Cormen et al.", genre: "Computer Science", copies: 5, available: true },
-  { id: 2, title: "Clean Code", author: "Robert C. Martin", genre: "Software Engineering", copies: 3, available: true },
-  { id: 3, title: "The Pragmatic Programmer", author: "Hunt & Thomas", genre: "Software Engineering", copies: 2, available: false },
-  { id: 4, title: "Design Patterns", author: "Gang of Four", genre: "Computer Science", copies: 4, available: true },
-  { id: 5, title: "You Don't Know JS", author: "Kyle Simpson", genre: "Web Development", copies: 6, available: true },
-  { id: 6, title: "Database System Concepts", author: "Silberschatz et al.", genre: "Database", copies: 3, available: false },
-  { id: 7, title: "Operating System Concepts", author: "Silberschatz et al.", genre: "Computer Science", copies: 4, available: true },
-  { id: 8, title: "Computer Networks", author: "Tanenbaum", genre: "Networking", copies: 2, available: true },
-];
-
+type Book = { id: string; title: string; author: string; genre: string; copies: number; available: boolean; };
+type Borrower = { id: string; user_name: string; book_title: string; borrow_date: string; due_date: string; status: string; };
 const emptyForm = { title: "", author: "", genre: "", copies: 1, available: true };
 
-const borrowers = [
-  { name: "Ellajoy Orcine", book: "Clean Code", borrowed: "Dec 10, 2025", due: "Dec 24, 2025", status: "Active" },
-  { name: "Juan dela Cruz", book: "Design Patterns", borrowed: "Dec 5, 2025", due: "Dec 19, 2025", status: "Overdue" },
-  { name: "Maria Santos", book: "Computer Networks", borrowed: "Dec 12, 2025", due: "Dec 26, 2025", status: "Active" },
-  { name: "Carlo Reyes", book: "Database System Concepts", borrowed: "Nov 28, 2025", due: "Dec 12, 2025", status: "Returned" },
-];
-
 export default function AdminPage() {
-  // ── Auth state ──
   const [authed, setAuthed] = useState(false);
   const [loginForm, setLoginForm] = useState({ username: "", password: "" });
   const [loginError, setLoginError] = useState("");
-
-  const handleAdminLogin = () => {
-    if (loginForm.username === "admin" && loginForm.password === "1234") {
-      setLoginError("");
-      setAuthed(true);
-    } else {
-      setLoginError("Invalid username or password.");
-    }
-  };
-
-  // ── Dashboard state ──
-  const [books, setBooks] = useState<Book[]>(initialBooks);
+  const [books, setBooks] = useState<Book[]>([]);
+  const [borrowers, setBorrowers] = useState<Borrower[]>([]);
   const [search, setSearch] = useState("");
   const [modal, setModal] = useState<"add" | "edit" | "delete" | null>(null);
   const [selected, setSelected] = useState<Book | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [activeTab, setActiveTab] = useState<"books" | "borrowers">("books");
+  const [loading, setLoading] = useState(false);
 
-  const filtered = books.filter(
-    (b) =>
-      b.title.toLowerCase().includes(search.toLowerCase()) ||
-      b.author.toLowerCase().includes(search.toLowerCase()) ||
-      b.genre.toLowerCase().includes(search.toLowerCase())
-  );
+  useEffect(() => {
+    if (authed) fetchData();
+  }, [authed]);
+
+  const fetchData = async () => {
+    const { data: booksData } = await supabase.from("books").select("*").order("title");
+    if (booksData) setBooks(booksData);
+    const { data: borrowData } = await supabase.from("borrow_records").select("*").order("created_at", { ascending: false });
+    if (borrowData) setBorrowers(borrowData);
+  };
+
+  const handleAdminLogin = () => {
+    if (loginForm.username === "admin" && loginForm.password === "1234") {
+      setAuthed(true); setLoginError("");
+    } else {
+      setLoginError("Invalid username or password.");
+    }
+  };
 
   const openAdd = () => { setForm(emptyForm); setModal("add"); };
   const openEdit = (b: Book) => { setSelected(b); setForm({ title: b.title, author: b.author, genre: b.genre, copies: b.copies, available: b.available }); setModal("edit"); };
   const openDelete = (b: Book) => { setSelected(b); setModal("delete"); };
   const closeModal = () => { setModal(null); setSelected(null); };
 
-  const handleAdd = () => {
+  const handleAdd = async () => {
     if (!form.title || !form.author || !form.genre) return;
-    setBooks([...books, { ...form, id: Date.now() }]);
+    setLoading(true);
+    await supabase.from("books").insert(form);
+    await fetchData();
+    setLoading(false);
     closeModal();
   };
-  const handleEdit = () => {
+
+  const handleEdit = async () => {
     if (!selected) return;
-    setBooks(books.map((b) => (b.id === selected.id ? { ...b, ...form } : b)));
+    setLoading(true);
+    await supabase.from("books").update(form).eq("id", selected.id);
+    await fetchData();
+    setLoading(false);
     closeModal();
   };
-  const handleDelete = () => {
+
+  const handleDelete = async () => {
     if (!selected) return;
-    setBooks(books.filter((b) => b.id !== selected.id));
+    setLoading(true);
+    await supabase.from("books").delete().eq("id", selected.id);
+    await fetchData();
+    setLoading(false);
     closeModal();
   };
+
+  const filtered = books.filter((b) =>
+    b.title.toLowerCase().includes(search.toLowerCase()) ||
+    b.author.toLowerCase().includes(search.toLowerCase()) ||
+    b.genre.toLowerCase().includes(search.toLowerCase())
+  );
 
   const stats = [
     { label: "Total Books", value: books.length, icon: "📚", color: "bg-blue-50 text-blue-700" },
     { label: "Available", value: books.filter((b) => b.available).length, icon: "✅", color: "bg-emerald-50 text-emerald-700" },
     { label: "Unavailable", value: books.filter((b) => !b.available).length, icon: "🔒", color: "bg-red-50 text-red-600" },
-    { label: "Total Copies", value: books.reduce((s, b) => s + b.copies, 0), icon: "🗂️", color: "bg-purple-50 text-purple-700" },
+    { label: "Borrowers", value: borrowers.length, icon: "👥", color: "bg-purple-50 text-purple-700" },
   ];
 
-  // ════════════════════════════════════════
-  // ADMIN LOGIN SCREEN
-  // ════════════════════════════════════════
   if (!authed) {
     return (
       <div className="flex min-h-screen font-sans">
-
-        {/* LEFT PANEL */}
         <div className="hidden lg:flex w-1/2 bg-gradient-to-br from-slate-800 via-slate-900 to-black flex-col justify-between p-12 relative overflow-hidden">
           <div className="absolute top-16 right-10 text-8xl opacity-10 rotate-12 select-none">🔐</div>
           <div className="absolute bottom-32 right-20 text-6xl opacity-10 -rotate-6 select-none">📊</div>
-          <div className="absolute top-1/2 left-6 text-5xl opacity-10 rotate-3 select-none">📚</div>
-
           <div className="relative z-10 flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-xl">📚</div>
             <span className="text-white font-bold text-lg">SCSIT Library</span>
           </div>
-
           <div className="relative z-10">
             <div className="text-6xl mb-6 select-none">🛡️</div>
-            <h2 className="text-4xl font-bold text-white leading-tight mb-4">
-              Admin Portal<br />Access Only.
-            </h2>
-            <p className="text-slate-400 text-sm leading-relaxed">
-              This area is restricted to authorized library administrators. Please sign in with your admin credentials to continue.
-            </p>
+            <h2 className="text-4xl font-bold text-white leading-tight mb-4">Admin Portal<br />Access Only.</h2>
+            <p className="text-slate-400 text-sm leading-relaxed">Restricted to authorized library administrators only.</p>
             <div className="mt-8 space-y-3">
               {["✅ Manage book catalog", "✅ View borrower records", "✅ Add, edit & delete books"].map((f) => (
                 <p key={f} className="text-sm text-slate-300">{f}</p>
               ))}
             </div>
           </div>
-
           <p className="relative z-10 text-xs text-slate-600">© {new Date().getFullYear()} SCSIT Library</p>
         </div>
 
-        {/* RIGHT PANEL */}
         <div className="flex-1 flex flex-col justify-center items-center bg-slate-50 px-8 py-12">
           <div className="w-full max-w-sm">
             <div className="mb-8">
-              <span className="inline-block bg-red-50 text-red-600 text-xs font-semibold px-3 py-1 rounded-full mb-4 uppercase tracking-wider">
-                Restricted Access
-              </span>
+              <span className="inline-block bg-red-50 text-red-600 text-xs font-semibold px-3 py-1 rounded-full mb-4 uppercase tracking-wider">Restricted Access</span>
               <h1 className="text-2xl font-bold text-slate-800">Admin Sign In</h1>
               <p className="text-slate-400 text-sm mt-1">Enter your admin credentials to continue</p>
             </div>
-
-            {loginError && (
-              <div className="bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-3 rounded-xl mb-5">
-                {loginError}
-              </div>
-            )}
-
+            {loginError && <div className="bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-3 rounded-xl mb-5">{loginError}</div>}
             <div className="space-y-4">
               <div>
                 <label className="text-sm font-medium text-slate-700 mb-1.5 block">Username</label>
-                <input
-                  placeholder="Enter admin username"
-                  value={loginForm.username}
+                <input placeholder="Enter admin username" value={loginForm.username}
                   onChange={(e) => setLoginForm({ ...loginForm, username: e.target.value })}
                   onKeyDown={(e) => e.key === "Enter" && handleAdminLogin()}
-                  className="border border-slate-200 p-3 w-full rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-slate-500 transition"
-                />
+                  className="border border-slate-200 p-3 w-full rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-slate-500 transition" />
               </div>
               <div>
                 <label className="text-sm font-medium text-slate-700 mb-1.5 block">Password</label>
-                <input
-                  type="password"
-                  placeholder="Enter admin password"
-                  value={loginForm.password}
+                <input type="password" placeholder="Enter admin password" value={loginForm.password}
                   onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
                   onKeyDown={(e) => e.key === "Enter" && handleAdminLogin()}
-                  className="border border-slate-200 p-3 w-full rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-slate-500 transition"
-                />
+                  className="border border-slate-200 p-3 w-full rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-slate-500 transition" />
               </div>
             </div>
-
-            <button
-              onClick={handleAdminLogin}
-              className="bg-slate-900 hover:bg-slate-700 text-white w-full py-3 rounded-xl transition font-semibold mt-6 text-sm shadow-sm"
-            >
+            <button onClick={handleAdminLogin} className="bg-slate-900 hover:bg-slate-700 text-white w-full py-3 rounded-xl transition font-semibold mt-6 text-sm shadow-sm">
               Sign In to Admin Panel
             </button>
-
             <div className="mt-6 pt-6 border-t border-slate-200 text-center">
-              <Link href="/" className="text-xs text-slate-400 hover:text-slate-600 transition">
-                ← Back to main site
-              </Link>
+              <Link href="/" className="text-xs text-slate-400 hover:text-slate-600 transition">← Back to main site</Link>
             </div>
           </div>
         </div>
-
       </div>
     );
   }
 
-  // ════════════════════════════════════════
-  // ADMIN DASHBOARD
-  // ════════════════════════════════════════
   return (
     <div className="flex min-h-screen font-sans bg-slate-50">
-
-      {/* SIDEBAR */}
       <aside className="w-64 bg-slate-900 text-white flex flex-col fixed h-full z-40">
         <div className="px-6 py-6 border-b border-slate-700 flex items-center gap-3">
           <div className="w-9 h-9 rounded-lg bg-blue-600 flex items-center justify-center text-lg">📚</div>
@@ -200,47 +153,26 @@ export default function AdminPage() {
             <p className="text-xs text-slate-400">Admin Panel</p>
           </div>
         </div>
-
         <nav className="flex-1 px-4 py-6 space-y-1">
-          {[
-            { icon: "🏠", label: "Dashboard", active: true },
-            { icon: "📚", label: "Books", active: false },
-            { icon: "👥", label: "Borrowers", active: false },
-            { icon: "📊", label: "Reports", active: false },
-          ].map((item) => (
-            <button
-              key={item.label}
+          {[{ icon: "📚", label: "Books" }, { icon: "👥", label: "Borrowers" }].map((item) => (
+            <button key={item.label}
+              onClick={() => setActiveTab(item.label.toLowerCase() as "books" | "borrowers")}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition text-left ${
-                item.active ? "bg-blue-600 text-white" : "text-slate-400 hover:bg-slate-800 hover:text-white"
-              }`}
-            >
-              <span>{item.icon}</span>
-              {item.label}
+                activeTab === item.label.toLowerCase() ? "bg-blue-600 text-white" : "text-slate-400 hover:bg-slate-800 hover:text-white"
+              }`}>
+              <span>{item.icon}</span>{item.label}
             </button>
           ))}
         </nav>
-
         <div className="px-4 py-6 border-t border-slate-700">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center text-sm font-bold">A</div>
-            <div>
-              <p className="text-sm font-medium">Admin</p>
-              <p className="text-xs text-slate-400">admin@scsit.edu</p>
-            </div>
-          </div>
-          <button
-            onClick={() => { setAuthed(false); setLoginForm({ username: "", password: "" }); }}
-            className="flex items-center gap-2 text-sm text-slate-400 hover:text-red-400 transition w-full"
-          >
+          <button onClick={() => { setAuthed(false); setLoginForm({ username: "", password: "" }); }}
+            className="flex items-center gap-2 text-sm text-slate-400 hover:text-red-400 transition w-full">
             <span>🚪</span> Sign Out
           </button>
         </div>
       </aside>
 
-      {/* MAIN CONTENT */}
       <div className="ml-64 flex-1 flex flex-col">
-
-        {/* TOP BAR */}
         <header className="bg-white border-b border-slate-200 px-8 py-4 flex justify-between items-center sticky top-0 z-30">
           <div>
             <h1 className="text-xl font-bold text-slate-800">Library Management</h1>
@@ -248,15 +180,11 @@ export default function AdminPage() {
           </div>
           <div className="flex items-center gap-3">
             <span className="text-xs bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full font-medium">● System Online</span>
-            <Link href="/" className="text-sm text-slate-500 hover:text-blue-600 transition border border-slate-200 px-4 py-2 rounded-lg">
-              View Site
-            </Link>
+            <Link href="/" className="text-sm text-slate-500 hover:text-blue-600 transition border border-slate-200 px-4 py-2 rounded-lg">View Site</Link>
           </div>
         </header>
 
         <main className="flex-1 px-8 py-8">
-
-          {/* STATS */}
           <div className="grid grid-cols-4 gap-5 mb-8">
             {stats.map((s) => (
               <div key={s.label} className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm flex items-center gap-4">
@@ -269,38 +197,26 @@ export default function AdminPage() {
             ))}
           </div>
 
-          {/* TABS */}
           <div className="flex gap-1 bg-slate-100 p-1 rounded-xl w-fit mb-6">
             {(["books", "borrowers"] as const).map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
+              <button key={tab} onClick={() => setActiveTab(tab)}
                 className={`px-5 py-2 rounded-lg text-sm font-medium capitalize transition ${
                   activeTab === tab ? "bg-white text-slate-800 shadow-sm" : "text-slate-500 hover:text-slate-700"
-                }`}
-              >
+                }`}>
                 {tab === "books" ? "📚 Books" : "👥 Borrowers"}
               </button>
             ))}
           </div>
 
-          {/* BOOKS TAB */}
           {activeTab === "books" && (
             <>
               <div className="flex justify-between items-center mb-5">
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">🔍</span>
-                  <input
-                    placeholder="Search books, authors, genres..."
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    className="pl-9 pr-4 py-2.5 border border-slate-200 rounded-xl text-sm w-72 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white"
-                  />
+                  <input placeholder="Search books..." value={search} onChange={(e) => setSearch(e.target.value)}
+                    className="pl-9 pr-4 py-2.5 border border-slate-200 rounded-xl text-sm w-72 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white" />
                 </div>
-                <button
-                  onClick={openAdd}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition flex items-center gap-2 shadow-sm"
-                >
+                <button onClick={openAdd} className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition flex items-center gap-2 shadow-sm">
                   + Add New Book
                 </button>
               </div>
@@ -322,9 +238,7 @@ export default function AdminPage() {
                         <tr key={book.id} className="hover:bg-slate-50 transition">
                           <td className="px-6 py-4 font-semibold text-slate-800">{book.title}</td>
                           <td className="px-6 py-4 text-slate-500">{book.author}</td>
-                          <td className="px-6 py-4">
-                            <span className="bg-blue-50 text-blue-700 text-xs px-2.5 py-1 rounded-full font-medium">{book.genre}</span>
-                          </td>
+                          <td className="px-6 py-4"><span className="bg-blue-50 text-blue-700 text-xs px-2.5 py-1 rounded-full font-medium">{book.genre}</span></td>
                           <td className="px-6 py-4 text-slate-600 font-medium">{book.copies}</td>
                           <td className="px-6 py-4">
                             <span className={`text-xs px-2.5 py-1 rounded-full font-semibold ${book.available ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-600"}`}>
@@ -333,12 +247,8 @@ export default function AdminPage() {
                           </td>
                           <td className="px-6 py-4">
                             <div className="flex gap-2">
-                              <button onClick={() => openEdit(book)} className="px-3 py-1.5 text-xs font-medium border border-blue-200 text-blue-600 rounded-lg hover:bg-blue-50 transition">
-                                Edit
-                              </button>
-                              <button onClick={() => openDelete(book)} className="px-3 py-1.5 text-xs font-medium border border-red-200 text-red-500 rounded-lg hover:bg-red-50 transition">
-                                Delete
-                              </button>
+                              <button onClick={() => openEdit(book)} className="px-3 py-1.5 text-xs font-medium border border-blue-200 text-blue-600 rounded-lg hover:bg-blue-50 transition">Edit</button>
+                              <button onClick={() => openDelete(book)} className="px-3 py-1.5 text-xs font-medium border border-red-200 text-red-500 rounded-lg hover:bg-red-50 transition">Delete</button>
                             </div>
                           </td>
                         </tr>
@@ -353,7 +263,6 @@ export default function AdminPage() {
             </>
           )}
 
-          {/* BORROWERS TAB */}
           {activeTab === "borrowers" && (
             <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
               <div className="px-6 py-5 border-b border-slate-100 flex justify-between items-center">
@@ -369,39 +278,36 @@ export default function AdminPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50">
-                  {borrowers.map((b) => (
-                    <tr key={b.name + b.book} className="hover:bg-slate-50 transition">
-                      <td className="px-6 py-4 font-semibold text-slate-800">{b.name}</td>
-                      <td className="px-6 py-4 text-slate-500">{b.book}</td>
-                      <td className="px-6 py-4 text-slate-500">{b.borrowed}</td>
-                      <td className="px-6 py-4 text-slate-500">{b.due}</td>
-                      <td className="px-6 py-4">
-                        <span className={`text-xs px-2.5 py-1 rounded-full font-semibold ${
-                          b.status === "Active" ? "bg-emerald-50 text-emerald-700" :
-                          b.status === "Overdue" ? "bg-red-50 text-red-600" :
-                          "bg-slate-100 text-slate-500"
-                        }`}>
-                          {b.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
+                  {borrowers.length === 0 ? (
+                    <tr><td colSpan={5} className="px-6 py-12 text-center text-slate-400">No borrow records yet.</td></tr>
+                  ) : (
+                    borrowers.map((b) => (
+                      <tr key={b.id} className="hover:bg-slate-50 transition">
+                        <td className="px-6 py-4 font-semibold text-slate-800">{b.user_name}</td>
+                        <td className="px-6 py-4 text-slate-500">{b.book_title}</td>
+                        <td className="px-6 py-4 text-slate-500">{b.borrow_date}</td>
+                        <td className="px-6 py-4 text-slate-500">{b.due_date}</td>
+                        <td className="px-6 py-4">
+                          <span className={`text-xs px-2.5 py-1 rounded-full font-semibold ${
+                            b.status === "Active" ? "bg-emerald-50 text-emerald-700" :
+                            b.status === "Overdue" ? "bg-red-50 text-red-600" : "bg-slate-100 text-slate-500"
+                          }`}>{b.status}</span>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
           )}
-
         </main>
       </div>
 
-      {/* ADD / EDIT MODAL */}
       {(modal === "add" || modal === "edit") && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 px-4">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8">
             <h2 className="text-xl font-bold text-slate-800 mb-1">{modal === "add" ? "Add New Book" : "Edit Book"}</h2>
-            <p className="text-sm text-slate-400 mb-6">
-              {modal === "add" ? "Fill in the details to add a book to the catalog." : "Update the book information below."}
-            </p>
+            <p className="text-sm text-slate-400 mb-6">{modal === "add" ? "Fill in the details to add a book." : "Update the book information below."}</p>
             <div className="space-y-4">
               {[
                 { key: "title", label: "Book Title", placeholder: "e.g. Introduction to Algorithms" },
@@ -410,32 +316,21 @@ export default function AdminPage() {
               ].map((f) => (
                 <div key={f.key}>
                   <label className="text-sm font-medium text-slate-600 mb-1 block">{f.label}</label>
-                  <input
-                    placeholder={f.placeholder}
-                    value={(form as Record<string, string | number | boolean>)[f.key] as string}
+                  <input placeholder={f.placeholder} value={(form as Record<string, string | number | boolean>)[f.key] as string}
                     onChange={(e) => setForm({ ...form, [f.key]: e.target.value })}
-                    className="border border-slate-200 p-3 w-full rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
-                  />
+                    className="border border-slate-200 p-3 w-full rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition" />
                 </div>
               ))}
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium text-slate-600 mb-1 block">Copies</label>
-                  <input
-                    type="number"
-                    min={1}
-                    value={form.copies}
-                    onChange={(e) => setForm({ ...form, copies: Number(e.target.value) })}
-                    className="border border-slate-200 p-3 w-full rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
-                  />
+                  <input type="number" min={1} value={form.copies} onChange={(e) => setForm({ ...form, copies: Number(e.target.value) })}
+                    className="border border-slate-200 p-3 w-full rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition" />
                 </div>
                 <div>
                   <label className="text-sm font-medium text-slate-600 mb-1 block">Status</label>
-                  <select
-                    value={form.available ? "true" : "false"}
-                    onChange={(e) => setForm({ ...form, available: e.target.value === "true" })}
-                    className="border border-slate-200 p-3 w-full rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition bg-white"
-                  >
+                  <select value={form.available ? "true" : "false"} onChange={(e) => setForm({ ...form, available: e.target.value === "true" })}
+                    className="border border-slate-200 p-3 w-full rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition bg-white">
                     <option value="true">Available</option>
                     <option value="false">Unavailable</option>
                   </select>
@@ -443,21 +338,16 @@ export default function AdminPage() {
               </div>
             </div>
             <div className="flex gap-3 mt-8">
-              <button onClick={closeModal} className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 text-sm font-medium hover:bg-slate-50 transition">
-                Cancel
-              </button>
-              <button
-                onClick={modal === "add" ? handleAdd : handleEdit}
-                className="flex-1 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition"
-              >
-                {modal === "add" ? "Add Book" : "Save Changes"}
+              <button onClick={closeModal} className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 text-sm font-medium hover:bg-slate-50 transition">Cancel</button>
+              <button onClick={modal === "add" ? handleAdd : handleEdit} disabled={loading}
+                className="flex-1 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white text-sm font-semibold transition">
+                {loading ? "Saving..." : modal === "add" ? "Add Book" : "Save Changes"}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* DELETE MODAL */}
       {modal === "delete" && selected && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 px-4">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-8 text-center">
@@ -467,17 +357,14 @@ export default function AdminPage() {
             <p className="font-semibold text-slate-800 mb-2">&quot;{selected.title}&quot;?</p>
             <p className="text-xs text-red-400 mb-6">This action cannot be undone.</p>
             <div className="flex gap-3">
-              <button onClick={closeModal} className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 text-sm font-medium hover:bg-slate-50 transition">
-                Cancel
-              </button>
-              <button onClick={handleDelete} className="flex-1 py-3 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-semibold transition">
-                Delete
+              <button onClick={closeModal} className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 text-sm font-medium hover:bg-slate-50 transition">Cancel</button>
+              <button onClick={handleDelete} disabled={loading} className="flex-1 py-3 rounded-xl bg-red-500 hover:bg-red-600 disabled:opacity-60 text-white text-sm font-semibold transition">
+                {loading ? "Deleting..." : "Delete"}
               </button>
             </div>
           </div>
         </div>
       )}
-
     </div>
   );
 }

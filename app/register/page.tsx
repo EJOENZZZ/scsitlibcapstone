@@ -1,39 +1,48 @@
 "use client";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase";
 
 export default function Register() {
   const router = useRouter();
   const [form, setForm] = useState({ name: "", email: "", username: "", password: "" });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleRegister = () => {
+  const handleRegister = async () => {
     if (!form.name || !form.email || !form.username || !form.password) {
-      alert("Please fill in all fields.");
+      setError("Please fill in all fields.");
       return;
     }
-    router.push("/dashboard");
+    setLoading(true);
+    setError("");
+
+    const { error: authError } = await supabase.auth.signUp({
+      email: form.email,
+      password: form.password,
+      options: { data: { username: form.username, full_name: form.name } },
+    });
+
+    if (authError) {
+      setError(authError.message);
+      setLoading(false);
+      return;
+    }
+
+    router.push(`/dashboard?user=${encodeURIComponent(form.username)}`);
   };
 
   return (
     <div className="flex min-h-screen font-sans">
-
-      {/* LEFT PANEL */}
       <div className="hidden lg:flex w-1/2 bg-gradient-to-br from-blue-700 via-blue-800 to-slate-900 flex-col justify-between p-12 relative overflow-hidden">
-
-        {/* Decorative book grid background */}
         <div className="absolute inset-0 opacity-5 grid grid-cols-6 gap-2 p-4">
-          {Array.from({ length: 48 }).map((_, i) => (
-            <div key={i} className="bg-white rounded h-full" />
-          ))}
+          {Array.from({ length: 48 }).map((_, i) => <div key={i} className="bg-white rounded h-full" />)}
         </div>
-
-        {/* Floating book illustrations */}
         <div className="absolute top-16 right-10 text-8xl opacity-20 rotate-12 select-none">📖</div>
         <div className="absolute top-40 right-32 text-5xl opacity-15 -rotate-6 select-none">📚</div>
         <div className="absolute bottom-40 right-8 text-6xl opacity-20 rotate-6 select-none">📕</div>
         <div className="absolute bottom-20 right-28 text-4xl opacity-15 -rotate-12 select-none">📗</div>
-        <div className="absolute top-1/2 left-6 text-5xl opacity-10 rotate-3 select-none">📘</div>
 
         <div className="relative z-10 flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-xl">📚</div>
@@ -42,29 +51,27 @@ export default function Register() {
 
         <div className="relative z-10">
           <div className="text-7xl mb-6 select-none">🎓</div>
-          <h2 className="text-4xl font-bold text-white leading-tight mb-4">
-            Join thousands of<br />students reading smarter.
-          </h2>
-          <p className="text-blue-200 text-sm leading-relaxed">
-            Create your free account and get instant access to our full catalog of books, journals, and academic resources.
-          </p>
+          <h2 className="text-4xl font-bold text-white leading-tight mb-4">Join thousands of<br />students reading smarter.</h2>
+          <p className="text-blue-200 text-sm leading-relaxed">Create your free account and get instant access to our full catalog of books, journals, and academic resources.</p>
           <div className="mt-8 space-y-3">
             {["✅ Free access to 1,230+ books", "✅ Track your borrowing history", "✅ Get due date reminders"].map((f) => (
               <p key={f} className="text-sm text-blue-100">{f}</p>
             ))}
           </div>
         </div>
-
         <p className="relative z-10 text-xs text-blue-400">© {new Date().getFullYear()} SCSIT Library</p>
       </div>
 
-      {/* RIGHT PANEL */}
       <div className="flex-1 flex flex-col justify-center items-center bg-slate-50 px-8 py-12">
         <div className="w-full max-w-sm">
           <div className="mb-8">
             <h1 className="text-2xl font-bold text-slate-800">Create your account</h1>
             <p className="text-slate-400 text-sm mt-1">Join the SCSIT Library community today</p>
           </div>
+
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-3 rounded-xl mb-5">{error}</div>
+          )}
 
           <div className="space-y-4">
             {[
@@ -87,9 +94,10 @@ export default function Register() {
 
           <button
             onClick={handleRegister}
-            className="bg-blue-600 hover:bg-blue-700 text-white w-full py-3 rounded-xl transition font-semibold mt-6 text-sm shadow-sm"
+            disabled={loading}
+            className="bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white w-full py-3 rounded-xl transition font-semibold mt-6 text-sm shadow-sm"
           >
-            Create Account
+            {loading ? "Creating account..." : "Create Account"}
           </button>
 
           <p className="text-center text-sm text-slate-400 mt-6">
@@ -98,7 +106,6 @@ export default function Register() {
           </p>
         </div>
       </div>
-
     </div>
   );
 }

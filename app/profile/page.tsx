@@ -1,17 +1,44 @@
 "use client";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Suspense } from "react";
+import { useEffect, useState, Suspense } from "react";
+import { supabase } from "@/lib/supabase";
 
-const borrowHistory = [
-  { title: "Introduction to Algorithms", borrowed: "Dec 1, 2025", returned: "Dec 15, 2025", status: "Returned" },
-  { title: "Clean Code", borrowed: "Dec 10, 2025", returned: "—", status: "Active" },
-  { title: "The Pragmatic Programmer", borrowed: "Nov 20, 2025", returned: "Dec 5, 2025", status: "Returned" },
-];
+type BorrowRecord = {
+  id: string;
+  book_title: string;
+  book_author: string;
+  borrow_date: string;
+  due_date: string;
+  status: string;
+};
 
 function ProfileContent() {
   const searchParams = useSearchParams();
   const username = searchParams.get("user") || "Student";
+  const [borrows, setBorrows] = useState<BorrowRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [email, setEmail] = useState("");
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setEmail(user.email || "");
+        const { data } = await supabase
+          .from("borrow_records")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false });
+        if (data) setBorrows(data);
+      }
+      setLoading(false);
+    };
+    fetchData();
+  }, []);
+
+  const activeCount = borrows.filter((b) => b.status === "Active").length;
+  const returnedCount = borrows.filter((b) => b.status === "Returned").length;
 
   return (
     <div className="flex flex-col min-h-screen font-sans bg-gradient-to-br from-slate-50 to-blue-50">
@@ -48,15 +75,13 @@ function ProfileContent() {
               <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-5xl mx-auto mb-6 shadow-lg">👤</div>
               <h2 className="text-2xl font-bold text-slate-800">{username}</h2>
               <p className="text-slate-500 text-sm mt-1">BSIT — 3rd Year</p>
-              <span className="inline-block mt-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-xs px-4 py-2 rounded-full font-medium shadow-md">
-                Active Student
-              </span>
+              <span className="inline-block mt-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-xs px-4 py-2 rounded-full font-medium shadow-md">Active Student</span>
+
               <div className="mt-8 space-y-4 text-left border-t border-slate-100 pt-6">
                 {[
-                  { icon: "📧", label: "Email", value: `${username.toLowerCase()}@scsit.edu` },
+                  { icon: "📧", label: "Email", value: email || `${username.toLowerCase()}@scsit.edu` },
                   { icon: "👤", label: "Username", value: `@${username.toLowerCase()}` },
                   { icon: "🎓", label: "Department", value: "SCSIT — College of IT" },
-                  { icon: "📅", label: "Member Since", value: "September 2024" },
                 ].map((item) => (
                   <div key={item.label} className="flex items-center gap-3 text-sm">
                     <span className="text-lg">{item.icon}</span>
@@ -67,22 +92,17 @@ function ProfileContent() {
                   </div>
                 ))}
               </div>
-              <button className="mt-8 w-full py-3 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 text-white text-sm font-medium hover:from-blue-600 hover:to-blue-700 transition shadow-lg">
-                Edit Profile
-              </button>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               {[
-                { label: "Total Borrowed", value: "8", color: "from-blue-500 to-blue-600", icon: "📚" },
-                { label: "Active", value: "1", color: "from-emerald-500 to-emerald-600", icon: "📖" },
-                { label: "Returned", value: "7", color: "from-slate-500 to-slate-600", icon: "✅" },
-                { label: "Overdue", value: "0", color: "from-red-500 to-red-600", icon: "⏰" },
+                { label: "Total Borrowed", value: borrows.length, color: "from-blue-500 to-blue-600", icon: "📚" },
+                { label: "Active", value: activeCount, color: "from-emerald-500 to-emerald-600", icon: "📖" },
+                { label: "Returned", value: returnedCount, color: "from-slate-500 to-slate-600", icon: "✅" },
+                { label: "Overdue", value: 0, color: "from-red-500 to-red-600", icon: "⏰" },
               ].map((s) => (
                 <div key={s.label} className="bg-white/70 backdrop-blur-sm rounded-2xl p-5 border border-white/50 shadow-lg text-center">
-                  <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${s.color} flex items-center justify-center text-xl mx-auto mb-3 shadow-md`}>
-                    {s.icon}
-                  </div>
+                  <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${s.color} flex items-center justify-center text-xl mx-auto mb-3 shadow-md`}>{s.icon}</div>
                   <p className={`text-2xl font-bold bg-gradient-to-r ${s.color} bg-clip-text text-transparent`}>{s.value}</p>
                   <p className="text-xs text-slate-500 mt-1">{s.label}</p>
                 </div>
@@ -94,36 +114,42 @@ function ProfileContent() {
             <div className="bg-white/70 backdrop-blur-sm rounded-3xl border border-white/50 shadow-xl overflow-hidden">
               <div className="px-8 py-6 border-b border-slate-100/50 bg-gradient-to-r from-slate-50 to-blue-50">
                 <h3 className="text-xl font-bold text-slate-800">Borrowing History</h3>
-                <p className="text-sm text-slate-500 mt-1">{borrowHistory.length} records found</p>
+                <p className="text-sm text-slate-500 mt-1">{borrows.length} records found</p>
               </div>
               <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="bg-gradient-to-r from-slate-50 to-blue-50 border-b border-slate-100">
-                      {["Book Title", "Borrowed", "Returned", "Status"].map((h) => (
-                        <th key={h} className="px-8 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100/50">
-                    {borrowHistory.map((b) => (
-                      <tr key={b.title} className="hover:bg-blue-50/30 transition-colors">
-                        <td className="px-8 py-5 font-semibold text-slate-800">{b.title}</td>
-                        <td className="px-8 py-5 text-slate-600">{b.borrowed}</td>
-                        <td className="px-8 py-5 text-slate-600">{b.returned}</td>
-                        <td className="px-8 py-5">
-                          <span className={`px-4 py-2 rounded-full text-xs font-semibold shadow-sm ${
-                            b.status === "Active"
-                              ? "bg-emerald-100 text-emerald-800 border border-emerald-300"
-                              : "bg-slate-100 text-slate-600 border border-slate-300"
-                          }`}>
-                            {b.status}
-                          </span>
-                        </td>
+                {loading ? (
+                  <div className="py-12 text-center text-slate-400">Loading history...</div>
+                ) : (
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="bg-gradient-to-r from-slate-50 to-blue-50 border-b border-slate-100">
+                        {["Book Title", "Borrowed", "Due Date", "Status"].map((h) => (
+                          <th key={h} className="px-8 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">{h}</th>
+                        ))}
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100/50">
+                      {borrows.length === 0 ? (
+                        <tr><td colSpan={4} className="px-8 py-12 text-center text-slate-400">No borrowing history yet.</td></tr>
+                      ) : (
+                        borrows.map((b) => (
+                          <tr key={b.id} className="hover:bg-blue-50/30 transition-colors">
+                            <td className="px-8 py-5 font-semibold text-slate-800">{b.book_title}</td>
+                            <td className="px-8 py-5 text-slate-600">{b.borrow_date}</td>
+                            <td className="px-8 py-5 text-slate-600">{b.due_date}</td>
+                            <td className="px-8 py-5">
+                              <span className={`px-4 py-2 rounded-full text-xs font-semibold shadow-sm ${
+                                b.status === "Active"
+                                  ? "bg-emerald-100 text-emerald-800 border border-emerald-300"
+                                  : "bg-slate-100 text-slate-600 border border-slate-300"
+                              }`}>{b.status}</span>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                )}
               </div>
             </div>
           </div>
