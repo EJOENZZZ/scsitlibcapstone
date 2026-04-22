@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 
 type Book = { id: string; title: string; author: string; genre: string; copies: number; available: boolean; };
-type Borrower = { id: string; user_name: string; book_title: string; borrow_date: string; due_date: string; status: string; };
+type Borrower = { id: string; user_name: string; book_title: string; borrow_date: string; due_date: string; status: string; book_id: string; };
 const emptyForm = { title: "", author: "", genre: "", copies: 1, available: true };
 
 export default function AdminPage() {
@@ -65,10 +65,18 @@ export default function AdminPage() {
   const handleDelete = async () => {
     if (!selected) return;
     setLoading(true);
+    // Delete related borrow records first, then delete book
+    await supabase.from("borrow_records").update({ book_id: null }).eq("book_id", selected.id);
     await supabase.from("books").delete().eq("id", selected.id);
     await fetchData();
     setLoading(false);
     closeModal();
+  };
+
+  const handleReturn = async (b: Borrower) => {
+    await supabase.from("borrow_records").update({ status: "Returned" }).eq("id", b.id);
+    if (b.book_id) await supabase.from("books").update({ available: true }).eq("id", b.book_id);
+    await fetchData();
   };
 
   const filtered = books.filter((b) =>
@@ -272,7 +280,7 @@ export default function AdminPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-slate-50 border-b border-slate-100">
-                    {["Borrower", "Book Title", "Borrowed Date", "Due Date", "Status"].map((h) => (
+                    {["Borrower", "Book Title", "Borrowed Date", "Due Date", "Status", "Action"].map((h) => (
                       <th key={h} className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">{h}</th>
                     ))}
                   </tr>
@@ -292,6 +300,14 @@ export default function AdminPage() {
                             b.status === "Active" ? "bg-emerald-50 text-emerald-700" :
                             b.status === "Overdue" ? "bg-red-50 text-red-600" : "bg-slate-100 text-slate-500"
                           }`}>{b.status}</span>
+                        </td>
+                        <td className="px-6 py-4">
+                          {b.status === "Active" && (
+                            <button onClick={() => handleReturn(b)}
+                              className="px-3 py-1.5 text-xs font-medium border border-emerald-200 text-emerald-600 rounded-lg hover:bg-emerald-50 transition">
+                              ✅ Mark Returned
+                            </button>
+                          )}
                         </td>
                       </tr>
                     ))
