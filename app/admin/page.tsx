@@ -26,11 +26,8 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
     const session = sessionStorage.getItem("adminAuthed");
-    if (params.get("access") === "1" || session === "1") {
-      setAuthed(true);
-    }
+    if (session === "1") setAuthed(true);
   }, []);
 
   useEffect(() => {
