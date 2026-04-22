@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase";
 type Book = { id: string; title: string; author: string; genre: string; copies: number; available: boolean; };
 type Borrower = { id: string; user_name: string; book_title: string; borrow_date: string; due_date: string; status: string; book_id: string; };
 type Review = { id: string; username: string; course: string; comment: string; rating: number; approved: boolean; created_at: string; };
+type UserProfile = { id: string; username: string; full_name: string; course: string; year: string; created_at: string; };
 const emptyForm = { title: "", author: "", genre: "", copies: 1, available: true };
 
 export default function AdminPage() {
@@ -15,11 +16,13 @@ export default function AdminPage() {
   const [books, setBooks] = useState<Book[]>([]);
   const [borrowers, setBorrowers] = useState<Borrower[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [users, setUsers] = useState<UserProfile[]>([]);
   const [search, setSearch] = useState("");
   const [modal, setModal] = useState<"add" | "edit" | "delete" | null>(null);
   const [selected, setSelected] = useState<Book | null>(null);
+  const [deleteUserTarget, setDeleteUserTarget] = useState<UserProfile | null>(null);
   const [form, setForm] = useState(emptyForm);
-  const [activeTab, setActiveTab] = useState<"books" | "borrowers" | "reviews">("books");
+  const [activeTab, setActiveTab] = useState<"books" | "borrowers" | "reviews" | "users">("books");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -33,6 +36,8 @@ export default function AdminPage() {
     if (borrowData) setBorrowers(borrowData);
     const { data: reviewData } = await supabase.from("reviews").select("*").order("created_at", { ascending: false });
     if (reviewData) setReviews(reviewData);
+    const { data: userData } = await supabase.from("profiles").select("*").order("created_at", { ascending: false });
+    if (userData) setUsers(userData);
   };
 
   const handleAdminLogin = () => {
@@ -93,6 +98,18 @@ export default function AdminPage() {
     await fetchData();
   };
 
+  const handleDeleteUser = async () => {
+    if (!deleteUserTarget) return;
+    setLoading(true);
+    await supabase.from("borrow_records").delete().eq("user_id", deleteUserTarget.id);
+    await supabase.from("reviews").delete().eq("user_id", deleteUserTarget.id);
+    await supabase.from("user_sessions").delete().eq("user_id", deleteUserTarget.id);
+    await supabase.from("profiles").delete().eq("id", deleteUserTarget.id);
+    setDeleteUserTarget(null);
+    setLoading(false);
+    await fetchData();
+  };
+
   const filtered = books.filter((b) =>
     b.title.toLowerCase().includes(search.toLowerCase()) ||
     b.author.toLowerCase().includes(search.toLowerCase()) ||
@@ -103,7 +120,7 @@ export default function AdminPage() {
     { label: "Total Books", value: books.length, icon: "📚", color: "bg-blue-50 text-blue-700" },
     { label: "Available", value: books.filter((b) => b.available).length, icon: "✅", color: "bg-emerald-50 text-emerald-700" },
     { label: "Borrowers", value: borrowers.length, icon: "👥", color: "bg-purple-50 text-purple-700" },
-    { label: "Reviews", value: reviews.length, icon: "💬", color: "bg-amber-50 text-amber-700" },
+    { label: "Users", value: users.length, icon: "👤", color: "bg-amber-50 text-amber-700" },
   ];
 
   if (!authed) {
@@ -176,9 +193,14 @@ export default function AdminPage() {
           </div>
         </div>
         <nav className="flex-1 px-4 py-6 space-y-1">
-          {[{ icon: "📚", label: "Books" }, { icon: "👥", label: "Borrowers" }, { icon: "💬", label: "Reviews" }].map((item) => (
+          {[
+            { icon: "📚", label: "Books" },
+            { icon: "👥", label: "Borrowers" },
+            { icon: "💬", label: "Reviews" },
+            { icon: "👤", label: "Users" },
+          ].map((item) => (
             <button key={item.label}
-              onClick={() => setActiveTab(item.label.toLowerCase() as "books" | "borrowers" | "reviews")}
+              onClick={() => setActiveTab(item.label.toLowerCase() as "books" | "borrowers" | "reviews" | "users")}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition text-left ${
                 activeTab === item.label.toLowerCase() ? "bg-blue-600 text-white" : "text-slate-400 hover:bg-slate-800 hover:text-white"
               }`}>
@@ -220,12 +242,12 @@ export default function AdminPage() {
           </div>
 
           <div className="flex gap-1 bg-slate-100 p-1 rounded-xl w-fit mb-6">
-            {(["books", "borrowers", "reviews"] as const).map((tab) => (
+            {(["books", "borrowers", "reviews", "users"] as const).map((tab) => (
               <button key={tab} onClick={() => setActiveTab(tab)}
                 className={`px-5 py-2 rounded-lg text-sm font-medium capitalize transition ${
                   activeTab === tab ? "bg-white text-slate-800 shadow-sm" : "text-slate-500 hover:text-slate-700"
                 }`}>
-                {tab === "books" ? "📚 Books" : tab === "borrowers" ? "👥 Borrowers" : "💬 Reviews"}
+                {tab === "books" ? "📚 Books" : tab === "borrowers" ? "👥 Borrowers" : tab === "reviews" ? "💬 Reviews" : "👤 Users"}
               </button>
             ))}
           </div>
@@ -330,6 +352,45 @@ export default function AdminPage() {
               </table>
             </div>
           )}
+          {activeTab === "users" && (
+            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+              <div className="px-6 py-5 border-b border-slate-100 flex justify-between items-center">
+                <h3 className="font-semibold text-slate-700">Registered Users</h3>
+                <span className="text-xs text-slate-400">{users.length} users</span>
+              </div>
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-slate-50 border-b border-slate-100">
+                    {["Username", "Full Name", "Course", "Year", "Joined", "Action"].map((h) => (
+                      <th key={h} className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-50">
+                  {users.length === 0 ? (
+                    <tr><td colSpan={6} className="px-6 py-12 text-center text-slate-400">No registered users yet.</td></tr>
+                  ) : (
+                    users.map((u) => (
+                      <tr key={u.id} className="hover:bg-slate-50 transition">
+                        <td className="px-6 py-4 font-semibold text-slate-800">{u.username}</td>
+                        <td className="px-6 py-4 text-slate-600">{u.full_name}</td>
+                        <td className="px-6 py-4 text-slate-500">{u.course}</td>
+                        <td className="px-6 py-4 text-slate-500">{u.year}</td>
+                        <td className="px-6 py-4 text-slate-400 text-xs">{new Date(u.created_at).toLocaleDateString()}</td>
+                        <td className="px-6 py-4">
+                          <button onClick={() => setDeleteUserTarget(u)}
+                            className="px-3 py-1.5 text-xs font-medium border border-red-200 text-red-500 rounded-lg hover:bg-red-50 transition">
+                            Remove
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+
           {activeTab === "reviews" && (
             <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
               <div className="px-6 py-5 border-b border-slate-100 flex justify-between items-center">
@@ -395,7 +456,7 @@ export default function AdminPage() {
               </table>
             </div>
           )}
- || modal === "edit") && (
+      {(modal === "add" || modal === "edit") && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 px-4">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8">
             <h2 className="text-xl font-bold text-slate-800 mb-1">{modal === "add" ? "Add New Book" : "Edit Book"}</h2>
@@ -434,6 +495,24 @@ export default function AdminPage() {
               <button onClick={modal === "add" ? handleAdd : handleEdit} disabled={loading}
                 className="flex-1 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white text-sm font-semibold transition">
                 {loading ? "Saving..." : modal === "add" ? "Add Book" : "Save Changes"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {deleteUserTarget && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 px-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-8 text-center">
+            <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center text-3xl mx-auto mb-4">👤</div>
+            <h2 className="text-xl font-bold text-slate-800 mb-2">Remove User</h2>
+            <p className="text-sm text-slate-500 mb-1">Are you sure you want to remove</p>
+            <p className="font-semibold text-slate-800 mb-2">{deleteUserTarget.username}</p>
+            <p className="text-xs text-red-400 mb-6">This will delete all their records and cannot be undone.</p>
+            <div className="flex gap-3">
+              <button onClick={() => setDeleteUserTarget(null)} className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 text-sm font-medium hover:bg-slate-50 transition">Cancel</button>
+              <button onClick={handleDeleteUser} disabled={loading} className="flex-1 py-3 rounded-xl bg-red-500 hover:bg-red-600 disabled:opacity-60 text-white text-sm font-semibold transition">
+                {loading ? "Removing..." : "Remove User"}
               </button>
             </div>
           </div>
