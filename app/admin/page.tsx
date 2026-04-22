@@ -93,6 +93,11 @@ export default function AdminPage() {
     await fetchData();
   };
 
+  const handleRemoveBorrowRecord = async (id: string) => {
+    await supabase.from("borrow_records").delete().eq("id", id);
+    await fetchData();
+  };
+
   const handleApproveReview = async (id: string, approved: boolean) => {
     await supabase.from("reviews").update({ approved }).eq("id", id);
     await fetchData();
@@ -343,12 +348,20 @@ export default function AdminPage() {
                           }`}>{b.status}</span>
                         </td>
                         <td className="px-6 py-4">
-                          {b.status === "Active" && (
-                            <button onClick={() => handleReturn(b)}
-                              className="px-3 py-1.5 text-xs font-medium border border-emerald-200 text-emerald-600 rounded-lg hover:bg-emerald-50 transition">
-                              ✅ Mark Returned
-                            </button>
-                          )}
+                          <div className="flex gap-2">
+                            {b.status === "Active" && (
+                              <button onClick={() => handleReturn(b)}
+                                className="px-3 py-1.5 text-xs font-medium border border-emerald-200 text-emerald-600 rounded-lg hover:bg-emerald-50 transition">
+                                ✅ Mark Returned
+                              </button>
+                            )}
+                            {b.status === "Returned" && (
+                              <button onClick={() => handleRemoveBorrowRecord(b.id)}
+                                className="px-3 py-1.5 text-xs font-medium border border-red-200 text-red-500 rounded-lg hover:bg-red-50 transition">
+                                Remove
+                              </button>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     ))
