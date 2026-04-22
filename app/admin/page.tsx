@@ -456,6 +456,9 @@ export default function AdminPage() {
               </table>
             </div>
           )}
+        </main>
+      </div>
+
       {(modal === "add" || modal === "edit") && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 px-4">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8">
@@ -539,3 +542,4 @@ export default function AdminPage() {
     </div>
   );
 }
+
