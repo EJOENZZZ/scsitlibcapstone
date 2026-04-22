@@ -98,7 +98,7 @@ function ReviewsList() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase.from("reviews").select("*").order("created_at", { ascending: false }).limit(6)
+    supabase.from("reviews").select("*").eq("approved", true).order("created_at", { ascending: false }).limit(6)
       .then(({ data }) => { if (data) setReviews(data); setLoading(false); });
   }, []);
 

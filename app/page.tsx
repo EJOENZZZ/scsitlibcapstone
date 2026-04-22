@@ -41,7 +41,7 @@ export default async function Home() {
   const satisfactionPct = totalBorrows && totalBorrows > 0 ? Math.round(((returned || 0) / totalBorrows) * 100) : 98;
 
   // Fetch real reviews
-  const { data: reviews } = await supabase.from("reviews").select("*").order("created_at", { ascending: false }).limit(6);
+  const { data: reviews } = await supabase.from("reviews").select("*").eq("approved", true).order("created_at", { ascending: false }).limit(6);
 
   const { count: totalUsers } = await supabase.from("profiles").select("*", { count: "exact", head: true });
 

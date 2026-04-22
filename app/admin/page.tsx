@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase";
 
 type Book = { id: string; title: string; author: string; genre: string; copies: number; available: boolean; };
 type Borrower = { id: string; user_name: string; book_title: string; borrow_date: string; due_date: string; status: string; book_id: string; };
+type Review = { id: string; username: string; course: string; comment: string; rating: number; approved: boolean; created_at: string; };
 const emptyForm = { title: "", author: "", genre: "", copies: 1, available: true };
 
 export default function AdminPage() {
@@ -13,11 +14,12 @@ export default function AdminPage() {
   const [loginError, setLoginError] = useState("");
   const [books, setBooks] = useState<Book[]>([]);
   const [borrowers, setBorrowers] = useState<Borrower[]>([]);
+  const [reviews, setReviews] = useState<Review[]>([]);
   const [search, setSearch] = useState("");
   const [modal, setModal] = useState<"add" | "edit" | "delete" | null>(null);
   const [selected, setSelected] = useState<Book | null>(null);
   const [form, setForm] = useState(emptyForm);
-  const [activeTab, setActiveTab] = useState<"books" | "borrowers">("books");
+  const [activeTab, setActiveTab] = useState<"books" | "borrowers" | "reviews">("books");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -29,6 +31,8 @@ export default function AdminPage() {
     if (booksData) setBooks(booksData);
     const { data: borrowData } = await supabase.from("borrow_records").select("*").order("created_at", { ascending: false });
     if (borrowData) setBorrowers(borrowData);
+    const { data: reviewData } = await supabase.from("reviews").select("*").order("created_at", { ascending: false });
+    if (reviewData) setReviews(reviewData);
   };
 
   const handleAdminLogin = () => {
@@ -79,6 +83,16 @@ export default function AdminPage() {
     await fetchData();
   };
 
+  const handleApproveReview = async (id: string, approved: boolean) => {
+    await supabase.from("reviews").update({ approved }).eq("id", id);
+    await fetchData();
+  };
+
+  const handleDeleteReview = async (id: string) => {
+    await supabase.from("reviews").delete().eq("id", id);
+    await fetchData();
+  };
+
   const filtered = books.filter((b) =>
     b.title.toLowerCase().includes(search.toLowerCase()) ||
     b.author.toLowerCase().includes(search.toLowerCase()) ||
@@ -88,8 +102,8 @@ export default function AdminPage() {
   const stats = [
     { label: "Total Books", value: books.length, icon: "📚", color: "bg-blue-50 text-blue-700" },
     { label: "Available", value: books.filter((b) => b.available).length, icon: "✅", color: "bg-emerald-50 text-emerald-700" },
-    { label: "Unavailable", value: books.filter((b) => !b.available).length, icon: "🔒", color: "bg-red-50 text-red-600" },
     { label: "Borrowers", value: borrowers.length, icon: "👥", color: "bg-purple-50 text-purple-700" },
+    { label: "Reviews", value: reviews.length, icon: "💬", color: "bg-amber-50 text-amber-700" },
   ];
 
   if (!authed) {
@@ -162,9 +176,9 @@ export default function AdminPage() {
           </div>
         </div>
         <nav className="flex-1 px-4 py-6 space-y-1">
-          {[{ icon: "📚", label: "Books" }, { icon: "👥", label: "Borrowers" }].map((item) => (
+          {[{ icon: "📚", label: "Books" }, { icon: "👥", label: "Borrowers" }, { icon: "💬", label: "Reviews" }].map((item) => (
             <button key={item.label}
-              onClick={() => setActiveTab(item.label.toLowerCase() as "books" | "borrowers")}
+              onClick={() => setActiveTab(item.label.toLowerCase() as "books" | "borrowers" | "reviews")}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition text-left ${
                 activeTab === item.label.toLowerCase() ? "bg-blue-600 text-white" : "text-slate-400 hover:bg-slate-800 hover:text-white"
               }`}>
@@ -206,12 +220,12 @@ export default function AdminPage() {
           </div>
 
           <div className="flex gap-1 bg-slate-100 p-1 rounded-xl w-fit mb-6">
-            {(["books", "borrowers"] as const).map((tab) => (
+            {(["books", "borrowers", "reviews"] as const).map((tab) => (
               <button key={tab} onClick={() => setActiveTab(tab)}
                 className={`px-5 py-2 rounded-lg text-sm font-medium capitalize transition ${
                   activeTab === tab ? "bg-white text-slate-800 shadow-sm" : "text-slate-500 hover:text-slate-700"
                 }`}>
-                {tab === "books" ? "📚 Books" : "👥 Borrowers"}
+                {tab === "books" ? "📚 Books" : tab === "borrowers" ? "👥 Borrowers" : "💬 Reviews"}
               </button>
             ))}
           </div>
@@ -316,10 +330,72 @@ export default function AdminPage() {
               </table>
             </div>
           )}
-        </main>
-      </div>
-
-      {(modal === "add" || modal === "edit") && (
+          {activeTab === "reviews" && (
+            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+              <div className="px-6 py-5 border-b border-slate-100 flex justify-between items-center">
+                <h3 className="font-semibold text-slate-700">Student Reviews</h3>
+                <span className="text-xs text-slate-400">{reviews.length} reviews · {reviews.filter(r => r.approved).length} approved</span>
+              </div>
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-slate-50 border-b border-slate-100">
+                    {["Student", "Course", "Rating", "Comment", "Status", "Actions"].map((h) => (
+                      <th key={h} className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-50">
+                  {reviews.length === 0 ? (
+                    <tr><td colSpan={6} className="px-6 py-12 text-center text-slate-400">No reviews yet.</td></tr>
+                  ) : (
+                    reviews.map((r) => (
+                      <tr key={r.id} className="hover:bg-slate-50 transition">
+                        <td className="px-6 py-4 font-semibold text-slate-800">{r.username}</td>
+                        <td className="px-6 py-4 text-slate-500">{r.course}</td>
+                        <td className="px-6 py-4">
+                          <div className="flex gap-0.5">
+                            {Array.from({ length: 5 }).map((_, i) => (
+                              <span key={i} className={i < r.rating ? "text-amber-400" : "text-slate-200"}>★</span>
+                            ))}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-slate-600 max-w-xs">
+                          <p className="truncate">&ldquo;{r.comment}&rdquo;</p>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className={`text-xs px-2.5 py-1 rounded-full font-semibold ${
+                            r.approved ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-600"
+                          }`}>
+                            {r.approved ? "✅ Approved" : "⏳ Pending"}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex gap-2">
+                            {!r.approved ? (
+                              <button onClick={() => handleApproveReview(r.id, true)}
+                                className="px-3 py-1.5 text-xs font-medium border border-emerald-200 text-emerald-600 rounded-lg hover:bg-emerald-50 transition">
+                                Approve
+                              </button>
+                            ) : (
+                              <button onClick={() => handleApproveReview(r.id, false)}
+                                className="px-3 py-1.5 text-xs font-medium border border-amber-200 text-amber-600 rounded-lg hover:bg-amber-50 transition">
+                                Hide
+                              </button>
+                            )}
+                            <button onClick={() => handleDeleteReview(r.id)}
+                              className="px-3 py-1.5 text-xs font-medium border border-red-200 text-red-500 rounded-lg hover:bg-red-50 transition">
+                              Delete
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+ || modal === "edit") && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 px-4">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8">
             <h2 className="text-xl font-bold text-slate-800 mb-1">{modal === "add" ? "Add New Book" : "Edit Book"}</h2>
