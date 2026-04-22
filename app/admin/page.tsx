@@ -94,9 +94,21 @@ export default function AdminPage() {
   };
 
   const handleReturn = async (b: Borrower) => {
-    await supabase.from("borrow_records").update({ status: "Returned" }).eq("id", b.id);
-    if (b.book_id) await supabase.from("books").update({ available: true }).eq("id", b.book_id);
+    setLoading(true);
+    const { error: updateError } = await supabase.from("borrow_records").update({ status: "Returned" }).eq("id", b.id);
+    if (updateError) {
+      alert("Failed to confirm return: " + updateError.message);
+      setLoading(false);
+      return;
+    }
+    if (b.book_id) {
+      const { error: bookError } = await supabase.from("books").update({ available: true }).eq("id", b.book_id);
+      if (bookError) {
+        alert("Failed to mark book as available: " + bookError.message);
+      }
+    }
     await fetchData();
+    setLoading(false);
   };
 
   const handleRemoveBorrowRecord = async (id: string) => {
@@ -353,7 +365,14 @@ export default function AdminPage() {
             <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
               <div className="px-6 py-5 border-b border-slate-100 flex justify-between items-center">
                 <h3 className="font-semibold text-slate-700">Borrower Records</h3>
-                <span className="text-xs text-slate-400">{borrowers.length} records</span>
+                <div className="flex items-center gap-3">
+                  {borrowers.filter(b => b.status === "Pending Return").length > 0 && (
+                    <span className="bg-amber-100 text-amber-700 text-xs font-bold px-3 py-1 rounded-full">
+                      ⏳ {borrowers.filter(b => b.status === "Pending Return").length} pending return{borrowers.filter(b => b.status === "Pending Return").length > 1 ? "s" : ""}
+                    </span>
+                  )}
+                  <span className="text-xs text-slate-400">{borrowers.length} records</span>
+                </div>
               </div>
               <table className="w-full text-sm">
                 <thead>
