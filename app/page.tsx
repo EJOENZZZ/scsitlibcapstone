@@ -43,6 +43,8 @@ export default async function Home() {
   // Fetch real reviews
   const { data: reviews } = await supabase.from("reviews").select("*").order("created_at", { ascending: false }).limit(6);
 
+  const { count: totalUsers } = await supabase.from("profiles").select("*", { count: "exact", head: true });
+
   return (
     <div className="flex flex-col min-h-screen font-sans bg-white">
 
@@ -94,7 +96,7 @@ export default async function Home() {
             {[
               { value: `${totalBooks || 0}+`, label: "Total Books", icon: "📚" },
               { value: `${satisfactionPct}%`, label: "Satisfaction", icon: "⭐" },
-              { value: `${reviews?.length || 0}`, label: "Reviews", icon: "💬" },
+              { value: `${totalUsers || 0}`, label: "Registered Users", icon: "👥" },
             ].map((s) => (
               <div key={s.label} className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl py-6 px-4 shadow-xl">
                 <div className="text-3xl mb-2">{s.icon}</div>

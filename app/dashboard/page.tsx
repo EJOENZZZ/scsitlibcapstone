@@ -162,7 +162,11 @@ function DashboardContent() {
       const { count: returnedCount } = await supabase
         .from("borrow_records").select("*", { count: "exact", head: true }).eq("status", "Returned");
 
-      setTotalUsers(totalCount || 0);
+      // Fetch total registered users
+      const { count: usersCount } = await supabase
+        .from("profiles").select("*", { count: "exact", head: true });
+
+      setTotalUsers(usersCount || 0);
       setSatisfiedUsers(returnedCount || 0);
       setLoading(false);
     };
@@ -239,7 +243,7 @@ function DashboardContent() {
           <div className="grid grid-cols-3 gap-6 max-w-2xl mx-auto mt-12">
             {[
               { value: loading ? "..." : `${totalBooks}+`, label: "Total Books", icon: "📚" },
-              { value: loading ? "..." : `${availableBooks}`, label: "Available Now", icon: "✅" },
+              { value: loading ? "..." : `${totalUsers}`, label: "Users Online", icon: "👥" },
               { value: loading ? "..." : `${satisfactionPct}%`, label: "Satisfaction", icon: "⭐" },
             ].map((s) => (
               <div key={s.label} className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl py-6 px-4 shadow-xl">

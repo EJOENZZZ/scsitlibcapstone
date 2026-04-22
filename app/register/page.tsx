@@ -21,13 +21,25 @@ export default function Register() {
     setLoading(true);
     setError("");
 
-    const { error: authError } = await supabase.auth.signUp({
+    const { data, error: authError } = await supabase.auth.signUp({
       email: form.email,
       password: form.password,
       options: { data: { username: form.username, full_name: form.name, course: form.course, year: form.year } },
     });
 
     if (authError) { setError(authError.message); setLoading(false); return; }
+
+    // Insert into profiles table
+    if (data.user) {
+      await supabase.from("profiles").insert({
+        id: data.user.id,
+        username: form.username,
+        full_name: form.name,
+        course: form.course,
+        year: form.year,
+      });
+    }
+
     router.push(`/dashboard?user=${encodeURIComponent(form.username)}`);
   };
 
