@@ -97,9 +97,12 @@ export default function AdminPage() {
   const handleReturn = async (b: Borrower) => {
     setReturningId(b.id);
     if (b.book_id) {
-      await supabase.from("books").update({ available: true }).eq("id", b.book_id);
+      const { error: bookErr } = await supabase.from("books").update({ available: true }).eq("id", b.book_id);
+      if (bookErr) { alert("Book update failed: " + bookErr.message); setReturningId(null); return; }
     }
-    await supabase.from("borrow_records").delete().eq("id", b.id);
+    const { error: deleteErr } = await supabase.from("borrow_records").delete().eq("id", b.id);
+    if (deleteErr) { alert("Delete failed: " + deleteErr.message); setReturningId(null); return; }
+    setBorrowers((prev) => prev.filter((r) => r.id !== b.id));
     await fetchData();
     setReturningId(null);
   };
