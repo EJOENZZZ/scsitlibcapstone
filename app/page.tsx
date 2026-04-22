@@ -92,10 +92,9 @@ export default async function Home() {
             <Link href="/register" className="px-8 py-4 rounded-xl bg-white text-blue-600 hover:bg-blue-50 transition font-bold text-sm shadow-2xl">Create Free Account</Link>
             <Link href="/login" className="px-8 py-4 rounded-xl border-2 border-white/30 hover:bg-white/10 backdrop-blur-sm transition font-semibold text-sm">Sign In →</Link>
           </div>
-          <div className="grid grid-cols-3 gap-6 max-w-2xl mx-auto">
+          <div className="grid grid-cols-2 gap-6 max-w-2xl mx-auto">
             {[
               { value: `${totalBooks || 0}+`, label: "Total Books", icon: "📚" },
-              { value: `${satisfactionPct}%`, label: "Satisfaction", icon: "⭐" },
               { value: `${totalUsers || 0}`, label: "Registered Users", icon: "👥" },
             ].map((s) => (
               <div key={s.label} className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl py-6 px-4 shadow-xl">
