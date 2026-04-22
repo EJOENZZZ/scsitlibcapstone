@@ -95,18 +95,10 @@ export default function AdminPage() {
 
   const handleReturn = async (b: Borrower) => {
     setLoading(true);
-    const { error: updateError } = await supabase.from("borrow_records").update({ status: "Returned" }).eq("id", b.id);
-    if (updateError) {
-      alert("Failed to confirm return: " + updateError.message);
-      setLoading(false);
-      return;
-    }
     if (b.book_id) {
-      const { error: bookError } = await supabase.from("books").update({ available: true }).eq("id", b.book_id);
-      if (bookError) {
-        alert("Failed to mark book as available: " + bookError.message);
-      }
+      await supabase.from("books").update({ available: true }).eq("id", b.book_id);
     }
+    await supabase.from("borrow_records").delete().eq("id", b.id);
     await fetchData();
     setLoading(false);
   };
@@ -402,19 +394,16 @@ export default function AdminPage() {
                         <td className="px-6 py-4">
                           <div className="flex gap-2">
                             {b.status === "Pending Return" && (
-                              <button onClick={() => handleReturn(b)}
-                                className="px-3 py-1.5 text-xs font-medium border border-emerald-200 text-emerald-600 rounded-lg hover:bg-emerald-50 transition">
-                                ✅ Confirm Return
+                              <button onClick={() => handleReturn(b)} disabled={loading}
+                                className="px-3 py-1.5 text-xs font-medium border border-emerald-200 text-emerald-600 rounded-lg hover:bg-emerald-50 transition disabled:opacity-50">
+                                {loading ? "Processing..." : "✅ Confirm Return"}
                               </button>
                             )}
                             {b.status === "Active" && (
                               <span className="text-xs text-slate-400">Waiting for user</span>
                             )}
                             {b.status === "Returned" && (
-                              <button onClick={() => handleRemoveBorrowRecord(b.id)}
-                                className="px-3 py-1.5 text-xs font-medium border border-red-200 text-red-500 rounded-lg hover:bg-red-50 transition">
-                                Remove
-                              </button>
+                              <span className="text-xs text-emerald-600">✅ Completed</span>
                             )}
                           </div>
                         </td>
