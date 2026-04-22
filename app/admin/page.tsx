@@ -243,6 +243,23 @@ export default function AdminPage() {
         </header>
 
         <main className="flex-1 px-8 py-8">
+          {borrowers.filter(b => b.status === "Pending Return").length > 0 && (
+            <div className="bg-amber-50 border border-amber-200 rounded-2xl px-6 py-4 mb-6 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">📬</span>
+                <div>
+                  <p className="font-semibold text-amber-800 text-sm">
+                    {borrowers.filter(b => b.status === "Pending Return").length} return request{borrowers.filter(b => b.status === "Pending Return").length > 1 ? "s" : ""} waiting for your confirmation
+                  </p>
+                  <p className="text-xs text-amber-600 mt-0.5">Go to Borrowers tab to confirm.</p>
+                </div>
+              </div>
+              <button onClick={() => setActiveTab("borrowers")}
+                className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold rounded-xl transition">
+                View Requests
+              </button>
+            </div>
+          )}
           <div className="grid grid-cols-4 gap-5 mb-8">
             {stats.map((s) => (
               <div key={s.label} className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm flex items-center gap-4">
@@ -261,7 +278,16 @@ export default function AdminPage() {
                 className={`px-5 py-2 rounded-lg text-sm font-medium capitalize transition ${
                   activeTab === tab ? "bg-white text-slate-800 shadow-sm" : "text-slate-500 hover:text-slate-700"
                 }`}>
-                {tab === "books" ? "📚 Books" : tab === "borrowers" ? "👥 Borrowers" : tab === "reviews" ? "💬 Reviews" : "👤 Users"}
+                {tab === "books" ? "📚 Books" : tab === "borrowers" ? (
+                  <span className="flex items-center gap-2">
+                    👥 Borrowers
+                    {borrowers.filter(b => b.status === "Pending Return").length > 0 && (
+                      <span className="bg-amber-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">
+                        {borrowers.filter(b => b.status === "Pending Return").length}
+                      </span>
+                    )}
+                  </span>
+                ) : tab === "reviews" ? "💬 Reviews" : "👤 Users"}
               </button>
             ))}
           </div>
@@ -340,7 +366,7 @@ export default function AdminPage() {
                     <tr><td colSpan={5} className="px-6 py-12 text-center text-slate-400">No borrow records yet.</td></tr>
                   ) : (
                     borrowers.map((b) => (
-                      <tr key={b.id} className="hover:bg-slate-50 transition">
+                      <tr key={b.id} className={`transition ${b.status === "Pending Return" ? "bg-amber-50 hover:bg-amber-100" : "hover:bg-slate-50"}`}>
                         <td className="px-6 py-4 font-semibold text-slate-800">{b.user_name}</td>
                         <td className="px-6 py-4 text-slate-500">{b.book_title}</td>
                         <td className="px-6 py-4 text-slate-500">{b.borrow_date}</td>
