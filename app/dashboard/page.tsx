@@ -144,34 +144,52 @@ function DashboardContent() {
 
   useEffect(() => {
     const fetchData = async () => {
-      // Fetch books
       const { data: booksData } = await supabase.from("books").select("*").order("title");
       if (booksData) setBooks(booksData);
 
-      // Fetch user's borrow records
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         const { data: borrowData } = await supabase
           .from("borrow_records").select("*").eq("user_id", user.id).order("created_at", { ascending: false });
         if (borrowData) setBorrows(borrowData);
+
+        // Mark user as online
+        const { data: existing } = await supabase
+          .from("user_sessions").select("id").eq("user_id", user.id).single();
+
+        if (existing) {
+          await supabase.from("user_sessions").update({ last_seen: new Date().toISOString() }).eq("user_id", user.id);
+        } else {
+          await supabase.from("user_sessions").insert({ user_id: user.id, username, last_seen: new Date().toISOString() });
+        }
       }
 
-      // Fetch total borrow records for satisfaction stats
-      const { count: totalCount } = await supabase
-        .from("borrow_records").select("*", { count: "exact", head: true });
-      const { count: returnedCount } = await supabase
-        .from("borrow_records").select("*", { count: "exact", head: true }).eq("status", "Returned");
+      // Count users online in last 10 minutes
+      const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+      const { count: onlineCount } = await supabase
+        .from("user_sessions").select("*", { count: "exact", head: true })
+        .gte("last_seen", tenMinutesAgo);
 
-      // Fetch total registered users
-      const { count: usersCount } = await supabase
-        .from("profiles").select("*", { count: "exact", head: true });
+      setTotalUsers(onlineCount || 0);
 
-      setTotalUsers(usersCount || 0);
+      // Satisfaction
+      const { count: totalBorrows } = await supabase.from("borrow_records").select("*", { count: "exact", head: true });
+      const { count: returnedCount } = await supabase.from("borrow_records").select("*", { count: "exact", head: true }).eq("status", "Returned");
       setSatisfiedUsers(returnedCount || 0);
       setLoading(false);
     };
     fetchData();
-  }, []);
+
+    // Update last_seen every 2 minutes to keep user online
+    const interval = setInterval(async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await supabase.from("user_sessions").update({ last_seen: new Date().toISOString() }).eq("user_id", user.id);
+      }
+    }, 2 * 60 * 1000);
+
+    return () => clearInterval(interval);
+  }, [username]);
 
   const totalBooks = books.length;
   const availableBooks = books.filter((b) => b.available).length;
@@ -243,7 +261,7 @@ function DashboardContent() {
           <div className="grid grid-cols-3 gap-6 max-w-2xl mx-auto mt-12">
             {[
               { value: loading ? "..." : `${totalBooks}+`, label: "Total Books", icon: "📚" },
-              { value: loading ? "..." : `${totalUsers}`, label: "Users Online", icon: "👥" },
+              { value: loading ? "..." : `${totalUsers}`, label: "Users Online", icon: "🟢" },
               { value: loading ? "..." : `${satisfactionPct}%`, label: "Satisfaction", icon: "⭐" },
             ].map((s) => (
               <div key={s.label} className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl py-6 px-4 shadow-xl">
