@@ -19,8 +19,8 @@ export default function Login() {
       const { count: books } = await supabase.from("books").select("*", { count: "exact", head: true });
       setTotalBooks(books || 0);
 
-      const { count: totalBorrows } = await supabase.from("borrow_records").select("*", { count: "exact", head: true });
-      const { count: returned } = await supabase.from("borrow_records").select("*", { count: "exact", head: true }).eq("status", "Returned");
+      const { count: totalBorrows } = await supabase.from("reviews").select("*", { count: "exact", head: true });
+      const { count: returned } = await supabase.from("reviews").select("*", { count: "exact", head: true }).gte("rating", 4);
       if (totalBorrows && totalBorrows > 0) {
         setSatisfaction(Math.round(((returned || 0) / totalBorrows) * 100));
       }

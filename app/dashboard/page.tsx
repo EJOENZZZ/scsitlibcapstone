@@ -36,6 +36,7 @@ function ReviewForm({ username, onSubmit }: { username: string; onSubmit: () => 
       course,
       comment,
       rating,
+      satisfied: rating >= 4,
     });
 
     if (insertError) { setError(insertError.message); setLoading(false); return; }
@@ -172,10 +173,11 @@ function DashboardContent() {
 
       setTotalUsers(onlineCount || 0);
 
-      // Satisfaction
-      const { count: totalBorrows } = await supabase.from("borrow_records").select("*", { count: "exact", head: true });
-      const { count: returnedCount } = await supabase.from("borrow_records").select("*", { count: "exact", head: true }).eq("status", "Returned");
-      setSatisfiedUsers(returnedCount || 0);
+      // Satisfaction based on reviews with rating >= 4
+      const { count: totalReviews } = await supabase.from("reviews").select("*", { count: "exact", head: true });
+      const { count: satisfiedCount } = await supabase.from("reviews").select("*", { count: "exact", head: true }).gte("rating", 4);
+      const pct = totalReviews && totalReviews > 0 ? Math.round(((satisfiedCount || 0) / totalReviews) * 100) : 98;
+      setSatisfiedUsers(pct);
       setLoading(false);
     };
     fetchData();
@@ -193,7 +195,7 @@ function DashboardContent() {
 
   const totalBooks = books.length;
   const availableBooks = books.filter((b) => b.available).length;
-  const satisfactionPct = totalUsers > 0 ? Math.round((satisfiedUsers / totalUsers) * 100) : 98;
+  const satisfactionPct = satisfiedUsers;
 
   const genres = ["All", ...Array.from(new Set(books.map((b) => b.genre)))];
   const filteredBooks = books.filter((b) => {
@@ -205,6 +207,15 @@ function DashboardContent() {
 
   const activeCount = borrows.filter((b) => b.status === "Active").length;
   const returnedCount = borrows.filter((b) => b.status === "Returned").length;
+
+  const handleSignOut = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      await supabase.from("user_sessions").delete().eq("user_id", user.id);
+    }
+    await supabase.auth.signOut();
+    window.location.href = "/login";
+  };
 
   return (
     <div className="flex flex-col min-h-screen font-sans bg-white">
@@ -226,7 +237,7 @@ function DashboardContent() {
         </div>
         <div className="flex items-center gap-3">
           <span className="text-sm text-slate-600">Hello, <span className="font-semibold text-slate-800">{username}</span> 👋</span>
-          <Link href="/login" className="px-4 py-2 rounded-lg border border-red-200 text-red-500 hover:bg-red-50 transition text-sm font-medium">Sign Out</Link>
+          <button onClick={handleSignOut} className="px-4 py-2 rounded-lg border border-red-200 text-red-500 hover:bg-red-50 transition text-sm font-medium">Sign Out</button>
         </div>
       </nav>
 

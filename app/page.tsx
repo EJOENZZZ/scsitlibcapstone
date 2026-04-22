@@ -36,8 +36,8 @@ const featuredBooks = [
 export default async function Home() {
   // Fetch real stats
   const { count: totalBooks } = await supabase.from("books").select("*", { count: "exact", head: true });
-  const { count: totalBorrows } = await supabase.from("borrow_records").select("*", { count: "exact", head: true });
-  const { count: returned } = await supabase.from("borrow_records").select("*", { count: "exact", head: true }).eq("status", "Returned");
+  const { count: totalBorrows } = await supabase.from("reviews").select("*", { count: "exact", head: true });
+  const { count: returned } = await supabase.from("reviews").select("*", { count: "exact", head: true }).gte("rating", 4);
   const satisfactionPct = totalBorrows && totalBorrows > 0 ? Math.round(((returned || 0) / totalBorrows) * 100) : 98;
 
   // Fetch real reviews
