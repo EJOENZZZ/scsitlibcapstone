@@ -348,16 +348,20 @@ export default function AdminPage() {
                         <td className="px-6 py-4">
                           <span className={`text-xs px-2.5 py-1 rounded-full font-semibold ${
                             b.status === "Active" ? "bg-emerald-50 text-emerald-700" :
+                            b.status === "Pending Return" ? "bg-amber-50 text-amber-600" :
                             b.status === "Overdue" ? "bg-red-50 text-red-600" : "bg-slate-100 text-slate-500"
                           }`}>{b.status}</span>
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex gap-2">
-                            {b.status === "Active" && (
+                            {b.status === "Pending Return" && (
                               <button onClick={() => handleReturn(b)}
                                 className="px-3 py-1.5 text-xs font-medium border border-emerald-200 text-emerald-600 rounded-lg hover:bg-emerald-50 transition">
-                                ✅ Mark Returned
+                                ✅ Confirm Return
                               </button>
+                            )}
+                            {b.status === "Active" && (
+                              <span className="text-xs text-slate-400">Waiting for user</span>
                             )}
                             {b.status === "Returned" && (
                               <button onClick={() => handleRemoveBorrowRecord(b.id)}

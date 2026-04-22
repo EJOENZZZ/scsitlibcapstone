@@ -5,7 +5,7 @@ import { useState, useEffect, Suspense } from "react";
 import { supabase } from "@/lib/supabase";
 
 type Book = { id: string; title: string; author: string; genre: string; available: boolean; copies: number; image?: string; };
-type BorrowRecord = { id: string; book_title: string; book_author: string; borrow_date: string; due_date: string; status: string; };
+type BorrowRecord = { id: string; book_title: string; book_author: string; borrow_date: string; due_date: string; status: string; book_id: string; };
 type Review = { id: string; username: string; course: string; comment: string; rating: number; created_at: string; };
 
 const features = [
@@ -207,6 +207,11 @@ function DashboardContent() {
 
   const activeCount = borrows.filter((b) => b.status === "Active").length;
   const returnedCount = borrows.filter((b) => b.status === "Returned").length;
+
+  const handleRequestReturn = async (b: BorrowRecord) => {
+    await supabase.from("borrow_records").update({ status: "Pending Return" }).eq("id", b.id);
+    setBorrows((prev) => prev.map((r) => r.id === b.id ? { ...r, status: "Pending Return" } : r));
+  };
 
   const handleSignOut = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -429,14 +434,14 @@ function DashboardContent() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-slate-50 border-b border-slate-100">
-                  {["Book Title", "Author", "Due Date", "Status"].map((h) => (
+                  {["Book Title", "Author", "Due Date", "Status", "Action"].map((h) => (
                     <th key={h} className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
                 {borrows.length === 0 ? (
-                  <tr><td colSpan={4} className="px-6 py-12 text-center text-slate-400">No borrowing activity yet. <Link href="/borrowbook" className="text-blue-600 font-medium hover:underline">Borrow a book →</Link></td></tr>
+                  <tr><td colSpan={5} className="px-6 py-12 text-center text-slate-400">No borrowing activity yet. <Link href="/borrowbook" className="text-blue-600 font-medium hover:underline">Borrow a book →</Link></td></tr>
                 ) : (
                   borrows.slice(0, 5).map((b) => (
                     <tr key={b.id} className="hover:bg-slate-50 transition">
@@ -444,9 +449,24 @@ function DashboardContent() {
                       <td className="px-6 py-4 text-slate-500">{b.book_author}</td>
                       <td className="px-6 py-4 text-slate-500">{b.due_date}</td>
                       <td className="px-6 py-4">
-                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${b.status === "Active" ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"}`}>
+                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                          b.status === "Active" ? "bg-emerald-50 text-emerald-700" :
+                          b.status === "Pending Return" ? "bg-amber-50 text-amber-600" :
+                          "bg-slate-100 text-slate-500"
+                        }`}>
                           {b.status}
                         </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        {b.status === "Active" && (
+                          <button onClick={() => handleRequestReturn(b)}
+                            className="px-3 py-1.5 text-xs font-medium border border-amber-200 text-amber-600 rounded-lg hover:bg-amber-50 transition">
+                            Request Return
+                          </button>
+                        )}
+                        {b.status === "Pending Return" && (
+                          <span className="text-xs text-amber-500">⏳ Awaiting admin confirmation</span>
+                        )}
                       </td>
                     </tr>
                   ))
