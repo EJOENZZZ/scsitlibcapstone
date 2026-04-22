@@ -209,8 +209,17 @@ function DashboardContent() {
   const returnedCount = borrows.filter((b) => b.status === "Returned").length;
 
   const handleRequestReturn = async (b: BorrowRecord) => {
-    await supabase.from("borrow_records").update({ status: "Pending Return" }).eq("id", b.id);
-    setBorrows((prev) => prev.map((r) => r.id === b.id ? { ...r, status: "Pending Return" } : r));
+    const { error } = await supabase.from("borrow_records").update({ status: "Pending Return" }).eq("id", b.id);
+    if (error) {
+      console.error("Return request error:", error.message);
+      alert("Failed to request return: " + error.message);
+      return;
+    }
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { data: borrowData } = await supabase.from("borrow_records").select("*").eq("user_id", user.id).order("created_at", { ascending: false });
+      if (borrowData) setBorrows(borrowData);
+    }
   };
 
   const handleSignOut = async () => {
