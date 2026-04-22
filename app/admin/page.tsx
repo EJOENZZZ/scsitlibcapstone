@@ -100,9 +100,8 @@ export default function AdminPage() {
       const { error: bookErr } = await supabase.from("books").update({ available: true }).eq("id", b.book_id);
       if (bookErr) { alert("Book update failed: " + bookErr.message); setReturningId(null); return; }
     }
-    const { error: deleteErr } = await supabase.from("borrow_records").delete().eq("id", b.id);
-    if (deleteErr) { alert("Delete failed: " + deleteErr.message); setReturningId(null); return; }
-    setBorrowers((prev) => prev.filter((r) => r.id !== b.id));
+    const { error: updateErr } = await supabase.from("borrow_records").update({ status: "Returned" }).eq("id", b.id);
+    if (updateErr) { alert("Update failed: " + updateErr.message); setReturningId(null); return; }
     await fetchData();
     setReturningId(null);
   };
@@ -407,7 +406,10 @@ export default function AdminPage() {
                               <span className="text-xs text-slate-400">Waiting for user</span>
                             )}
                             {b.status === "Returned" && (
-                              <span className="text-xs text-emerald-600">✅ Completed</span>
+                              <button onClick={() => handleRemoveBorrowRecord(b.id)}
+                                className="px-3 py-1.5 text-xs font-medium border border-red-200 text-red-500 rounded-lg hover:bg-red-50 transition">
+                                Remove
+                              </button>
                             )}
                           </div>
                         </td>

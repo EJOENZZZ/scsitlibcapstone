@@ -469,9 +469,10 @@ function DashboardContent() {
                         <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
                           b.status === "Active" ? "bg-emerald-50 text-emerald-700" :
                           b.status === "Pending Return" ? "bg-amber-50 text-amber-600" :
+                          b.status === "Returned" ? "bg-blue-50 text-blue-600" :
                           "bg-slate-100 text-slate-500"
                         }`}>
-                          {b.status}
+                          {b.status === "Returned" ? "✅ Returned" : b.status}
                         </span>
                       </td>
                       <td className="px-6 py-4">
