@@ -225,19 +225,6 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="py-32 bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 text-white text-center relative overflow-hidden">
-        <div className="absolute top-8 left-16 text-8xl opacity-5 select-none rotate-12 animate-pulse">📚</div>
-        <div className="absolute bottom-8 right-16 text-8xl opacity-5 select-none -rotate-12 animate-pulse">📖</div>
-        <div className="relative z-10 max-w-4xl mx-auto px-6">
-          <h2 className="text-5xl font-bold mb-6 tracking-tight">Ready to Start Reading?</h2>
-          <p className="text-xl text-blue-100 mb-12 max-w-2xl mx-auto">Join hundreds of SCSIT students already using the digital library system.</p>
-          <div className="flex flex-col sm:flex-row justify-center gap-6">
-            <Link href="/register" className="px-10 py-4 rounded-xl bg-white text-slate-900 hover:bg-blue-50 transition font-bold text-lg shadow-2xl">Create Free Account</Link>
-            <Link href="/login" className="px-10 py-4 rounded-xl border-2 border-white/30 hover:bg-white/10 text-white font-bold text-lg transition">Sign In →</Link>
-          </div>
-        </div>
-      </section>
 
       {/* FOOTER */}
       <footer className="bg-white border-t border-slate-200 py-6 text-center">
