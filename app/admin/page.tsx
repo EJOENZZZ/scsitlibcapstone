@@ -68,7 +68,8 @@ export default function AdminPage() {
   const handleAdd = async () => {
     if (!form.title || !form.author || !form.genre) return;
     setLoading(true);
-    await supabase.from("books").insert(form);
+    const { error } = await supabase.from("books").insert(form);
+    if (error) { alert("Failed to add book: " + error.message); setLoading(false); return; }
     await fetchData();
     setLoading(false);
     closeModal();
