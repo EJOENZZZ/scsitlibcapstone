@@ -234,7 +234,11 @@ export default function AdminPage() {
             </button>
           ))}
         </nav>
-        <div className="px-4 py-6 border-t border-slate-700">
+        <div className="px-4 py-6 border-t border-slate-700 space-y-2">
+          <Link href="/dashboard?user=Admin" target="_blank"
+            className="flex items-center gap-2 text-sm text-slate-400 hover:text-blue-400 transition w-full">
+            <span>🌐</span> View Site
+          </Link>
           <button onClick={() => { sessionStorage.removeItem("adminAuthed"); setAuthed(false); setLoginForm({ username: "", password: "" }); }}
             className="flex items-center gap-2 text-sm text-slate-400 hover:text-red-400 transition w-full">
             <span>🚪</span> Sign Out
@@ -250,7 +254,6 @@ export default function AdminPage() {
           </div>
           <div className="flex items-center gap-3">
             <span className="text-xs bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full font-medium">● System Online</span>
-            <Link href="/" target="_blank" className="text-sm text-slate-500 hover:text-blue-600 transition border border-slate-200 px-4 py-2 rounded-lg">View Site</Link>
           </div>
         </header>
 
