@@ -65,7 +65,7 @@ export default function Register() {
           <div className="w-11 h-11">
             <img src="/scsitlogo.png" alt="SCSIT Logo" className="w-full h-full object-contain" />
           </div>
-          <span className="text-white font-bold text-base">SCSIT Library</span>
+          <span className="text-white font-bold text-lg">SCSIT Library</span>
         </div>
 
         <div className="relative z-10">

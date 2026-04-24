@@ -124,7 +124,7 @@ function ProfileContent() {
           <div className="w-11 h-11">
             <img src="/scsitlogo.png" alt="SCSIT Logo" className="w-full h-full object-contain" />
           </div>
-          <span className="text-base font-bold text-white tracking-tight">SCSIT Library</span>
+          <span className="text-lg font-bold text-white tracking-tight">SCSIT Library</span>
         </div>
         <div className="hidden md:flex items-center gap-1 bg-slate-800 rounded-xl p-1">
           <Link href="/dashboard" className="px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-700 transition">Home</Link>

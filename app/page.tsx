@@ -56,7 +56,7 @@ export default async function Home() {
           <div className="w-11 h-11">
             <img src="/scsitlogo.png" alt="SCSIT Logo" className="w-full h-full object-contain" />
           </div>
-          <span className="text-base font-bold text-white tracking-tight">SCSIT Library</span>
+          <span className="text-lg font-bold text-white tracking-tight">SCSIT Library</span>
         </div>
         <div className="hidden md:flex items-center gap-1 bg-slate-800 rounded-xl p-1">
           <Link href="/" className="px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white">Home</Link>
