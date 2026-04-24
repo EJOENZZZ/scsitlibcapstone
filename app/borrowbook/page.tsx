@@ -61,22 +61,19 @@ function BorrowBookContent() {
 
   return (
     <div className="flex flex-col min-h-screen font-sans bg-slate-50">
-      <nav className="w-full bg-[#0f172a] border-b border-slate-700 py-4 px-10 flex justify-between items-center sticky top-0 z-50 shadow-sm">
+      <nav className="w-full bg-[#0f172a] py-3 px-10 flex justify-between items-center sticky top-0 z-50 shadow-lg">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12">
+          <div className="w-11 h-11">
             <img src="/scsitlogo.png" alt="SCSIT Logo" className="w-full h-full object-contain" />
           </div>
-          <div>
-            <span className="text-lg font-bold text-white tracking-tight">SCSIT Library</span>
-            <span className="hidden sm:inline ml-2 text-xs bg-blue-800 text-blue-200 px-3 py-1 rounded-full font-medium">Student Portal</span>
-          </div>
+          <span className="text-base font-bold text-white tracking-tight">SCSIT Library</span>
         </div>
-        <div className="hidden md:flex gap-8 text-sm">
-          <Link href="/dashboard" className="font-semibold text-slate-300 hover:text-white border-b-2 border-transparent pb-1">Home</Link>
-          <Link href="/borrowbook" className="font-semibold text-blue-400 border-b-2 border-blue-400 pb-1">Borrow</Link>
-          <Link href="/profile" className="font-semibold text-slate-300 hover:text-white border-b-2 border-transparent pb-1">Profile</Link>
+        <div className="hidden md:flex items-center gap-1 bg-slate-800 rounded-xl p-1">
+          <Link href="/dashboard" className="px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-700 transition">Home</Link>
+          <Link href="/borrowbook" className="px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white">Borrow</Link>
+          <Link href="/profile" className="px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-700 transition">Profile</Link>
         </div>
-        <Link href="/login" className="min-w-[80px] text-center px-4 py-2 rounded-lg bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700 transition text-sm font-medium shadow-md">Sign Out</Link>
+        <Link href="/login" className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-sm font-medium transition">Sign Out</Link>
       </nav>
 
       <main className="flex-1 max-w-2xl mx-auto w-full px-6 py-10">

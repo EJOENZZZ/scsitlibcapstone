@@ -246,25 +246,24 @@ function DashboardContent() {
   return (
     <div className="flex flex-col min-h-screen font-sans bg-white">
 
-      {/* NAVBAR */}
-      <nav className="w-full bg-[#0f172a] border-b border-slate-700 py-4 px-10 flex justify-between items-center sticky top-0 z-50 shadow-sm">
+      <nav className="w-full bg-[#0f172a] py-3 px-10 flex justify-between items-center sticky top-0 z-50 shadow-lg">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12">
+          <div className="w-11 h-11">
             <img src="/scsitlogo.png" alt="SCSIT Logo" className="w-full h-full object-contain" />
           </div>
-          <div>
-            <span className="text-lg font-bold text-white tracking-tight">SCSIT Library</span>
-            <span className="hidden sm:inline ml-2 text-xs bg-blue-800 text-blue-200 px-3 py-1 rounded-full font-medium">Student Portal</span>
+          <span className="text-base font-bold text-white tracking-tight">SCSIT Library</span>
+        </div>
+        <div className="hidden md:flex items-center gap-1 bg-slate-800 rounded-xl p-1">
+          <Link href="/dashboard" className="px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white">Home</Link>
+          <Link href="/borrowbook" className="px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-700 transition">Borrow</Link>
+          <Link href={`/profile?user=${encodeURIComponent(username)}`} className="px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-700 transition">Profile</Link>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 bg-slate-800 px-3 py-2 rounded-xl">
+            <div className="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center text-xs font-bold text-white">{username.charAt(0).toUpperCase()}</div>
+            <span className="text-sm font-medium text-white">{username}</span>
           </div>
-        </div>
-        <div className="hidden md:flex gap-8 text-sm">
-          <Link href="/dashboard" className="font-semibold text-blue-400 border-b-2 border-blue-400 pb-1">Home</Link>
-          <Link href="/borrowbook" className="font-semibold text-slate-300 hover:text-white border-b-2 border-transparent pb-1">Borrow</Link>
-          <Link href={`/profile?user=${encodeURIComponent(username)}`} className="font-semibold text-slate-300 hover:text-white border-b-2 border-transparent pb-1">Profile</Link>
-        </div>
-        <div className="flex items-center gap-3 min-w-[240px] justify-end">
-          <span className="text-sm font-semibold text-white">Hi, {username} 👋</span>
-          <button onClick={handleSignOut} className="px-4 py-2 rounded-lg bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700 transition text-sm font-medium shadow-md">Sign Out</button>
+          <button onClick={handleSignOut} className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-sm font-medium transition">Sign Out</button>
         </div>
       </nav>
 
