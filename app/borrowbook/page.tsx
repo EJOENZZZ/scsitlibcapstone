@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
-type Book = { id: string; title: string; author: string; genre: string; available: boolean; };
+type Book = { id: string; title: string; author: string; genre: string; available: boolean; shelf?: string; };
 
 function BorrowBookContent() {
   const searchParams = useSearchParams();
@@ -105,6 +105,15 @@ function BorrowBookContent() {
                 {selected ? selected.author : <span className="text-slate-400">—</span>}
               </div>
             </div>
+            {selected?.shelf && (
+              <div className="bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 flex items-center gap-2">
+                <span className="text-lg">📍</span>
+                <div>
+                  <p className="text-xs text-blue-500 font-medium">Shelf Location</p>
+                  <p className="text-sm font-bold text-blue-700">Shelf {selected.shelf}</p>
+                </div>
+              </div>
+            )}
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="text-sm font-medium text-slate-700 mb-1.5 block">Borrow Date</label>

@@ -327,7 +327,8 @@ function DashboardContent() {
                     </div>
                     <div className="absolute inset-0 bg-gradient-to-t from-blue-900/95 via-blue-800/80 to-blue-600/40 opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col justify-end p-5">
                       <p className="text-white font-bold text-sm leading-tight mb-1">{book.title}</p>
-                      <p className="text-blue-200 text-xs mb-4">{book.author}</p>
+                      <p className="text-blue-200 text-xs mb-1">{book.author}</p>
+                      {book.shelf && <p className="text-amber-300 text-xs mb-3">📍 Shelf {book.shelf}</p>}
                       <Link href={`/borrowbook?bookId=${book.id}`} className="w-full text-center bg-white text-blue-700 hover:bg-blue-50 font-bold text-xs py-2.5 rounded-xl transition shadow-lg">
                         📚 Borrow This Book
                       </Link>
