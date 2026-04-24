@@ -62,8 +62,8 @@ export default function Register() {
         <div className="absolute top-1/2 left-6 text-5xl opacity-10 rotate-3 select-none">📘</div>
 
         <div className="relative z-10 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl overflow-hidden bg-white shadow-lg">
-            <img src="/scsitlogo.png" alt="SCSIT Logo" className="w-full h-full object-contain p-0.5" />
+          <div className="w-12 h-12">
+            <img src="/scsitlogo.png" alt="SCSIT Logo" className="w-full h-full object-contain" />
           </div>
           <span className="text-white font-bold text-lg">SCSIT Library</span>
         </div>
@@ -105,8 +105,8 @@ export default function Register() {
 
         <div className="w-full max-w-sm relative z-10">
           <div className="mb-8">
-            <div className="w-12 h-12 rounded-2xl overflow-hidden shadow-lg mb-4 bg-white">
-            <img src="/scsitlogo.png" alt="SCSIT Logo" className="w-full h-full object-contain p-0.5" />
+            <div className="w-14 h-14">
+            <img src="/scsitlogo.png" alt="SCSIT Logo" className="w-full h-full object-contain" />
           </div>
             <h1 className="text-2xl font-bold text-slate-800">Create your account</h1>
             <p className="text-slate-400 text-sm mt-1">Join the SCSIT Library community today</p>

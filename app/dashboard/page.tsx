@@ -249,8 +249,8 @@ function DashboardContent() {
       {/* NAVBAR */}
       <nav className="w-full bg-white/95 backdrop-blur-lg border-b border-slate-200/50 py-4 px-10 flex justify-between items-center sticky top-0 z-50 shadow-sm">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl overflow-hidden shadow-lg bg-white">
-            <img src="/scsitlogo.png" alt="SCSIT Logo" className="w-full h-full object-contain p-0.5" />
+          <div className="w-12 h-12">
+            <img src="/scsitlogo.png" alt="SCSIT Logo" className="w-full h-full object-contain" />
           </div>
           <div>
             <span className="text-lg font-bold text-slate-800 tracking-tight">SCSIT Library</span>
