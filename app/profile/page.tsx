@@ -23,7 +23,7 @@ function ProfileContent() {
   const [course, setCourse] = useState("");
   const [year, setYear] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
-  const [nickname, setNickname] = useState("");
+  const [username, setUsername] = useState("");
   const [editingNickname, setEditingNickname] = useState(false);
   const [newNickname, setNewNickname] = useState("");
   const [uploading, setUploading] = useState(false);
@@ -39,17 +39,16 @@ function ProfileContent() {
         setUserId(user.id);
         setEmail(user.email || "");
 
-        // Fetch profile
         const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).single();
         if (profile) {
           setAvatarUrl(profile.avatar_url || "");
-          setNickname(profile.nickname || profile.username || urlUsername);
-          setNewNickname(profile.nickname || profile.username || urlUsername);
+          setUsername(profile.username || user.user_metadata?.username || urlUsername);
+          setNewNickname(profile.username || user.user_metadata?.username || urlUsername);
           setCourse(profile.course || user.user_metadata?.course || "");
           setYear(profile.year || user.user_metadata?.year || "");
         } else {
-          setNickname(urlUsername);
-          setNewNickname(urlUsername);
+          setUsername(user.user_metadata?.username || urlUsername);
+          setNewNickname(user.user_metadata?.username || urlUsername);
           setCourse(user.user_metadata?.course || "");
           setYear(user.user_metadata?.year || "");
         }
@@ -101,11 +100,11 @@ function ProfileContent() {
   const handleSaveNickname = async () => {
     if (!newNickname.trim() || !userId) return;
     setSaving(true);
-    await supabase.from("profiles").upsert({ id: userId, nickname: newNickname.trim() });
-    setNickname(newNickname.trim());
+    await supabase.from("profiles").upsert({ id: userId, username: newNickname.trim() });
+    setUsername(newNickname.trim());
     setEditingNickname(false);
     setSaving(false);
-    setSaveMsg("Nickname updated! ✅");
+    setSaveMsg("Username updated! ✅");
     setTimeout(() => setSaveMsg(""), 3000);
   };
 
@@ -134,7 +133,7 @@ function ProfileContent() {
           <Link href="/profile" className="text-blue-600 font-semibold border-b-2 border-blue-600 pb-1">Profile</Link>
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-sm font-semibold text-slate-800">{nickname}</span>
+          <span className="text-sm font-semibold text-slate-800">Hi, {username} 👋</span>
           <button onClick={handleSignOut} className="px-4 py-2 rounded-lg bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700 transition text-sm font-medium shadow-md">Sign Out</button>
         </div>
       </nav>
@@ -159,7 +158,7 @@ function ProfileContent() {
                   <img src={avatarUrl} alt="Profile" className="w-24 h-24 rounded-full object-cover shadow-lg border-4 border-white" />
                 ) : (
                   <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-5xl shadow-lg border-4 border-white">
-                    {nickname.charAt(0).toUpperCase()}
+                    {username.charAt(0).toUpperCase()}
                   </div>
                 )}
                 <button
@@ -179,7 +178,7 @@ function ProfileContent() {
                     value={newNickname}
                     onChange={(e) => setNewNickname(e.target.value)}
                     className="border border-blue-300 p-2 w-full rounded-xl text-sm text-center focus:outline-none focus:ring-2 focus:ring-blue-400"
-                    placeholder="Enter nickname"
+                    placeholder="Enter username"
                   />
                   <div className="flex gap-2 mt-2">
                     <button onClick={handleSaveNickname} disabled={saving}
@@ -194,8 +193,8 @@ function ProfileContent() {
                 </div>
               ) : (
                 <div className="flex items-center justify-center gap-2 mb-1">
-                  <h2 className="text-2xl font-bold text-slate-800">{nickname}</h2>
-                  <button onClick={() => setEditingNickname(true)} className="text-slate-400 hover:text-blue-600 transition text-sm" title="Edit nickname">✏️</button>
+                  <h2 className="text-2xl font-bold text-slate-800">{username}</h2>
+                  <button onClick={() => setEditingNickname(true)} className="text-slate-400 hover:text-blue-600 transition text-sm" title="Edit username">✏️</button>
                 </div>
               )}
 
@@ -205,7 +204,7 @@ function ProfileContent() {
               <div className="mt-8 space-y-4 text-left border-t border-slate-100 pt-6">
                 {[
                   { icon: "📧", label: "Email", value: email },
-                  { icon: "👤", label: "Username", value: `@${urlUsername.toLowerCase()}` },
+                  { icon: "👤", label: "Username", value: `@${username}` },
                   { icon: "🎓", label: "Course", value: course || "—" },
                   { icon: "📅", label: "Year Level", value: year || "—" },
                 ].map((item) => (
