@@ -105,9 +105,6 @@ export default function Login() {
 
         <div className="w-full max-w-sm relative z-10">
           <div className="mb-8">
-            <div className="w-14 h-14">
-            <img src="/scsitlogo.png" alt="SCSIT Logo" className="w-full h-full object-contain" />
-          </div>
             <h1 className="text-2xl font-bold text-slate-800">Sign in to your account</h1>
             <p className="text-slate-400 text-sm mt-1">Welcome back to SCSIT Library</p>
           </div>
