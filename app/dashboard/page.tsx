@@ -209,21 +209,9 @@ function DashboardContent() {
   const returnedCount = borrows.filter((b) => b.status === "Returned").length;
 
   const handleRequestReturn = async (b: BorrowRecord) => {
-    console.log("Requesting return for:", b);
     const { data: { user } } = await supabase.auth.getUser();
-    console.log("Current user ID:", user?.id);
-    console.log("Borrow record user_id:", b.book_id);
-    
     const { data, error } = await supabase.from("borrow_records").update({ status: "Pending Return" }).eq("id", b.id).select();
-    
-    console.log("Update result:", { data, error });
-    
-    if (error) {
-      console.error("Return request error:", error);
-      alert("Failed to request return: " + error.message);
-      return;
-    }
-    
+    if (error) { alert("Failed to request return: " + error.message); return; }
     if (user) {
       const { data: borrowData } = await supabase.from("borrow_records").select("*").eq("user_id", user.id).order("created_at", { ascending: false });
       if (borrowData) setBorrows(borrowData);
@@ -253,7 +241,6 @@ function DashboardContent() {
         </div>
         <div className="hidden md:flex gap-8 text-sm font-medium text-slate-500">
           <Link href="/dashboard" className="text-blue-600 font-semibold border-b-2 border-blue-600 pb-1">Home</Link>
-          <Link href="#books" className="hover:text-slate-800 transition">Books</Link>
           <Link href="/borrowbook" className="hover:text-slate-800 transition">Borrow</Link>
           <Link href={`/profile?user=${encodeURIComponent(username)}`} className="hover:text-slate-800 transition">Profile</Link>
         </div>
@@ -263,48 +250,6 @@ function DashboardContent() {
         </div>
       </nav>
 
-      {/* HERO */}
-      <section className="relative flex items-center justify-center text-center text-white min-h-[60vh] overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800" />
-        <div className="absolute top-20 left-20 text-8xl opacity-10 rotate-12 select-none animate-pulse">📚</div>
-        <div className="absolute bottom-20 right-20 text-8xl opacity-10 -rotate-12 select-none animate-pulse">📖</div>
-
-        <div className="relative z-10 max-w-4xl px-6 py-16">
-          <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 text-white text-xs font-semibold px-4 py-2 rounded-full mb-6 uppercase tracking-widest">
-            <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
-            Welcome back, {username}!
-          </div>
-          <h1 className="text-4xl md:text-6xl font-bold leading-tight tracking-tight mb-4">
-            Your Library,<br />
-            <span className="bg-gradient-to-r from-blue-200 to-cyan-200 bg-clip-text text-transparent">Your Knowledge</span>
-          </h1>
-          <p className="text-lg text-blue-100 max-w-2xl mx-auto mb-8">
-            Browse, borrow, and manage books from the SCSIT Library — all in one place.
-          </p>
-          <div className="flex justify-center gap-4">
-            <Link href="/borrowbook" className="px-8 py-3 rounded-xl bg-white text-blue-600 hover:bg-blue-50 transition font-bold text-sm shadow-2xl">
-              Borrow a Book
-            </Link>
-            <Link href={`/profile?user=${encodeURIComponent(username)}`} className="px-8 py-3 rounded-xl border-2 border-white/30 hover:bg-white/10 transition font-semibold text-sm">
-              My Profile →
-            </Link>
-          </div>
-
-          {/* STATS */}
-          <div className="grid grid-cols-2 gap-6 max-w-2xl mx-auto mt-12">
-            {[
-              { value: loading ? "..." : `${totalBooks}+`, label: "Total Books", icon: "📚" },
-              { value: loading ? "..." : `${totalUsers}`, label: "Users Online", icon: "🟢" },
-            ].map((s) => (
-              <div key={s.label} className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl py-6 px-4 shadow-xl">
-                <div className="text-3xl mb-2">{s.icon}</div>
-                <p className="text-3xl font-bold text-white">{s.value}</p>
-                <p className="text-xs text-blue-200 mt-1">{s.label}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* MY ACTIVITY */}
       <section className="py-10 bg-slate-50 border-b border-slate-100">
