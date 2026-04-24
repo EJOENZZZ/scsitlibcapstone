@@ -134,7 +134,8 @@ function ReviewsList() {
 
 function DashboardContent() {
   const searchParams = useSearchParams();
-  const username = searchParams.get("user") || "Student";
+  const urlUsername = searchParams.get("user") || "";
+  const [username, setUsername] = useState(urlUsername);
   const [books, setBooks] = useState<Book[]>([]);
   const [borrows, setBorrows] = useState<BorrowRecord[]>([]);
   const [totalUsers, setTotalUsers] = useState(0);
@@ -150,6 +151,10 @@ function DashboardContent() {
 
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
+        const { data: profile } = await supabase.from("profiles").select("username").eq("id", user.id).single();
+        if (profile?.username) setUsername(profile.username);
+        else if (user.user_metadata?.username) setUsername(user.user_metadata.username);
+
         const { data: borrowData } = await supabase
           .from("borrow_records").select("*").eq("user_id", user.id).order("created_at", { ascending: false });
         if (borrowData) setBorrows(borrowData);
