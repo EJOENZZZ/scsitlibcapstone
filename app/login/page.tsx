@@ -61,10 +61,10 @@ export default function Login() {
         <div className="absolute bottom-20 right-28 text-4xl opacity-15 -rotate-12 select-none">📗</div>
 
         <div className="relative z-10 flex items-center gap-3">
-          <div className="w-12 h-12">
+          <div className="w-11 h-11">
             <img src="/scsitlogo.png" alt="SCSIT Logo" className="w-full h-full object-contain" />
           </div>
-          <span className="text-white font-bold text-lg">SCSIT Library</span>
+          <span className="text-white font-bold text-base">SCSIT Library</span>
         </div>
 
         <div className="relative z-10">

@@ -51,25 +51,21 @@ export default async function Home() {
     <div className="flex flex-col min-h-screen font-sans bg-white">
 
       {/* NAVBAR */}
-      <nav className="w-full bg-[#0f172a] border-b border-slate-700 py-4 px-10 flex justify-between items-center sticky top-0 z-50 shadow-sm">
+      <nav className="w-full bg-[#0f172a] py-3 px-10 flex justify-between items-center sticky top-0 z-50 shadow-lg">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12">
+          <div className="w-11 h-11">
             <img src="/scsitlogo.png" alt="SCSIT Logo" className="w-full h-full object-contain" />
           </div>
-          <div>
-            <span className="text-lg font-bold text-white tracking-tight">SCSIT Library</span>
-            <span className="hidden sm:inline ml-2 text-xs bg-blue-800 text-blue-200 px-3 py-1 rounded-full font-medium">Digital System</span>
-          </div>
+          <span className="text-base font-bold text-white tracking-tight">SCSIT Library</span>
         </div>
-        <div className="hidden md:flex gap-8 text-sm font-medium text-slate-500">
-          <Link href="/" className="text-blue-400 font-semibold border-b-2 border-blue-400 pb-1">Home</Link>
-          <Link href="#features" className="text-slate-300 hover:text-white transition">Features</Link>
-          <Link href="#reviews" className="text-slate-300 hover:text-white transition">Reviews</Link>
+        <div className="hidden md:flex items-center gap-1 bg-slate-800 rounded-xl p-1">
+          <Link href="/" className="px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white">Home</Link>
+          <Link href="#features" className="px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-700 transition">Features</Link>
+          <Link href="#reviews" className="px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-700 transition">Reviews</Link>
         </div>
-        <div className="flex items-center gap-3">
-          <Link href="/login" className="px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-700 transition">Sign In</Link>
-          <Link href="/register" className="px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-700 transition">Sign Up</Link>
-
+        <div className="flex items-center gap-2">
+          <Link href="/login" className="px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-700 transition">Sign In</Link>
+          <Link href="/register" className="px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white transition">Sign Up</Link>
         </div>
       </nav>
 
