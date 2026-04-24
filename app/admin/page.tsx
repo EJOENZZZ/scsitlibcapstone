@@ -532,34 +532,41 @@ export default function AdminPage() {
 
       {(modal === "add" || modal === "edit") && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 px-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8">
-            <h2 className="text-xl font-bold text-slate-800 mb-1">{modal === "add" ? "Add New Book" : "Edit Book"}</h2>
-            <p className="text-sm text-slate-400 mb-6">{modal === "add" ? "Fill in the details to add a book." : "Update the book information below."}</p>
-            <div className="space-y-4">
-              {[
-                { key: "title", label: "Book Title", placeholder: "e.g. Introduction to Algorithms" },
-                { key: "author", label: "Author", placeholder: "e.g. Thomas H. Cormen" },
-                { key: "genre", label: "Genre", placeholder: "e.g. Computer Science" },
-                { key: "shelf", label: "Shelf Location", placeholder: "e.g. A1, B2, C3" },
-                { key: "image", label: "Image URL (optional)", placeholder: "e.g. https://images.unsplash.com/..." },
-              ].map((f) => (
-                <div key={f.key}>
-                  <label className="text-sm font-medium text-slate-600 mb-1 block">{f.label}</label>
-                  <input placeholder={f.placeholder} value={(form as Record<string, string | number | boolean>)[f.key] as string}
-                    onChange={(e) => setForm({ ...form, [f.key]: e.target.value })}
-                    className="border border-slate-200 p-3 w-full rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition" />
-                </div>
-              ))}
-              <div className="grid grid-cols-2 gap-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
+            <h2 className="text-base font-bold text-slate-800 mb-0.5">{modal === "add" ? "Add New Book" : "Edit Book"}</h2>
+            <p className="text-xs text-slate-400 mb-4">{modal === "add" ? "Fill in the details to add a book." : "Update the book information below."}</p>
+            <div className="space-y-2.5">
+              <div className="grid grid-cols-2 gap-2.5">
+                {[
+                  { key: "title", label: "Book Title", placeholder: "e.g. Introduction to Algorithms" },
+                  { key: "author", label: "Author", placeholder: "e.g. Thomas H. Cormen" },
+                  { key: "genre", label: "Genre", placeholder: "e.g. Computer Science" },
+                  { key: "shelf", label: "Shelf Location", placeholder: "e.g. A1, B2, C3" },
+                ].map((f) => (
+                  <div key={f.key}>
+                    <label className="text-xs font-medium text-slate-600 mb-1 block">{f.label}</label>
+                    <input placeholder={f.placeholder} value={(form as Record<string, string | number | boolean>)[f.key] as string}
+                      onChange={(e) => setForm({ ...form, [f.key]: e.target.value })}
+                      className="border border-slate-200 px-3 py-2 w-full rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-400 transition" />
+                  </div>
+                ))}
+              </div>
+              <div>
+                <label className="text-xs font-medium text-slate-600 mb-1 block">Image URL (optional)</label>
+                <input placeholder="e.g. https://images.unsplash.com/..." value={(form as Record<string, string | number | boolean>)["image"] as string}
+                  onChange={(e) => setForm({ ...form, image: e.target.value })}
+                  className="border border-slate-200 px-3 py-2 w-full rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-400 transition" />
+              </div>
+              <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="text-sm font-medium text-slate-600 mb-1 block">Copies</label>
+                  <label className="text-xs font-medium text-slate-600 mb-1 block">Copies</label>
                   <input type="number" min={1} value={form.copies} onChange={(e) => setForm({ ...form, copies: Number(e.target.value) })}
-                    className="border border-slate-200 p-3 w-full rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition" />
+                    className="border border-slate-200 px-3 py-2 w-full rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-400 transition" />
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-slate-600 mb-1 block">Status</label>
+                  <label className="text-xs font-medium text-slate-600 mb-1 block">Status</label>
                   <select value={form.available ? "true" : "false"} onChange={(e) => setForm({ ...form, available: e.target.value === "true" })}
-                    className="border border-slate-200 p-3 w-full rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition bg-white">
+                    className="border border-slate-200 px-3 py-2 w-full rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-400 transition bg-white">
                     <option value="true">Available</option>
                     <option value="false">Unavailable</option>
                   </select>
@@ -567,16 +574,16 @@ export default function AdminPage() {
               </div>
               {(form as Record<string, string | number | boolean>)["image"] && (
                 <div>
-                  <label className="text-sm font-medium text-slate-600 mb-1 block">Image Preview</label>
+                  <label className="text-xs font-medium text-slate-600 mb-1 block">Image Preview</label>
                   <img src={(form as Record<string, string | number | boolean>)["image"] as string} alt="preview"
-                    className="w-full h-32 object-cover rounded-xl border border-slate-200" />
+                    className="w-full h-24 object-cover rounded-lg border border-slate-200" />
                 </div>
               )}
             </div>
-            <div className="flex gap-3 mt-8">
-              <button onClick={closeModal} className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 text-sm font-medium hover:bg-slate-50 transition">Cancel</button>
+            <div className="flex gap-3 mt-5">
+              <button onClick={closeModal} className="flex-1 py-2 rounded-xl border border-slate-200 text-slate-600 text-xs font-medium hover:bg-slate-50 transition">Cancel</button>
               <button onClick={modal === "add" ? handleAdd : handleEdit} disabled={loading}
-                className="flex-1 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white text-sm font-semibold transition">
+                className="flex-1 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white text-xs font-semibold transition">
                 {loading ? "Saving..." : modal === "add" ? "Add Book" : "Save Changes"}
               </button>
             </div>
