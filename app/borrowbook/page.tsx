@@ -71,10 +71,10 @@ function BorrowBookContent() {
             <span className="hidden sm:inline ml-2 text-xs bg-blue-800 text-blue-200 px-3 py-1 rounded-full font-medium">Student Portal</span>
           </div>
         </div>
-        <div className="hidden md:flex gap-8 font-medium text-slate-500 text-sm">
-          <Link href="/dashboard" className="text-slate-300 hover:text-white transition">Home</Link>
+        <div className="hidden md:flex gap-8 font-medium text-sm">
+          <Link href="/dashboard" className="text-slate-300 hover:text-white transition border-b-2 border-transparent pb-1">Home</Link>
           <Link href="/borrowbook" className="text-blue-400 font-semibold border-b-2 border-blue-400 pb-1">Borrow Book</Link>
-          <Link href="/profile" className="text-slate-300 hover:text-white transition">Profile</Link>
+          <Link href="/profile" className="text-slate-300 hover:text-white transition border-b-2 border-transparent pb-1">Profile</Link>
         </div>
         <Link href="/login" className="px-4 py-2 rounded-lg bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700 transition text-sm font-medium shadow-md">Sign Out</Link>
       </nav>
