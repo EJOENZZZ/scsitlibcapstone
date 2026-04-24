@@ -37,19 +37,20 @@ function ReviewForm({ username, onSubmit }: { username: string; onSubmit: () => 
       comment,
       rating,
       satisfied: rating >= 4,
+      approved: false,
     });
 
     if (insertError) { setError(insertError.message); setLoading(false); return; }
     setSuccess(true);
     setComment("");
     setLoading(false);
-    setTimeout(() => { setSuccess(false); onSubmit(); }, 1500);
+    setTimeout(() => { setSuccess(false); onSubmit(); }, 3000);
   };
 
   return (
     <div className="bg-white rounded-3xl border border-slate-200 shadow-lg p-8 mb-10 max-w-2xl mx-auto">
       <h3 className="font-bold text-slate-800 text-lg mb-5">✍️ Leave a Review</h3>
-      {success && <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm px-4 py-3 rounded-xl mb-4">✅ Review submitted! Thank you.</div>}
+      {success && <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm px-4 py-3 rounded-xl mb-4">✅ Review submitted! It will appear once approved by the admin.</div>}
       {error && <div className="bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-3 rounded-xl mb-4">{error}</div>}
       <div className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
