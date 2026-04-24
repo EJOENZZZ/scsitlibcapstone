@@ -156,7 +156,9 @@ export default function AdminPage() {
           <div className="absolute top-16 right-10 text-8xl opacity-10 rotate-12 select-none">🔐</div>
           <div className="absolute bottom-32 right-20 text-6xl opacity-10 -rotate-6 select-none">📊</div>
           <div className="relative z-10 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-xl">📚</div>
+            <div className="w-10 h-10 rounded-xl overflow-hidden">
+              <img src="/scsitlogo.png" alt="SCSIT Logo" className="w-full h-full object-cover" />
+            </div>
             <span className="text-white font-bold text-lg">SCSIT Library</span>
           </div>
           <div className="relative z-10">
@@ -212,7 +214,9 @@ export default function AdminPage() {
     <div className="flex min-h-screen font-sans bg-slate-50">
       <aside className="w-64 bg-slate-900 text-white flex flex-col fixed h-full z-40">
         <div className="px-6 py-6 border-b border-slate-700 flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg bg-blue-600 flex items-center justify-center text-lg">📚</div>
+          <div className="w-9 h-9 rounded-lg overflow-hidden">
+            <img src="/scsitlogo.png" alt="SCSIT Logo" className="w-full h-full object-cover" />
+          </div>
           <div>
             <p className="font-bold text-sm">SCSIT Library</p>
             <p className="text-xs text-slate-400">Admin Panel</p>

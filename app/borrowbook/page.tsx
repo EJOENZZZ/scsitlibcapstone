@@ -63,7 +63,9 @@ function BorrowBookContent() {
     <div className="flex flex-col min-h-screen font-sans bg-slate-50">
       <nav className="w-full bg-white/95 backdrop-blur-lg border-b border-slate-200/50 py-4 px-10 flex justify-between items-center sticky top-0 z-50 shadow-sm">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-xl shadow-lg">📚</div>
+          <div className="w-10 h-10 rounded-xl overflow-hidden shadow-lg">
+            <img src="/scsitlogo.png" alt="SCSIT Logo" className="w-full h-full object-cover" />
+          </div>
           <div>
             <span className="text-lg font-bold text-slate-800 tracking-tight">SCSIT Library</span>
             <span className="hidden sm:inline ml-2 text-xs bg-blue-100 text-blue-700 px-3 py-1 rounded-full font-medium">Student Portal</span>
