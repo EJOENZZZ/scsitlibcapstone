@@ -112,12 +112,14 @@ export default function AdminPage() {
   };
 
   const handleApproveReview = async (id: string, approved: boolean) => {
-    await supabase.from("reviews").update({ approved }).eq("id", id);
+    const { error } = await supabase.from("reviews").update({ approved }).eq("id", id);
+    if (error) { alert("Failed to update review: " + error.message); return; }
     await fetchData();
   };
 
   const handleDeleteReview = async (id: string) => {
-    await supabase.from("reviews").delete().eq("id", id);
+    const { error } = await supabase.from("reviews").delete().eq("id", id);
+    if (error) { alert("Failed to delete review: " + error.message); return; }
     await fetchData();
   };
 
