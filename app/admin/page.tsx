@@ -3,11 +3,11 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 
-type Book = { id: string; title: string; author: string; genre: string; copies: number; available: boolean; };
+type Book = { id: string; title: string; author: string; genre: string; copies: number; available: boolean; image?: string; };
 type Borrower = { id: string; user_name: string; book_title: string; borrow_date: string; due_date: string; status: string; book_id: string; };
 type Review = { id: string; username: string; course: string; comment: string; rating: number; approved: boolean; created_at: string; };
 type UserProfile = { id: string; username: string; full_name: string; course: string; year: string; created_at: string; };
-const emptyForm = { title: "", author: "", genre: "", copies: 1, available: true };
+const emptyForm = { title: "", author: "", genre: "", copies: 1, available: true, image: "" };
 
 export default function AdminPage() {
   const [authed, setAuthed] = useState(false);
@@ -61,7 +61,7 @@ export default function AdminPage() {
   };
 
   const openAdd = () => { setForm(emptyForm); setModal("add"); };
-  const openEdit = (b: Book) => { setSelected(b); setForm({ title: b.title, author: b.author, genre: b.genre, copies: b.copies, available: b.available }); setModal("edit"); };
+  const openEdit = (b: Book) => { setSelected(b); setForm({ title: b.title, author: b.author, genre: b.genre, copies: b.copies, available: b.available, image: b.image || "" }); setModal("edit"); };
   const openDelete = (b: Book) => { setSelected(b); setModal("delete"); };
   const closeModal = () => { setModal(null); setSelected(null); };
 
@@ -537,6 +537,7 @@ export default function AdminPage() {
                 { key: "title", label: "Book Title", placeholder: "e.g. Introduction to Algorithms" },
                 { key: "author", label: "Author", placeholder: "e.g. Thomas H. Cormen" },
                 { key: "genre", label: "Genre", placeholder: "e.g. Computer Science" },
+                { key: "image", label: "Image URL (optional)", placeholder: "e.g. https://images.unsplash.com/photo-..." },
               ].map((f) => (
                 <div key={f.key}>
                   <label className="text-sm font-medium text-slate-600 mb-1 block">{f.label}</label>
@@ -560,6 +561,13 @@ export default function AdminPage() {
                   </select>
                 </div>
               </div>
+              {(form as Record<string, string | number | boolean>)["image"] && (
+                <div>
+                  <label className="text-sm font-medium text-slate-600 mb-1 block">Image Preview</label>
+                  <img src={(form as Record<string, string | number | boolean>)["image"] as string} alt="preview"
+                    className="w-full h-32 object-cover rounded-xl border border-slate-200" />
+                </div>
+              )}
             </div>
             <div className="flex gap-3 mt-8">
               <button onClick={closeModal} className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 text-sm font-medium hover:bg-slate-50 transition">Cancel</button>
