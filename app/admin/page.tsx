@@ -250,7 +250,7 @@ export default function AdminPage() {
           </div>
           <div className="flex items-center gap-3">
             <span className="text-xs bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full font-medium">● System Online</span>
-            <Link href="/" className="text-sm text-slate-500 hover:text-blue-600 transition border border-slate-200 px-4 py-2 rounded-lg">View Site</Link>
+            <Link href="/" target="_blank" className="text-sm text-slate-500 hover:text-blue-600 transition border border-slate-200 px-4 py-2 rounded-lg">View Site</Link>
           </div>
         </header>
 
