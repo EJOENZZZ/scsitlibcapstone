@@ -10,7 +10,6 @@ function BorrowBookContent() {
   const searchParams = useSearchParams();
   const bookId = searchParams.get("bookId");
 
-  const [books, setBooks] = useState<Book[]>([]);
   const [selected, setSelected] = useState<Book | null>(null);
   const [borrowDate, setBorrowDate] = useState("");
   const [dueDate, setDueDate] = useState("");
@@ -19,19 +18,15 @@ function BorrowBookContent() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    supabase.from("books").select("*").order("title").then(({ data }) => {
-      if (data) {
-        setBooks(data);
-        if (bookId) {
-          const match = data.find((b) => b.id === bookId);
-          if (match && match.available) setSelected(match);
-        }
-      }
-    });
     const today = new Date().toISOString().split("T")[0];
     const due = new Date(Date.now() + 14 * 86400000).toISOString().split("T")[0];
     setBorrowDate(today);
     setDueDate(due);
+    if (bookId) {
+      supabase.from("books").select("*").eq("id", bookId).single().then(({ data }) => {
+        if (data && data.available) setSelected(data);
+      });
+    }
   }, [bookId]);
 
   const handleBorrow = async () => {
@@ -58,8 +53,6 @@ function BorrowBookContent() {
     if (borrowError) { setError(borrowError.message); setLoading(false); return; }
 
     await supabase.from("books").update({ available: false }).eq("id", selected.id);
-    setBooks((prev) => prev.map((b) => b.id === selected.id ? { ...b, available: false } : b));
-
     setSuccess(true);
     setSelected(null);
     setLoading(false);
@@ -81,91 +74,59 @@ function BorrowBookContent() {
         <Link href="/login" className="px-5 py-2 rounded-lg border border-red-200 text-red-500 hover:bg-red-50 transition text-sm font-medium">Sign Out</Link>
       </nav>
 
-      <main className="flex-1 max-w-6xl mx-auto w-full px-6 py-10">
+      <main className="flex-1 max-w-2xl mx-auto w-full px-6 py-10">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-slate-800">Borrow a Book</h1>
-          <p className="text-slate-400 text-sm mt-1">Select a title from the catalog, then confirm your borrow request.</p>
+          <p className="text-slate-400 text-sm mt-1">Confirm your borrow request below.</p>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-8">
-          {/* CATALOG */}
-          <div>
-            <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">Book Catalog</h2>
-            <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1">
-              {books.map((book) => (
-                <div
-                  key={book.id}
-                  onClick={() => book.available && setSelected(book)}
-                  className={`bg-white rounded-2xl p-4 border-2 transition shadow-sm
-                    ${!book.available ? "opacity-50 cursor-not-allowed border-slate-100" :
-                      selected?.id === book.id ? "border-blue-500 bg-blue-50/50" : "border-slate-100 hover:border-blue-300 cursor-pointer"}`}
-                >
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <p className="font-semibold text-slate-800 text-sm">{book.title}</p>
-                      <p className="text-xs text-slate-400 mt-0.5">{book.author} · {book.genre}</p>
-                    </div>
-                    <span className={`text-xs px-2.5 py-1 rounded-full font-semibold shrink-0 ml-3 ${book.available ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-500"}`}>
-                      {book.available ? "Available" : "Borrowed"}
-                    </span>
-                  </div>
-                </div>
-              ))}
+        <div className="bg-white p-8 rounded-2xl border border-slate-100 shadow-sm">
+          {success && (
+            <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 text-center py-3 rounded-xl mb-6 text-sm font-medium">
+              ✅ Book borrowed successfully!
             </div>
-          </div>
+          )}
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-600 text-center py-3 rounded-xl mb-6 text-sm">
+              {error}
+            </div>
+          )}
 
-          {/* FORM */}
-          <div>
-            <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">Borrow Form</h2>
-            <div className="bg-white p-8 rounded-2xl border border-slate-100 shadow-sm">
-              {success && (
-                <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 text-center py-3 rounded-xl mb-6 text-sm font-medium">
-                  ✅ Book borrowed successfully!
-                </div>
-              )}
-              {error && (
-                <div className="bg-red-50 border border-red-200 text-red-600 text-center py-3 rounded-xl mb-6 text-sm">
-                  {error}
-                </div>
-              )}
-
-              <div className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium text-slate-700 mb-1.5 block">Selected Book</label>
-                  <div className="border border-slate-200 p-3 w-full rounded-xl text-sm bg-slate-50 text-slate-600 min-h-[44px]">
-                    {selected ? selected.title : <span className="text-slate-400">Click a book from the catalog</span>}
-                  </div>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-slate-700 mb-1.5 block">Author</label>
-                  <div className="border border-slate-200 p-3 w-full rounded-xl text-sm bg-slate-50 text-slate-600 min-h-[44px]">
-                    {selected ? selected.author : <span className="text-slate-400">—</span>}
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-medium text-slate-700 mb-1.5 block">Borrow Date</label>
-                    <input type="date" value={borrowDate} onChange={(e) => setBorrowDate(e.target.value)}
-                      className="border border-slate-200 p-3 w-full rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition" />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-slate-700 mb-1.5 block">Due Date</label>
-                    <input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)}
-                      className="border border-slate-200 p-3 w-full rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition" />
-                  </div>
-                </div>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium text-slate-700 mb-1.5 block">Selected Book</label>
+              <div className="border border-slate-200 p-3 w-full rounded-xl text-sm bg-slate-50 text-slate-600 min-h-[44px]">
+                {selected ? selected.title : <span className="text-slate-400">No book selected</span>}
               </div>
-
-              <button
-                onClick={handleBorrow}
-                disabled={loading || !selected}
-                className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white w-full py-3 rounded-xl transition font-semibold mt-6 text-sm shadow-sm"
-              >
-                {loading ? "Processing..." : "Confirm Borrow"}
-              </button>
-              <p className="text-center text-xs text-slate-400 mt-3">Please return the book by the due date to avoid penalties.</p>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-slate-700 mb-1.5 block">Author</label>
+              <div className="border border-slate-200 p-3 w-full rounded-xl text-sm bg-slate-50 text-slate-600 min-h-[44px]">
+                {selected ? selected.author : <span className="text-slate-400">—</span>}
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium text-slate-700 mb-1.5 block">Borrow Date</label>
+                <input type="date" value={borrowDate} onChange={(e) => setBorrowDate(e.target.value)}
+                  className="border border-slate-200 p-3 w-full rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition" />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-slate-700 mb-1.5 block">Due Date</label>
+                <input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)}
+                  className="border border-slate-200 p-3 w-full rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition" />
+              </div>
             </div>
           </div>
+
+          <button
+            onClick={handleBorrow}
+            disabled={loading || !selected}
+            className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white w-full py-3 rounded-xl transition font-semibold mt-6 text-sm shadow-sm"
+          >
+            {loading ? "Processing..." : "Confirm Borrow"}
+          </button>
+          <p className="text-center text-xs text-slate-400 mt-3">Please return the book by the due date to avoid penalties.</p>
         </div>
       </main>
 
