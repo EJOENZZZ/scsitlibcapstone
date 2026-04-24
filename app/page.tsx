@@ -62,49 +62,16 @@ export default async function Home() {
         <div className="hidden md:flex gap-8 text-sm font-medium text-slate-500">
           <Link href="/" className="text-blue-600 font-semibold border-b-2 border-blue-600 pb-1">Home</Link>
           <Link href="#features" className="hover:text-slate-800 transition">Features</Link>
-          <Link href="#books" className="hover:text-slate-800 transition">Books</Link>
           <Link href="#reviews" className="hover:text-slate-800 transition">Reviews</Link>
         </div>
         <div className="flex items-center gap-3">
           <Link href="/login" className="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100 transition">Sign In</Link>
           <Link href="/register" className="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100 transition">Sign Up</Link>
-          <Link href="/register" className="px-4 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 text-white text-sm font-medium hover:from-blue-600 hover:to-blue-700 transition shadow-lg">Get Started</Link>
+
         </div>
       </nav>
 
-      {/* HERO */}
-      <section className="relative flex items-center justify-center text-center text-white min-h-[90vh] overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800" />
-        <div className="absolute top-20 left-20 text-8xl opacity-10 rotate-12 select-none animate-pulse">📚</div>
-        <div className="absolute bottom-20 right-20 text-8xl opacity-10 -rotate-12 select-none animate-pulse">📖</div>
 
-        <div className="relative z-10 max-w-5xl px-6 py-20">
-          <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 text-white text-xs font-semibold px-4 py-2 rounded-full mb-8 uppercase tracking-widest shadow-lg">
-            <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
-            SCSIT Digital Library System
-          </div>
-          <h1 className="text-5xl md:text-7xl font-bold leading-tight tracking-tight mb-6">
-            Knowledge at Your<br />
-            <span className="bg-gradient-to-r from-blue-200 to-cyan-200 bg-clip-text text-transparent">Fingertips</span>
-          </h1>
-          <p className="text-xl text-blue-100 max-w-3xl mx-auto mb-10 leading-relaxed">
-            The official digital library of SCSIT — browse, borrow, and manage books from anywhere.
-          </p>
-          <div className="grid grid-cols-2 gap-6 max-w-2xl mx-auto mt-10">
-            {[
-              { value: `${totalBooks || 0}+`, label: "Total Books", icon: "📚" },
-              { value: `${totalUsers || 0}`, label: "Registered Users", icon: "👥" },
-            ].map((s) => (
-              <div key={s.label} className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl py-6 px-4 shadow-xl">
-                <div className="text-3xl mb-2">{s.icon}</div>
-                <p className="text-3xl font-bold text-white">{s.value}</p>
-                <p className="text-xs text-blue-200 mt-1">{s.label}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-      </section>
 
       {/* TRUSTED BY */}
       <section className="bg-gradient-to-r from-slate-50 to-blue-50 border-y border-slate-200/50 py-6">
