@@ -120,24 +120,22 @@ function ProfileContent() {
 
   return (
     <div className="flex flex-col min-h-screen font-sans bg-gradient-to-br from-slate-50 to-blue-50">
-      <nav className="w-full bg-white/80 backdrop-blur-lg border-b border-slate-200/50 py-4 px-10 flex justify-between items-center sticky top-0 z-50 shadow-sm">
+      <nav className="w-full bg-white/95 backdrop-blur-lg border-b border-slate-200/50 py-4 px-10 flex justify-between items-center sticky top-0 z-50 shadow-sm">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-xl shadow-lg">📚</div>
           <div>
-            <span className="text-lg font-bold text-slate-800">SCSIT Library</span>
-            <span className="ml-2 text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">Student Portal</span>
+            <span className="text-lg font-bold text-slate-800 tracking-tight">SCSIT Library</span>
+            <span className="hidden sm:inline ml-2 text-xs bg-blue-100 text-blue-700 px-3 py-1 rounded-full font-medium">Student Portal</span>
           </div>
         </div>
         <div className="hidden md:flex gap-8 font-medium text-slate-500 text-sm">
-          <Link href="/dashboard" className="hover:text-blue-600 transition">Home</Link>
-          <Link href="/borrowbook" className="hover:text-blue-600 transition">Borrow Book</Link>
+          <Link href="/dashboard" className="hover:text-slate-800 transition">Home</Link>
+          <Link href="/borrowbook" className="hover:text-slate-800 transition">Borrow Book</Link>
           <Link href="/profile" className="text-blue-600 font-semibold border-b-2 border-blue-600 pb-1">Profile</Link>
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-sm text-slate-600">Hello, <span className="font-semibold text-slate-800">{nickname}</span></span>
-          <button onClick={handleSignOut} className="px-5 py-2 rounded-lg bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700 transition text-sm font-medium shadow-md">
-            Sign Out
-          </button>
+          <span className="text-sm font-semibold text-slate-800">{nickname}</span>
+          <button onClick={handleSignOut} className="px-4 py-2 rounded-lg bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700 transition text-sm font-medium shadow-md">Sign Out</button>
         </div>
       </nav>
 

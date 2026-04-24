@@ -245,8 +245,8 @@ function DashboardContent() {
           <Link href={`/profile?user=${encodeURIComponent(username)}`} className="hover:text-slate-800 transition">Profile</Link>
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-sm text-slate-600">Hello, <span className="font-semibold text-slate-800">{username}</span> 👋</span>
-          <button onClick={handleSignOut} className="px-4 py-2 rounded-lg border border-red-200 text-red-500 hover:bg-red-50 transition text-sm font-medium">Sign Out</button>
+          <span className="text-sm font-semibold text-slate-800">{username}</span>
+          <button onClick={handleSignOut} className="px-4 py-2 rounded-lg bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700 transition text-sm font-medium shadow-md">Sign Out</button>
         </div>
       </nav>
 
