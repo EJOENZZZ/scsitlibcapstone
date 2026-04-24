@@ -76,7 +76,7 @@ function BorrowBookContent() {
           <Link href="/borrowbook" className="text-blue-400 font-semibold border-b-2 border-blue-400 pb-1">Borrow Book</Link>
           <Link href="/profile" className="text-slate-300 hover:text-white transition border-b-2 border-transparent pb-1">Profile</Link>
         </div>
-        <Link href="/login" className="px-4 py-2 rounded-lg bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700 transition text-sm font-medium shadow-md">Sign Out</Link>
+        <Link href="/login" className="min-w-[80px] text-center px-4 py-2 rounded-lg bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700 transition text-sm font-medium shadow-md">Sign Out</Link>
       </nav>
 
       <main className="flex-1 max-w-2xl mx-auto w-full px-6 py-10">

@@ -134,7 +134,7 @@ function ProfileContent() {
           <Link href="/borrowbook" className="text-slate-300 hover:text-white transition border-b-2 border-transparent pb-1">Borrow Book</Link>
           <Link href="/profile" className="text-blue-400 font-semibold border-b-2 border-blue-400 pb-1">Profile</Link>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 min-w-[240px] justify-end">
           <span className="text-sm font-semibold text-white">Hi, {username} 👋</span>
           <button onClick={handleSignOut} className="px-4 py-2 rounded-lg bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700 transition text-sm font-medium shadow-md">Sign Out</button>
         </div>
