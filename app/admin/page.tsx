@@ -165,11 +165,7 @@ export default function AdminPage() {
             <div className="text-6xl mb-6 select-none">🛡️</div>
             <h2 className="text-4xl font-bold text-white leading-tight mb-4">Admin Portal<br />Access Only.</h2>
             <p className="text-slate-400 text-sm leading-relaxed">Restricted to authorized library administrators only.</p>
-            <div className="mt-8 space-y-3">
-              {["✅ Manage book catalog", "✅ View borrower records", "✅ Add, edit & delete books"].map((f) => (
-                <p key={f} className="text-sm text-slate-300">{f}</p>
-              ))}
-            </div>
+
           </div>
           <p className="relative z-10 text-xs text-slate-600">© {new Date().getFullYear()} SCSIT Library</p>
         </div>
