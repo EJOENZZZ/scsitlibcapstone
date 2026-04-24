@@ -4,7 +4,7 @@ import { useSearchParams } from "next/navigation";
 import { useState, useEffect, Suspense } from "react";
 import { supabase } from "@/lib/supabase";
 
-type Book = { id: string; title: string; author: string; genre: string; available: boolean; copies: number; image?: string; };
+type Book = { id: string; title: string; author: string; genre: string; available: boolean; copies: number; image?: string; shelf?: string; };
 type BorrowRecord = { id: string; book_title: string; book_author: string; borrow_date: string; due_date: string; status: string; book_id: string; };
 type Review = { id: string; username: string; course: string; comment: string; rating: number; created_at: string; };
 
@@ -342,6 +342,11 @@ function DashboardContent() {
                         {book.available ? "Free to borrow" : "Unavailable"}
                       </span>
                     </div>
+                    {book.shelf && (
+                      <div className="flex items-center gap-1.5 pt-1">
+                        <span className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md font-medium">📍 Shelf {book.shelf}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}

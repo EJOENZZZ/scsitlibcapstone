@@ -3,11 +3,11 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 
-type Book = { id: string; title: string; author: string; genre: string; copies: number; available: boolean; image?: string; };
+type Book = { id: string; title: string; author: string; genre: string; copies: number; available: boolean; image?: string; shelf?: string; };
 type Borrower = { id: string; user_name: string; book_title: string; borrow_date: string; due_date: string; status: string; book_id: string; };
 type Review = { id: string; username: string; course: string; comment: string; rating: number; approved: boolean; created_at: string; };
 type UserProfile = { id: string; username: string; full_name: string; course: string; year: string; created_at: string; };
-const emptyForm = { title: "", author: "", genre: "", copies: 1, available: true, image: "" };
+const emptyForm = { title: "", author: "", genre: "", copies: 1, available: true, image: "", shelf: "" };
 
 export default function AdminPage() {
   const [authed, setAuthed] = useState(false);
@@ -61,7 +61,7 @@ export default function AdminPage() {
   };
 
   const openAdd = () => { setForm(emptyForm); setModal("add"); };
-  const openEdit = (b: Book) => { setSelected(b); setForm({ title: b.title, author: b.author, genre: b.genre, copies: b.copies, available: b.available, image: b.image || "" }); setModal("edit"); };
+  const openEdit = (b: Book) => { setSelected(b); setForm({ title: b.title, author: b.author, genre: b.genre, copies: b.copies, available: b.available, image: b.image || "", shelf: b.shelf || "" }); setModal("edit"); };
   const openDelete = (b: Book) => { setSelected(b); setModal("delete"); };
   const closeModal = () => { setModal(null); setSelected(null); };
 
@@ -318,20 +318,21 @@ export default function AdminPage() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="bg-slate-50 border-b border-slate-100">
-                      {["Book Title", "Author", "Genre", "Copies", "Status", "Actions"].map((h) => (
+                      {["Book Title", "Author", "Genre", "Shelf", "Copies", "Status", "Actions"].map((h) => (
                         <th key={h} className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">{h}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-50">
                     {filtered.length === 0 ? (
-                      <tr><td colSpan={6} className="px-6 py-12 text-center text-slate-400">No books found.</td></tr>
+                      <tr><td colSpan={7} className="px-6 py-12 text-center text-slate-400">No books found.</td></tr>
                     ) : (
                       filtered.map((book) => (
                         <tr key={book.id} className="hover:bg-slate-50 transition">
                           <td className="px-6 py-4 font-semibold text-slate-800">{book.title}</td>
                           <td className="px-6 py-4 text-slate-500">{book.author}</td>
                           <td className="px-6 py-4"><span className="bg-blue-50 text-blue-700 text-xs px-2.5 py-1 rounded-full font-medium">{book.genre}</span></td>
+                          <td className="px-6 py-4 text-slate-600 text-xs">{book.shelf || "—"}</td>
                           <td className="px-6 py-4 text-slate-600 font-medium">{book.copies}</td>
                           <td className="px-6 py-4">
                             <span className={`text-xs px-2.5 py-1 rounded-full font-semibold ${book.available ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-600"}`}>
@@ -537,7 +538,8 @@ export default function AdminPage() {
                 { key: "title", label: "Book Title", placeholder: "e.g. Introduction to Algorithms" },
                 { key: "author", label: "Author", placeholder: "e.g. Thomas H. Cormen" },
                 { key: "genre", label: "Genre", placeholder: "e.g. Computer Science" },
-                { key: "image", label: "Image URL (optional)", placeholder: "e.g. https://images.unsplash.com/photo-..." },
+                { key: "shelf", label: "Shelf Location", placeholder: "e.g. A1, B2, C3" },
+                { key: "image", label: "Image URL (optional)", placeholder: "e.g. https://images.unsplash.com/..." },
               ].map((f) => (
                 <div key={f.key}>
                   <label className="text-sm font-medium text-slate-600 mb-1 block">{f.label}</label>
