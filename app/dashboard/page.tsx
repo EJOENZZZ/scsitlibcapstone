@@ -188,6 +188,13 @@ function DashboardContent() {
     };
     fetchData();
 
+    // Realtime subscription for new books
+    const channel = supabase.channel("books-changes")
+      .on("postgres_changes", { event: "*", schema: "public", table: "books" }, () => {
+        fetchData();
+      })
+      .subscribe();
+
     // Update last_seen every 2 minutes to keep user online
     const interval = setInterval(async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -196,7 +203,10 @@ function DashboardContent() {
       }
     }, 2 * 60 * 1000);
 
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      supabase.removeChannel(channel);
+    };
   }, [username]);
 
   const totalBooks = books.length;
