@@ -31,7 +31,22 @@ export default function Login() {
     fetchStats();
   }, []);
 
-  const handleLogin = async () => {
+  const [forgotMode, setForgotMode] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotMsg, setForgotMsg] = useState("");
+  const [forgotLoading, setForgotLoading] = useState(false);
+
+  const handleForgotPassword = async () => {
+    if (!forgotEmail) { setError("Please enter your email."); return; }
+    setForgotLoading(true);
+    setError("");
+    const { error: resetError } = await supabase.auth.resetPasswordForEmail(forgotEmail, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    setForgotLoading(false);
+    if (resetError) { setError(resetError.message); return; }
+    setForgotMsg("Password reset link sent! Check your email.");
+  };
     if (!email || !password) { setError("Please fill in all fields."); return; }
     setLoading(true);
     setError("");
@@ -113,35 +128,57 @@ export default function Login() {
             <div className="bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-3 rounded-xl mb-5">{error}</div>
           )}
 
-          <div className="space-y-4">
-            <div>
-              <label className="text-sm font-medium text-slate-700 mb-1.5 block">Email</label>
-              <input type="email" placeholder="you@example.com" value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="border border-slate-200 p-3 w-full rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition shadow-sm" />
+          {forgotMode ? (
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium text-slate-700 mb-1.5 block">Email Address</label>
+                <input type="email" placeholder="you@example.com" value={forgotEmail}
+                  onChange={(e) => setForgotEmail(e.target.value)}
+                  className="border border-slate-200 p-3 w-full rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition shadow-sm" />
+              </div>
+              {forgotMsg && <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm px-4 py-3 rounded-xl">{forgotMsg}</div>}
+              <button onClick={handleForgotPassword} disabled={forgotLoading}
+                className="bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white w-full py-3 rounded-xl transition font-semibold text-sm shadow-lg">
+                {forgotLoading ? "Sending..." : "Send Reset Link"}
+              </button>
+              <button onClick={() => { setForgotMode(false); setForgotMsg(""); setError(""); }}
+                className="w-full text-center text-sm text-slate-400 hover:text-slate-600 transition">
+                ← Back to Sign In
+              </button>
             </div>
-            <div>
-              <label className="text-sm font-medium text-slate-700 mb-1.5 block">Password</label>
-              <input type="password" placeholder="Enter your password" value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-                className="border border-slate-200 p-3 w-full rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition shadow-sm" />
-            </div>
-          </div>
-
-          <button onClick={handleLogin} disabled={loading}
-            className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:opacity-60 text-white w-full py-3 rounded-xl transition font-semibold mt-6 text-sm shadow-lg">
-            {loading ? "Signing in..." : "Sign In"}
-          </button>
-
-          <p className="text-center text-sm text-slate-400 mt-6">
-            Don&apos;t have an account?{" "}
-            <Link href="/register" className="text-blue-600 font-medium hover:underline">Create one</Link>
-          </p>
-
-          <div className="mt-6 pt-6 border-t border-slate-200 text-center">
-            <Link href="/admin" className="text-xs text-slate-400 hover:text-slate-600 transition">Admin Portal →</Link>
-          </div>
+          ) : (
+            <>
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium text-slate-700 mb-1.5 block">Email</label>
+                  <input type="email" placeholder="you@example.com" value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="border border-slate-200 p-3 w-full rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition shadow-sm" />
+                </div>
+                <div>
+                  <div className="flex justify-between items-center mb-1.5">
+                    <label className="text-sm font-medium text-slate-700">Password</label>
+                    <button onClick={() => { setForgotMode(true); setError(""); }} className="text-xs text-blue-600 hover:underline">Forgot password?</button>
+                  </div>
+                  <input type="password" placeholder="Enter your password" value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+                    className="border border-slate-200 p-3 w-full rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition shadow-sm" />
+                </div>
+              </div>
+              <button onClick={handleLogin} disabled={loading}
+                className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:opacity-60 text-white w-full py-3 rounded-xl transition font-semibold mt-6 text-sm shadow-lg">
+                {loading ? "Signing in..." : "Sign In"}
+              </button>
+              <p className="text-center text-sm text-slate-400 mt-6">
+                Don&apos;t have an account?{" "}
+                <Link href="/register" className="text-blue-600 font-medium hover:underline">Create one</Link>
+              </p>
+              <div className="mt-6 pt-6 border-t border-slate-200 text-center">
+                <Link href="/admin" className="text-xs text-slate-400 hover:text-slate-600 transition">Admin Portal →</Link>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>

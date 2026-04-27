@@ -40,7 +40,7 @@ export default function Register() {
       });
     }
 
-    router.push(`/dashboard?user=${encodeURIComponent(form.username)}`);
+    router.push(`/verify-otp?email=${encodeURIComponent(form.email)}&user=${encodeURIComponent(form.username)}`);
   };
 
   return (
