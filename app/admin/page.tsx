@@ -25,6 +25,18 @@ export default function AdminPage() {
   const [activeTab, setActiveTab] = useState<"books" | "borrowers" | "reviews" | "users">("books");
   const [loading, setLoading] = useState(false);
   const [returningId, setReturningId] = useState<string | null>(null);
+  const [imageUploading, setImageUploading] = useState(false);
+
+  const handleImageUpload = async (file: File) => {
+    setImageUploading(true);
+    const ext = file.name.split(".").pop();
+    const fileName = `${Date.now()}.${ext}`;
+    const { error } = await supabase.storage.from("book-covers").upload(fileName, file, { upsert: true });
+    if (error) { alert("Upload failed: " + error.message); setImageUploading(false); return; }
+    const { data } = supabase.storage.from("book-covers").getPublicUrl(fileName);
+    setForm((prev) => ({ ...prev, image: data.publicUrl }));
+    setImageUploading(false);
+  };
 
   useEffect(() => {
     const session = sessionStorage.getItem("adminAuthed");
@@ -552,10 +564,11 @@ export default function AdminPage() {
                 ))}
               </div>
               <div>
-                <label className="text-xs font-medium text-slate-600 mb-1 block">Image URL (optional)</label>
-                <input placeholder="e.g. https://images.unsplash.com/..." value={(form as Record<string, string | number | boolean>)["image"] as string}
-                  onChange={(e) => setForm({ ...form, image: e.target.value })}
-                  className="border border-slate-200 px-3 py-2 w-full rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-400 transition" />
+                <label className="text-xs font-medium text-slate-600 mb-1 block">Book Cover Image</label>
+                <input type="file" accept="image/*"
+                  onChange={(e) => { if (e.target.files?.[0]) handleImageUpload(e.target.files[0]); }}
+                  className="border border-slate-200 px-3 py-2 w-full rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-400 transition bg-white" />
+                {imageUploading && <p className="text-xs text-blue-500 mt-1">Uploading...</p>}
               </div>
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
