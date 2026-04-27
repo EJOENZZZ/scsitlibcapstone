@@ -211,7 +211,6 @@ function DashboardContent() {
 
   const totalBooks = books.length;
   const availableBooks = books.filter((b) => b.available).length;
-  const satisfactionPct = satisfiedUsers;
 
   const genres = ["All", ...Array.from(new Set(books.map((b) => b.genre)))];
   const filteredBooks = books.filter((b) => {
@@ -226,8 +225,7 @@ function DashboardContent() {
 
   const handleRequestReturn = async (b: BorrowRecord) => {
     const { data: { user } } = await supabase.auth.getUser();
-    const { data, error } = await supabase.from("borrow_records").update({ status: "Pending Return" }).eq("id", b.id).select();
-    if (error) { alert("Failed to request return: " + error.message); return; }
+    await supabase.from("borrow_records").update({ status: "Pending Return" }).eq("id", b.id);
     if (user) {
       const { data: borrowData } = await supabase.from("borrow_records").select("*").eq("user_id", user.id).order("created_at", { ascending: false });
       if (borrowData) setBorrows(borrowData);
