@@ -29,7 +29,6 @@ export default function Register() {
 
     if (authError) { setError(authError.message); setLoading(false); return; }
 
-    // Insert into profiles table
     if (data.user) {
       await supabase.from("profiles").insert({
         id: data.user.id,
@@ -40,7 +39,7 @@ export default function Register() {
       });
     }
 
-    router.push(`/verify-otp?email=${encodeURIComponent(form.email)}&user=${encodeURIComponent(form.username)}`);
+    router.push(`/dashboard?user=${encodeURIComponent(form.username)}`);
   };
 
   return (
