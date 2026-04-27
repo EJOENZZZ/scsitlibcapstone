@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@supabase/supabase-js";
-
-export const revalidate = 0;
+import { unstable_noStore as noStore } from "next/cache";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -18,6 +17,7 @@ const features = [
 ];
 
 export default async function Home() {
+  noStore();
   const { data: books } = await supabase.from("books").select("*").order("title");
   const totalBooks = books?.length || 0;
   const totalGenres = new Set(books?.map((b) => b.genre) || []).size;
