@@ -71,20 +71,7 @@ export default async function Home() {
 
 
 
-      {/* TRUSTED BY */}
-      <section className="bg-gradient-to-r from-slate-50 to-blue-50 border-y border-slate-200/50 py-6">
-        <div className="max-w-6xl mx-auto px-10 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Trusted by students of</p>
-          <div className="flex items-center gap-8 text-slate-600 text-sm font-semibold">
-            {["BSIT", "BSCE", "BSCRIM", "BSHM", "BSBA", "BSN"].map((c, i, arr) => (
-              <span key={c} className="flex items-center gap-8">
-                {c}{i < arr.length - 1 && <span className="text-slate-300 ml-8">|</span>}
-              </span>
-            ))}
-          </div>
-          <p className="text-xs text-slate-400">School of Computer Studies & Information Technology</p>
-        </div>
-      </section>
+
 
       {/* FEATURED BOOKS */}
       <section id="books" className="py-24 bg-gradient-to-b from-white to-slate-50">
@@ -128,16 +115,9 @@ export default async function Home() {
             ))}
           </div>
           <div className="text-center">
-            <div className="inline-flex items-center gap-4 bg-white rounded-2xl p-6 border border-slate-200 shadow-lg">
-              <div className="text-4xl">📚</div>
-              <div className="text-left">
-                <p className="text-2xl font-bold text-slate-800">{totalBooks || 0}+ Books Available</p>
-                <p className="text-sm text-slate-500">Across 12+ categories and genres</p>
-              </div>
-              <Link href="/login" className="px-6 py-3 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold hover:from-blue-600 hover:to-blue-700 transition shadow-lg text-sm">
-                Browse All Books →
-              </Link>
-            </div>
+            <Link href="/login" className="px-6 py-3 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold hover:from-blue-600 hover:to-blue-700 transition shadow-lg text-sm">
+              Browse All Books →
+            </Link>
           </div>
         </div>
       </section>
