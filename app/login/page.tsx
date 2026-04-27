@@ -13,28 +13,35 @@ export default function Login() {
   const [totalBooks, setTotalBooks] = useState(0);
   const [satisfaction, setSatisfaction] = useState(98);
   const [totalUsers, setTotalUsers] = useState(0);
+  const [forgotMode, setForgotMode] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotMsg, setForgotMsg] = useState("");
+  const [forgotLoading, setForgotLoading] = useState(false);
 
   useEffect(() => {
     const fetchStats = async () => {
       const { count: books } = await supabase.from("books").select("*", { count: "exact", head: true });
       setTotalBooks(books || 0);
-
       const { count: totalBorrows } = await supabase.from("reviews").select("*", { count: "exact", head: true });
       const { count: returned } = await supabase.from("reviews").select("*", { count: "exact", head: true }).gte("rating", 4);
       if (totalBorrows && totalBorrows > 0) {
         setSatisfaction(Math.round(((returned || 0) / totalBorrows) * 100));
       }
-
       const { count: users } = await supabase.from("profiles").select("*", { count: "exact", head: true });
       setTotalUsers(users || 0);
     };
     fetchStats();
   }, []);
 
-  const [forgotMode, setForgotMode] = useState(false);
-  const [forgotEmail, setForgotEmail] = useState("");
-  const [forgotMsg, setForgotMsg] = useState("");
-  const [forgotLoading, setForgotLoading] = useState(false);
+  const handleLogin = async () => {
+    if (!email || !password) { setError("Please fill in all fields."); return; }
+    setLoading(true);
+    setError("");
+    const { data, error: authError } = await supabase.auth.signInWithPassword({ email, password });
+    if (authError) { setError(authError.message); setLoading(false); return; }
+    const username = data.user?.user_metadata?.username || email.split("@")[0];
+    router.push(`/dashboard?user=${encodeURIComponent(username)}`);
+  };
 
   const handleForgotPassword = async () => {
     if (!forgotEmail) { setError("Please enter your email."); return; }
@@ -47,29 +54,14 @@ export default function Login() {
     if (resetError) { setError(resetError.message); return; }
     setForgotMsg("Password reset link sent! Check your email.");
   };
-    if (!email || !password) { setError("Please fill in all fields."); return; }
-    setLoading(true);
-    setError("");
-
-    const { data, error: authError } = await supabase.auth.signInWithPassword({ email, password });
-
-    if (authError) { setError(authError.message); setLoading(false); return; }
-
-    const username = data.user?.user_metadata?.username || email.split("@")[0];
-    router.push(`/dashboard?user=${encodeURIComponent(username)}`);
-  };
 
   return (
     <div className="flex min-h-screen font-sans">
 
       {/* LEFT PANEL */}
       <div className="hidden lg:flex w-1/2 bg-gradient-to-br from-blue-700 via-blue-800 to-slate-900 flex-col justify-between p-12 relative overflow-hidden">
-
-        {/* Background blur circles */}
         <div className="absolute -top-20 -left-20 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl" />
         <div className="absolute -bottom-20 -right-20 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl" />
-
-        {/* Floating books */}
         <div className="absolute top-16 right-10 text-8xl opacity-20 rotate-12 select-none">📖</div>
         <div className="absolute top-40 right-32 text-5xl opacity-15 -rotate-6 select-none">📚</div>
         <div className="absolute bottom-40 right-8 text-6xl opacity-20 rotate-6 select-none">📕</div>
@@ -90,8 +82,6 @@ export default function Login() {
           <p className="text-blue-200 text-sm leading-relaxed">
             Access thousands of books, manage your borrowing history, and stay on top of your reading — all in one place.
           </p>
-
-          {/* REAL STATS - same as homepage */}
           <div className="flex gap-4 mt-8">
             {(
               [
@@ -113,8 +103,6 @@ export default function Login() {
 
       {/* RIGHT PANEL */}
       <div className="flex-1 flex flex-col justify-center items-center bg-gradient-to-br from-slate-50 to-blue-50 px-8 py-12 relative overflow-hidden">
-
-        {/* Background decoration */}
         <div className="absolute top-0 right-0 w-64 h-64 bg-blue-100/50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
         <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-100/50 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
 
