@@ -17,6 +17,7 @@ export default function Login() {
   const [forgotEmail, setForgotEmail] = useState("");
   const [forgotMsg, setForgotMsg] = useState("");
   const [forgotLoading, setForgotLoading] = useState(false);
+  const [cooldown, setCooldown] = useState(0);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -45,14 +46,29 @@ export default function Login() {
 
   const handleForgotPassword = async () => {
     if (!forgotEmail) { setError("Please enter your email."); return; }
+    if (cooldown > 0) return;
     setForgotLoading(true);
     setError("");
     const { error: resetError } = await supabase.auth.resetPasswordForEmail(forgotEmail, {
       redirectTo: `${window.location.origin}/reset-password`,
     });
     setForgotLoading(false);
-    if (resetError) { setError(resetError.message); return; }
+    if (resetError) {
+      if (resetError.message.toLowerCase().includes("rate limit") || resetError.message.toLowerCase().includes("too many")) {
+        setError("Too many requests. Please wait a few minutes before trying again.");
+      } else {
+        setError(resetError.message);
+      }
+      return;
+    }
     setForgotMsg("Password reset link sent! Check your email.");
+    setCooldown(60);
+    const timer = setInterval(() => {
+      setCooldown((prev) => {
+        if (prev <= 1) { clearInterval(timer); return 0; }
+        return prev - 1;
+      });
+    }, 1000);
   };
 
   return (
@@ -125,9 +141,9 @@ export default function Login() {
                   className="border border-slate-200 p-3 w-full rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition shadow-sm" />
               </div>
               {forgotMsg && <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm px-4 py-3 rounded-xl">{forgotMsg}</div>}
-              <button onClick={handleForgotPassword} disabled={forgotLoading}
+              <button onClick={handleForgotPassword} disabled={forgotLoading || cooldown > 0}
                 className="bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white w-full py-3 rounded-xl transition font-semibold text-sm shadow-lg">
-                {forgotLoading ? "Sending..." : "Send Reset Link"}
+                {forgotLoading ? "Sending..." : cooldown > 0 ? `Resend in ${cooldown}s` : "Send Reset Link"}
               </button>
               <button onClick={() => { setForgotMode(false); setForgotMsg(""); setError(""); }}
                 className="w-full text-center text-sm text-slate-400 hover:text-slate-600 transition">

@@ -19,7 +19,7 @@ function BorrowBookContent() {
 
   useEffect(() => {
     const today = new Date().toISOString().split("T")[0];
-    const due = new Date(Date.now() + 14 * 86400000).toISOString().split("T")[0];
+    const due = new Date(Date.now() + 3 * 86400000).toISOString().split("T")[0];
     setBorrowDate(today);
     setDueDate(due);
     if (bookId) {
@@ -124,8 +124,8 @@ function BorrowBookContent() {
               </div>
               <div>
                 <label className="text-sm font-medium text-slate-700 mb-1.5 block">Due Date</label>
-                <input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)}
-                  className="border border-slate-200 p-3 w-full rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition" />
+                <input type="date" value={dueDate} readOnly
+                  className="border border-slate-200 p-3 w-full rounded-xl text-sm bg-slate-50 text-slate-600 cursor-not-allowed" />
               </div>
             </div>
           </div>
