@@ -17,35 +17,11 @@ const features = [
   { icon: "🔒", title: "Secure Access", desc: "Your account and data are protected with secure auth." },
 ];
 
-const genres = [
-  "Computer Science", "Software Engineering", "Web Development",
-  "Database", "Networking", "Mathematics",
-  "Data Science", "Cybersecurity", "Operating Systems",
-  "Algorithms", "Artificial Intelligence", "Mobile Development",
-];
-
-const featuredBooks = [
-  { title: "Introduction to Algorithms", author: "Cormen et al.", genre: "Computer Science", image: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=300&h=400&fit=crop" },
-  { title: "Clean Code", author: "Robert C. Martin", genre: "Software Engineering", image: "https://images.unsplash.com/photo-1532012197267-da84d127e765?w=300&h=400&fit=crop" },
-  { title: "Design Patterns", author: "Gang of Four", genre: "Computer Science", image: "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=300&h=400&fit=crop" },
-  { title: "You Don't Know JS", author: "Kyle Simpson", genre: "Web Development", image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=400&fit=crop" },
-  { title: "Operating System Concepts", author: "Silberschatz et al.", genre: "Computer Science", image: "https://images.unsplash.com/photo-1589998059171-988d887df646?w=300&h=400&fit=crop" },
-  { title: "Computer Networks", author: "Andrew S. Tanenbaum", genre: "Networking", image: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=300&h=400&fit=crop" },
-  { title: "Artificial Intelligence", author: "Russell & Norvig", genre: "Artificial Intelligence", image: "https://images.unsplash.com/photo-1555255707-c07966088b7b?w=300&h=400&fit=crop" },
-  { title: "Machine Learning", author: "Tom M. Mitchell", genre: "Machine Learning", image: "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=300&h=400&fit=crop" },
-];
-
 export default async function Home() {
-  // Fetch real stats
-  const { count: totalBooks } = await supabase.from("books").select("*", { count: "exact", head: true });
-  const { count: totalBorrows } = await supabase.from("reviews").select("*", { count: "exact", head: true });
-  const { count: returned } = await supabase.from("reviews").select("*", { count: "exact", head: true }).gte("rating", 4);
-  const satisfactionPct = totalBorrows && totalBorrows > 0 ? Math.round(((returned || 0) / totalBorrows) * 100) : 98;
-
-  // Fetch real reviews
+  const { data: books } = await supabase.from("books").select("*").order("title");
+  const totalBooks = books?.length || 0;
+  const totalGenres = new Set(books?.map((b) => b.genre) || []).size;
   const { data: reviews } = await supabase.from("reviews").select("*").eq("approved", true).order("created_at", { ascending: false }).limit(6);
-
-  const { count: totalUsers } = await supabase.from("profiles").select("*", { count: "exact", head: true });
 
   return (
     <div className="flex flex-col min-h-screen font-sans bg-white">
@@ -69,10 +45,6 @@ export default async function Home() {
         </div>
       </nav>
 
-
-
-
-
       {/* FEATURED BOOKS */}
       <section id="books" className="py-24 bg-gradient-to-b from-white to-slate-50">
         <div className="max-w-7xl mx-auto px-10">
@@ -80,17 +52,23 @@ export default async function Home() {
             <span className="text-xs font-bold text-blue-600 uppercase tracking-widest">Our Collection</span>
             <h2 className="text-5xl font-bold text-slate-800 mt-3 mb-4 tracking-tight">Featured Books</h2>
             <p className="text-slate-500 max-w-2xl mx-auto text-lg">
-              Over <span className="font-bold text-blue-600">{totalBooks || 0}</span> books in our digital catalog.
+              Over <span className="font-bold text-blue-600">{totalBooks}</span> books across <span className="font-bold text-blue-600">{totalGenres}</span> genres.
             </p>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-12">
-            {featuredBooks.map((book) => (
-              <div key={book.title} className="group relative bg-white rounded-3xl overflow-hidden border border-slate-200/50 hover:border-blue-300 hover:shadow-2xl hover:shadow-blue-100 transition-all duration-500 transform hover:-translate-y-3 cursor-pointer">
+            {(books || []).map((book) => (
+              <div key={book.id} className="group relative bg-white rounded-3xl overflow-hidden border border-slate-200/50 hover:border-blue-300 hover:shadow-2xl hover:shadow-blue-100 transition-all duration-500 transform hover:-translate-y-3 cursor-pointer">
                 <div className="relative overflow-hidden h-56">
-                  <img src={book.image} alt={book.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                  <img
+                    src={book.image || "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=300&h=400&fit=crop"}
+                    alt={book.title}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                  />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                   <div className="absolute top-3 left-3">
-                    <span className="bg-emerald-500 text-white text-xs px-3 py-1 rounded-full font-bold shadow-lg">✓ Available</span>
+                    <span className={`text-white text-xs px-3 py-1 rounded-full font-bold shadow-lg ${book.available ? "bg-emerald-500" : "bg-red-500"}`}>
+                      {book.available ? "✓ Available" : "✗ Borrowed"}
+                    </span>
                   </div>
                   <div className="absolute top-3 right-3">
                     <span className="bg-blue-600/90 backdrop-blur-sm text-white text-xs px-2.5 py-1 rounded-full font-semibold">{book.genre}</span>
@@ -108,7 +86,9 @@ export default async function Home() {
                   <p className="text-slate-400 text-xs">{book.author}</p>
                   <div className="flex items-center justify-between pt-1">
                     <span className="text-xs text-slate-400">📖 {book.genre}</span>
-                    <span className="text-xs text-emerald-600 font-semibold">Free to borrow</span>
+                    <span className={`text-xs font-semibold ${book.available ? "text-emerald-600" : "text-red-500"}`}>
+                      {book.available ? "Free to borrow" : "Unavailable"}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -141,23 +121,7 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* GENRES */}
-      <section className="py-20 bg-white">
-        <div className="max-w-6xl mx-auto px-10 text-center">
-          <span className="text-xs font-bold text-blue-600 uppercase tracking-widest">Browse Categories</span>
-          <h2 className="text-5xl font-bold text-slate-800 mt-3 mb-4 tracking-tight">Book Genres</h2>
-          <div className="flex flex-wrap justify-center gap-4 mt-8">
-            {genres.map((g) => (
-              <span key={g} className="px-6 py-3 rounded-full border-2 border-slate-200 text-sm text-slate-600 hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50 transition cursor-pointer font-semibold shadow-sm hover:shadow-md">{g}</span>
-            ))}
-          </div>
-          <div className="mt-10">
-            <Link href="/login" className="inline-flex items-center gap-2 text-blue-600 font-semibold hover:underline text-lg">Browse full catalog →</Link>
-          </div>
-        </div>
-      </section>
-
-      {/* REAL STUDENT REVIEWS */}
+      {/* REVIEWS */}
       <section id="reviews" className="py-24 bg-gradient-to-b from-slate-50 to-blue-50">
         <div className="max-w-6xl mx-auto px-10">
           <div className="text-center mb-16">
@@ -165,12 +129,10 @@ export default async function Home() {
             <h2 className="text-5xl font-bold text-slate-800 mt-3 mb-4 tracking-tight">What Students Say</h2>
             <p className="text-slate-500">Real reviews from real SCSIT students. <Link href="/login" className="text-blue-600 font-semibold hover:underline">Sign in to leave yours →</Link></p>
           </div>
-
           {!reviews || reviews.length === 0 ? (
             <div className="text-center py-16 bg-white rounded-3xl border border-slate-200 shadow-sm">
               <div className="text-5xl mb-4">💬</div>
               <p className="text-slate-500 text-lg">No reviews yet.</p>
-              <p className="text-slate-400 text-sm mt-2">Be the first student to leave a review!</p>
               <Link href="/register" className="inline-block mt-6 px-6 py-3 bg-blue-600 text-white rounded-xl font-semibold text-sm hover:bg-blue-700 transition">
                 Create Account & Review
               </Link>
@@ -201,12 +163,9 @@ export default async function Home() {
         </div>
       </section>
 
-
-      {/* FOOTER */}
       <footer className="bg-white border-t border-slate-200 py-6 text-center">
         <p className="text-sm text-slate-400">© {new Date().getFullYear()} SCSIT Library. All rights reserved.</p>
       </footer>
-
     </div>
   );
 }
