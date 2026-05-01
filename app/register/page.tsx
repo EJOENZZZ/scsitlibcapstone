@@ -126,65 +126,60 @@ export default function Register() {
               </Link>
             </div>
           ) : (
-          <div className="space-y-4">
-            <div>
-              <label className="text-sm font-medium text-slate-700 mb-1.5 block">Full Name</label>
-              <input type="text" placeholder="e.g. Ellajoy Orcine"
-                className="border border-slate-200 p-3 w-full rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition shadow-sm"
-                onChange={(e) => setForm({ ...form, name: e.target.value })} />
-            </div>
-
-            <div>
-              <label className="text-sm font-medium text-slate-700 mb-1.5 block">Email Address</label>
-              <input type="email" placeholder="you@example.com"
-                className="border border-slate-200 p-3 w-full rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition shadow-sm"
-                onChange={(e) => setForm({ ...form, email: e.target.value })} />
-            </div>
-
-            <div>
-              <label className="text-sm font-medium text-slate-700 mb-1.5 block">Username</label>
-              <input type="text" placeholder="Choose a username"
-                className="border border-slate-200 p-3 w-full rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition shadow-sm"
-                onChange={(e) => setForm({ ...form, username: e.target.value })} />
-            </div>
-
-            {/* Course & Year side by side */}
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="text-sm font-medium text-slate-700 mb-1.5 block">Course</label>
-                <select value={form.course} onChange={(e) => setForm({ ...form, course: e.target.value })}
-                  className="border border-slate-200 p-3 w-full rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition shadow-sm">
-                  <option value="">Select course</option>
-                  {courses.map((c) => <option key={c} value={c}>{c}</option>)}
-                </select>
+            <>
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium text-slate-700 mb-1.5 block">Full Name</label>
+                  <input type="text" placeholder="e.g. Ellajoy Orcine"
+                    className="border border-slate-200 p-3 w-full rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition shadow-sm"
+                    onChange={(e) => setForm({ ...form, name: e.target.value })} />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-slate-700 mb-1.5 block">Email Address</label>
+                  <input type="email" placeholder="you@example.com"
+                    className="border border-slate-200 p-3 w-full rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition shadow-sm"
+                    onChange={(e) => setForm({ ...form, email: e.target.value })} />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-slate-700 mb-1.5 block">Username</label>
+                  <input type="text" placeholder="Choose a username"
+                    className="border border-slate-200 p-3 w-full rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition shadow-sm"
+                    onChange={(e) => setForm({ ...form, username: e.target.value })} />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-sm font-medium text-slate-700 mb-1.5 block">Course</label>
+                    <select value={form.course} onChange={(e) => setForm({ ...form, course: e.target.value })}
+                      className="border border-slate-200 p-3 w-full rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition shadow-sm">
+                      <option value="">Select course</option>
+                      {courses.map((c) => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-slate-700 mb-1.5 block">Year Level</label>
+                    <select value={form.year} onChange={(e) => setForm({ ...form, year: e.target.value })}
+                      className="border border-slate-200 p-3 w-full rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition shadow-sm">
+                      <option value="">Select year</option>
+                      {yearLevels.map((y) => <option key={y} value={y}>{y}</option>)}
+                    </select>
+                  </div>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-slate-700 mb-1.5 block">Password</label>
+                  <input type="password" placeholder="Create a strong password"
+                    className="border border-slate-200 p-3 w-full rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition shadow-sm"
+                    onChange={(e) => setForm({ ...form, password: e.target.value })} />
+                </div>
               </div>
-              <div>
-                <label className="text-sm font-medium text-slate-700 mb-1.5 block">Year Level</label>
-                <select value={form.year} onChange={(e) => setForm({ ...form, year: e.target.value })}
-                  className="border border-slate-200 p-3 w-full rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition shadow-sm">
-                  <option value="">Select year</option>
-                  {yearLevels.map((y) => <option key={y} value={y}>{y}</option>)}
-                </select>
-              </div>
-            </div>
-
-            <div>
-              <label className="text-sm font-medium text-slate-700 mb-1.5 block">Password</label>
-              <input type="password" placeholder="Create a strong password"
-                className="border border-slate-200 p-3 w-full rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition shadow-sm"
-                onChange={(e) => setForm({ ...form, password: e.target.value })} />
-            </div>
-          </div>
-
-          <button onClick={handleRegister} disabled={loading}
-            className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:opacity-60 text-white w-full py-3 rounded-xl transition font-semibold mt-6 text-sm shadow-lg">
-            {loading ? "Creating account..." : "Create Account"}
-          </button>
-
-          <p className="text-center text-sm text-slate-400 mt-6">
-            Already have an account?{" "}
-            <Link href="/login" className="text-blue-600 font-medium hover:underline">Sign in</Link>
-          </p>
+              <button onClick={handleRegister} disabled={loading}
+                className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:opacity-60 text-white w-full py-3 rounded-xl transition font-semibold mt-6 text-sm shadow-lg">
+                {loading ? "Creating account..." : "Create Account"}
+              </button>
+              <p className="text-center text-sm text-slate-400 mt-6">
+                Already have an account?{" "}
+                <Link href="/login" className="text-blue-600 font-medium hover:underline">Sign in</Link>
+              </p>
+            </>
           )}
         </div>
       </div>
