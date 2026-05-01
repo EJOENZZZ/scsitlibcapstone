@@ -210,7 +210,7 @@ export default function AdminPage() {
               Sign In to Admin Panel
             </button>
             <div className="mt-6 pt-6 border-t border-slate-200 text-center">
-              <Link href="/" className="text-xs text-slate-400 hover:text-slate-600 transition">← Back to main site</Link>
+              <Link href="/login" className="text-xs text-slate-400 hover:text-slate-600 transition">← Go to User Login</Link>
             </div>
           </div>
         </div>
@@ -247,7 +247,7 @@ export default function AdminPage() {
           ))}
         </nav>
         <div className="px-4 py-6 border-t border-slate-700">
-          <button onClick={() => { sessionStorage.removeItem("adminAuthed"); setAuthed(false); setLoginForm({ username: "", password: "" }); }}
+          <button onClick={() => { sessionStorage.removeItem("adminAuthed"); setAuthed(false); setLoginForm({ username: "", password: "" }); window.location.href = "/login"; }}
             className="flex items-center gap-2 text-sm text-slate-400 hover:text-red-400 transition w-full">
             <span>🚪</span> Sign Out
           </button>
