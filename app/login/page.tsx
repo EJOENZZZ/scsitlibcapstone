@@ -75,13 +75,9 @@ export default function Login() {
     <div className="flex min-h-screen font-sans">
 
       {/* LEFT PANEL */}
-      <div className="hidden lg:flex w-1/2 bg-gradient-to-br from-blue-700 via-blue-800 to-slate-900 flex-col justify-between p-12 relative overflow-hidden">
-        <div className="absolute -top-20 -left-20 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl" />
-        <div className="absolute -bottom-20 -right-20 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl" />
-        <div className="absolute top-16 right-10 text-8xl opacity-20 rotate-12 select-none">📖</div>
-        <div className="absolute top-40 right-32 text-5xl opacity-15 -rotate-6 select-none">📚</div>
-        <div className="absolute bottom-40 right-8 text-6xl opacity-20 rotate-6 select-none">📕</div>
-        <div className="absolute bottom-20 right-28 text-4xl opacity-15 -rotate-12 select-none">📗</div>
+      <div className="hidden lg:flex w-1/2 flex-col justify-between p-12 relative overflow-hidden">
+        <img src="/scsitbuilding.jpg" alt="SCSIT Building" className="absolute inset-0 w-full h-full object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-b from-blue-900/80 via-blue-900/70 to-slate-900/90" />
 
         <div className="relative z-10 flex items-center gap-3">
           <div className="w-11 h-11">
