@@ -64,7 +64,9 @@ export default function AdminPage() {
   };
 
   const handleAdminLogin = () => {
-    if (loginForm.username === "admin" && loginForm.password === "1234") {
+    const adminUser = process.env.NEXT_PUBLIC_ADMIN_USERNAME || "admin";
+    const adminPass = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || "1234";
+    if (loginForm.username === adminUser && loginForm.password === adminPass) {
       sessionStorage.setItem("adminAuthed", "1");
       setAuthed(true); setLoginError("");
     } else {
