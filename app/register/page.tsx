@@ -12,6 +12,7 @@ export default function Register() {
   const [form, setForm] = useState({ name: "", email: "", username: "", password: "", course: "", year: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [confirmed, setConfirmed] = useState(false);
 
   const handleRegister = async () => {
     if (!form.name || !form.email || !form.username || !form.password || !form.course || !form.year) {
@@ -39,7 +40,8 @@ export default function Register() {
       });
     }
 
-    router.push(`/dashboard?user=${encodeURIComponent(form.username)}`);
+    setLoading(false);
+    setConfirmed(true);
   };
 
   return (
@@ -112,6 +114,18 @@ export default function Register() {
             <div className="bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-3 rounded-xl mb-5">{error}</div>
           )}
 
+          {confirmed ? (
+            <div className="text-center py-6">
+              <div className="text-5xl mb-4">📧</div>
+              <h2 className="text-xl font-bold text-slate-800 mb-2">Check your email!</h2>
+              <p className="text-slate-500 text-sm mb-1">We sent a confirmation link to</p>
+              <p className="text-blue-600 font-semibold text-sm mb-6">{form.email}</p>
+              <p className="text-slate-400 text-xs">Click the link in your email to activate your account, then sign in.</p>
+              <Link href="/login" className="inline-block mt-6 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl transition">
+                Go to Sign In
+              </Link>
+            </div>
+          ) : (
           <div className="space-y-4">
             <div>
               <label className="text-sm font-medium text-slate-700 mb-1.5 block">Full Name</label>
@@ -171,6 +185,7 @@ export default function Register() {
             Already have an account?{" "}
             <Link href="/login" className="text-blue-600 font-medium hover:underline">Sign in</Link>
           </p>
+          )}
         </div>
       </div>
     </div>
