@@ -6,6 +6,16 @@ import { supabase } from "@/lib/supabase";
 
 type Book = { id: string; title: string; author: string; genre: string; available: boolean; copies: number; image?: string; shelf?: string; };
 type BorrowRecord = { id: string; book_title: string; book_author: string; borrow_date: string; due_date: string; status: string; book_id: string; };
+
+const calcFine = (due_date: string, status: string) => {
+  if (status === "Returned") return 0;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const due = new Date(due_date);
+  due.setHours(0, 0, 0, 0);
+  const days = Math.floor((today.getTime() - due.getTime()) / 86400000);
+  return days > 0 ? days : 0;
+};
 type Review = { id: string; username: string; course: string; comment: string; rating: number; created_at: string; };
 
 const features = [
@@ -222,6 +232,8 @@ function DashboardContent() {
 
   const activeCount = borrows.filter((b) => b.status === "Active").length;
   const returnedCount = borrows.filter((b) => b.status === "Returned").length;
+  const overdueCount = borrows.filter((b) => b.status !== "Returned" && calcFine(b.due_date, b.status) > 0).length;
+  const totalFine = borrows.reduce((sum, b) => sum + calcFine(b.due_date, b.status), 0);
 
   const handleRequestReturn = async (b: BorrowRecord) => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -270,11 +282,12 @@ function DashboardContent() {
       <section className="py-10 bg-slate-50 border-b border-slate-100">
         <div className="max-w-6xl mx-auto px-10">
           <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-5">My Activity</h3>
-          <div className="grid grid-cols-3 gap-5">
+          <div className="grid grid-cols-4 gap-5">
             {[
               { label: "Books Borrowed", value: activeCount, icon: "📚", color: "bg-blue-50 text-blue-700" },
               { label: "Books Returned", value: returnedCount, icon: "✅", color: "bg-emerald-50 text-emerald-700" },
-              { label: "Total Records", value: borrows.length, icon: "📋", color: "bg-purple-50 text-purple-700" },
+              { label: "Overdue", value: overdueCount, icon: "⏰", color: "bg-red-50 text-red-700" },
+              { label: "Total Fine", value: `₱${totalFine}.00`, icon: "💰", color: "bg-amber-50 text-amber-700" },
             ].map((s) => (
               <div key={s.label} className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-4">
                 <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl ${s.color}`}>{s.icon}</div>
@@ -417,7 +430,7 @@ function DashboardContent() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-slate-50 border-b border-slate-100">
-                  {["Book Title", "Author", "Due Date", "Status", "Action"].map((h) => (
+                  {["Book Title", "Author", "Due Date", "Status", "Fine", "Action"].map((h) => (
                     <th key={h} className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">{h}</th>
                   ))}
                 </tr>
@@ -426,23 +439,34 @@ function DashboardContent() {
                 {borrows.length === 0 ? (
                   <tr><td colSpan={5} className="px-6 py-12 text-center text-slate-400">No borrowing activity yet. <Link href="/borrowbook" className="text-blue-600 font-medium hover:underline">Borrow a book →</Link></td></tr>
                 ) : (
-                  borrows.slice(0, 5).map((b) => (
-                    <tr key={b.id} className="hover:bg-slate-50 transition">
+                  borrows.slice(0, 5).map((b) => {
+                    const fine = calcFine(b.due_date, b.status);
+                    const isOverdue = fine > 0 && b.status !== "Returned";
+                    return (
+                    <tr key={b.id} className={`transition ${isOverdue ? "bg-red-50 hover:bg-red-100" : "hover:bg-slate-50"}`}>
                       <td className="px-6 py-4 font-semibold text-slate-800">{b.book_title}</td>
                       <td className="px-6 py-4 text-slate-500">{b.book_author}</td>
-                      <td className="px-6 py-4 text-slate-500">{b.due_date}</td>
+                      <td className={`px-6 py-4 font-medium ${isOverdue ? "text-red-600" : "text-slate-500"}`}>{b.due_date}</td>
                       <td className="px-6 py-4">
                         <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                          isOverdue ? "bg-red-100 text-red-700" :
                           b.status === "Active" ? "bg-emerald-50 text-emerald-700" :
                           b.status === "Pending Return" ? "bg-amber-50 text-amber-600" :
                           b.status === "Returned" ? "bg-blue-50 text-blue-600" :
                           "bg-slate-100 text-slate-500"
                         }`}>
-                          {b.status === "Returned" ? "✅ Returned" : b.status}
+                          {isOverdue ? "⚠️ Overdue" : b.status === "Returned" ? "✅ Returned" : b.status}
                         </span>
                       </td>
                       <td className="px-6 py-4">
-                        {b.status === "Active" && (
+                        {fine > 0 && b.status !== "Returned" ? (
+                          <span className="text-xs font-bold text-red-600">₱{fine}.00</span>
+                        ) : (
+                          <span className="text-xs text-slate-400">—</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4">
+                        {(b.status === "Active" || isOverdue) && (
                           <button onClick={() => handleRequestReturn(b)}
                             className="px-3 py-1.5 text-xs font-medium border border-amber-200 text-amber-600 rounded-lg hover:bg-amber-50 transition">
                             Request Return
@@ -453,7 +477,8 @@ function DashboardContent() {
                         )}
                       </td>
                     </tr>
-                  ))
+                    );
+                  })
                 )}
               </tbody>
             </table>

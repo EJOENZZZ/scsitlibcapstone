@@ -13,6 +13,16 @@ type BorrowRecord = {
   status: string;
 };
 
+const calcFine = (due_date: string, status: string) => {
+  if (status === "Returned") return 0;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const due = new Date(due_date);
+  due.setHours(0, 0, 0, 0);
+  const days = Math.floor((today.getTime() - due.getTime()) / 86400000);
+  return days > 0 ? days : 0;
+};
+
 function ProfileContent() {
   const searchParams = useSearchParams();
   const urlUsername = searchParams.get("user") || "Student";
@@ -110,6 +120,8 @@ function ProfileContent() {
 
   const activeCount = borrows.filter((b) => b.status === "Active").length;
   const returnedCount = borrows.filter((b) => b.status === "Returned").length;
+  const overdueCount = borrows.filter((b) => b.status !== "Returned" && calcFine(b.due_date, b.status) > 0).length;
+  const totalFine = borrows.reduce((sum, b) => sum + calcFine(b.due_date, b.status), 0);
 
   const handleSignOut = async () => {
     await supabase.from("user_sessions").delete().eq("user_id", userId);
@@ -148,6 +160,16 @@ function ProfileContent() {
 
         {saveMsg && (
           <div className="mb-6 bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm px-4 py-3 rounded-xl">{saveMsg}</div>
+        )}
+
+        {totalFine > 0 && (
+          <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-5 py-4 rounded-xl flex items-center gap-3">
+            <span className="text-2xl">⚠️</span>
+            <div>
+              <p className="font-bold text-sm">You have an overdue fine of ₱{totalFine}.00</p>
+              <p className="text-xs text-red-500 mt-0.5">Fine accumulates ₱1.00 per day after due date. Please return the book and pay at the library.</p>
+            </div>
+          </div>
         )}
 
         <div className="grid lg:grid-cols-3 gap-8">
@@ -226,7 +248,7 @@ function ProfileContent() {
                 { label: "Total Borrowed", value: borrows.length, color: "from-blue-500 to-blue-600", icon: "📚" },
                 { label: "Active", value: activeCount, color: "from-emerald-500 to-emerald-600", icon: "📖" },
                 { label: "Returned", value: returnedCount, color: "from-slate-500 to-slate-600", icon: "✅" },
-                { label: "Overdue", value: 0, color: "from-red-500 to-red-600", icon: "⏰" },
+                { label: "Overdue", value: overdueCount, color: "from-red-500 to-red-600", icon: "⏰" },
               ].map((s) => (
                 <div key={s.label} className="bg-white/70 backdrop-blur-sm rounded-2xl p-5 border border-white/50 shadow-lg text-center">
                   <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${s.color} flex items-center justify-center text-xl mx-auto mb-3 shadow-md`}>{s.icon}</div>
@@ -250,7 +272,7 @@ function ProfileContent() {
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="bg-gradient-to-r from-slate-50 to-blue-50 border-b border-slate-100">
-                        {["Book Title", "Borrowed", "Due Date", "Status"].map((h) => (
+                {["Book Title", "Borrowed", "Due Date", "Status", "Fine"].map((h) => (
                           <th key={h} className="px-8 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">{h}</th>
                         ))}
                       </tr>
@@ -259,20 +281,33 @@ function ProfileContent() {
                       {borrows.length === 0 ? (
                         <tr><td colSpan={4} className="px-8 py-12 text-center text-slate-400">No borrowing history yet.</td></tr>
                       ) : (
-                        borrows.map((b) => (
-                          <tr key={b.id} className="hover:bg-blue-50/30 transition-colors">
+                        borrows.map((b) => {
+                          const fine = calcFine(b.due_date, b.status);
+                          const isOverdue = fine > 0 && b.status !== "Returned";
+                          return (
+                          <tr key={b.id} className={`transition-colors ${isOverdue ? "bg-red-50 hover:bg-red-100" : "hover:bg-blue-50/30"}`}>
                             <td className="px-8 py-5 font-semibold text-slate-800">{b.book_title}</td>
                             <td className="px-8 py-5 text-slate-600">{b.borrow_date}</td>
-                            <td className="px-8 py-5 text-slate-600">{b.due_date}</td>
+                            <td className={`px-8 py-5 font-medium ${isOverdue ? "text-red-600" : "text-slate-600"}`}>{b.due_date}</td>
                             <td className="px-8 py-5">
                               <span className={`px-4 py-2 rounded-full text-xs font-semibold shadow-sm ${
-                                b.status === "Active"
-                                  ? "bg-emerald-100 text-emerald-800 border border-emerald-300"
-                                  : "bg-slate-100 text-slate-600 border border-slate-300"
-                              }`}>{b.status}</span>
+                                isOverdue ? "bg-red-100 text-red-700 border border-red-300" :
+                                b.status === "Active" ? "bg-emerald-100 text-emerald-800 border border-emerald-300" :
+                                "bg-slate-100 text-slate-600 border border-slate-300"
+                              }`}>
+                                {isOverdue ? "⚠️ Overdue" : b.status}
+                              </span>
+                            </td>
+                            <td className="px-8 py-5">
+                              {fine > 0 && b.status !== "Returned" ? (
+                                <span className="text-sm font-bold text-red-600">₱{fine}.00</span>
+                              ) : (
+                                <span className="text-xs text-slate-400">—</span>
+                              )}
                             </td>
                           </tr>
-                        ))
+                          );
+                        })
                       )}
                     </tbody>
                   </table>
