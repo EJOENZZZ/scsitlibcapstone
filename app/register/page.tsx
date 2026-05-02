@@ -7,7 +7,7 @@ const courses = ["BSIT", "BSCS", "BSCE", "BSBA", "BSN", "BSHM", "BSCRIM", "BSED"
 const yearLevels = ["1st Year", "2nd Year", "3rd Year", "4th Year"];
 
 export default function Register() {
-  const [form, setForm] = useState({ name: "", email: "", username: "", password: "", course: "", year: "" });
+  const [form, setForm] = useState({ name: "", email: "", username: "", password: "", confirmPassword: "", course: "", year: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState<"form" | "otp">("form");
@@ -15,8 +15,11 @@ export default function Register() {
   const [verifying, setVerifying] = useState(false);
 
   const handleRegister = async () => {
-    if (!form.name || !form.email || !form.username || !form.password || !form.course || !form.year) {
+    if (!form.name || !form.email || !form.username || !form.password || !form.confirmPassword || !form.course || !form.year) {
       setError("Please fill in all fields."); return;
+    }
+    if (form.password !== form.confirmPassword) {
+      setError("Passwords do not match."); return;
     }
     setLoading(true);
     setError("");
@@ -162,6 +165,12 @@ export default function Register() {
                   <input type="password" placeholder="Create a strong password"
                     className="border border-slate-200 p-3 w-full rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition shadow-sm"
                     onChange={(e) => setForm({ ...form, password: e.target.value })} />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-slate-700 mb-1.5 block">Confirm Password</label>
+                  <input type="password" placeholder="Re-enter your password"
+                    className="border border-slate-200 p-3 w-full rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition shadow-sm"
+                    onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })} />
                 </div>
               </div>
               <button onClick={handleRegister} disabled={loading}
