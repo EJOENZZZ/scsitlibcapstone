@@ -27,6 +27,7 @@ export default function AdminPage() {
   const [returningId, setReturningId] = useState<string | null>(null);
   const [imageUploading, setImageUploading] = useState(false);
   const [adminProfileOpen, setAdminProfileOpen] = useState(false);
+  const [earlyReturnTarget, setEarlyReturnTarget] = useState<Borrower | null>(null);
 
   const handleImageUpload = async (file: File) => {
     setImageUploading(true);
@@ -543,9 +544,9 @@ export default function AdminPage() {
                               </button>
                             )}
                             {b.status === "Early Return" && (
-                              <button onClick={() => handleConfirmEarlyReturn(b)} disabled={returningId === b.id}
+                              <button onClick={() => setEarlyReturnTarget(b)} disabled={returningId === b.id}
                                 className="px-3 py-1.5 text-xs font-medium border border-purple-200 text-purple-600 rounded-lg hover:bg-purple-50 transition disabled:opacity-50">
-                                {returningId === b.id ? "Processing..." : "✅ Confirm Early Return"}
+                                ↩ Confirm Early Return
                               </button>
                             )}
                             {isOverdue && (
@@ -737,6 +738,29 @@ export default function AdminPage() {
               <button onClick={modal === "add" ? handleAdd : handleEdit} disabled={loading}
                 className="flex-1 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white text-xs font-semibold transition">
                 {loading ? "Saving..." : modal === "add" ? "Add Book" : "Save Changes"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {earlyReturnTarget && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 px-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-8 text-center">
+            <div className="w-16 h-16 bg-purple-50 rounded-full flex items-center justify-center text-3xl mx-auto mb-4">↩</div>
+            <h2 className="text-xl font-bold text-slate-800 mb-2">Confirm Early Return</h2>
+            <p className="text-sm text-slate-500 mb-1">Confirm that the book has been returned by</p>
+            <p className="font-semibold text-slate-800 mb-1">{earlyReturnTarget.user_name}</p>
+            <p className="text-sm text-slate-500 mb-1">Book:</p>
+            <p className="font-semibold text-slate-800 mb-5">&ldquo;{earlyReturnTarget.book_title}&rdquo;</p>
+            <p className="text-xs text-slate-400 mb-6">This will mark the book as returned and restore its availability.</p>
+            <div className="flex gap-3">
+              <button onClick={() => setEarlyReturnTarget(null)} className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 text-sm font-medium hover:bg-slate-50 transition">Cancel</button>
+              <button
+                onClick={async () => { await handleConfirmEarlyReturn(earlyReturnTarget); setEarlyReturnTarget(null); }}
+                disabled={returningId === earlyReturnTarget.id}
+                className="flex-1 py-3 rounded-xl bg-purple-600 hover:bg-purple-700 disabled:opacity-60 text-white text-sm font-semibold transition">
+                {returningId === earlyReturnTarget.id ? "Processing..." : "Yes, Confirm"}
               </button>
             </div>
           </div>
