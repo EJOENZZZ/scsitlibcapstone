@@ -156,7 +156,7 @@ function ProfileContent() {
     if (!otpCode.trim()) return;
     setOtpLoading(true);
     setOtpError("");
-    const { error } = await supabase.auth.verifyOtp({ email: editEmail.trim(), token: otpCode.trim(), type: "magiclink" });
+    const { error } = await supabase.auth.verifyOtp({ email: editEmail.trim(), token: otpCode.trim(), type: "email" });
     if (error) { setOtpError("Invalid or expired code."); setOtpLoading(false); return; }
     setOtpVerified(true);
     setEmail(editEmail.trim());
