@@ -88,8 +88,8 @@ function ProfileContent() {
     };
     fetchData();
 
-    const channel = supabase.channel("profile-borrow-changes")
-      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "borrow_records" }, async () => {
+    const channel = supabase.channel(`profile-borrows-${Date.now()}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "borrow_records" }, async () => {
         const uid = userIdRef.current;
         if (!uid) return;
         const { data } = await supabase
@@ -98,7 +98,15 @@ function ProfileContent() {
       })
       .subscribe();
 
-    return () => { supabase.removeChannel(channel); };
+    const poll = setInterval(async () => {
+      const uid = userIdRef.current;
+      if (!uid) return;
+      const { data } = await supabase
+        .from("borrow_records").select("*").eq("user_id", uid).order("created_at", { ascending: false });
+      if (data) setBorrows(data);
+    }, 3000);
+
+    return () => { supabase.removeChannel(channel); clearInterval(poll); };
   }, [urlUsername]);
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
