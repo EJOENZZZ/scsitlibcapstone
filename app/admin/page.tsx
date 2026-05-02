@@ -148,7 +148,10 @@ export default function AdminPage() {
       await supabase.from("books").update({ copies: newCopies, available: true }).eq("id", b.book_id);
     }
     const returnedDate = new Date().toISOString().split("T")[0];
-    await supabase.from("borrow_records").update({ status: "Returned", returned_date: returnedDate }).eq("id", b.id);
+    const { error } = await supabase.from("borrow_records").update({ status: "Returned", returned_date: returnedDate }).eq("id", b.id);
+    if (error) { alert("Failed: " + error.message); setReturningId(null); return; }
+    // Optimistic update — immediately reflect in UI
+    setBorrowers((prev) => prev.map((r) => r.id === b.id ? { ...r, status: "Returned" } : r));
     await fetchData();
     setReturningId(null);
   };

@@ -55,6 +55,7 @@ function ProfileContent() {
   const [otpSent, setOtpSent] = useState(false);
   const [otpLoading, setOtpLoading] = useState(false);
   const [otpError, setOtpError] = useState("");
+  const borrowsRef = useRef<BorrowRecord[]>([]);
   const userIdRef = useRef("");
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -82,7 +83,10 @@ function ProfileContent() {
 
         const { data } = await supabase
           .from("borrow_records").select("*").eq("user_id", user.id).order("created_at", { ascending: false });
-        if (data) setBorrows(data);
+        if (data) {
+          setBorrows([...data]);
+          borrowsRef.current = data;
+        }
       }
       setLoading(false);
     };
@@ -94,17 +98,19 @@ function ProfileContent() {
         if (!uid) return;
         const { data } = await supabase
           .from("borrow_records").select("*").eq("user_id", uid).order("created_at", { ascending: false });
-        if (data) setBorrows([...data]);
+        if (data) { setBorrows([...data]); borrowsRef.current = data; }
       })
       .subscribe();
 
     const poll = setInterval(async () => {
       const uid = userIdRef.current;
       if (!uid) return;
+      const hasPending = borrowsRef.current.some(b => b.status === "Early Return" || b.status === "Pending" || b.status === "Pending Return");
+      if (!hasPending) return;
       const { data } = await supabase
         .from("borrow_records").select("*").eq("user_id", uid).order("created_at", { ascending: false });
-      if (data) setBorrows([...data]);
-    }, 3000);
+      if (data) { setBorrows([...data]); borrowsRef.current = data; }
+    }, 2000);
 
     return () => { supabase.removeChannel(channel); clearInterval(poll); };
   }, [urlUsername]);
