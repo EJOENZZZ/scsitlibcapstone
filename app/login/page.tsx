@@ -50,7 +50,7 @@ export default function Login() {
     setForgotLoading(true);
     setError("");
     const { error: resetError } = await supabase.auth.resetPasswordForEmail(forgotEmail, {
-      redirectTo: `${window.location.origin}/reset-password`,
+      redirectTo: `https://scsitlibcapstone.vercel.app/reset-password`,
     });
     setForgotLoading(false);
     if (resetError) {
