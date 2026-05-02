@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState, useRef, Suspense } from "react";
 import { supabase } from "@/lib/supabase";
+import emailjs from "@emailjs/browser";
 
 type BorrowRecord = {
   id: string;
@@ -149,8 +150,17 @@ function ProfileContent() {
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     const expires = new Date(Date.now() + 10 * 60 * 1000).toISOString();
     await supabase.from("email_verifications").upsert({ user_id: userId, new_email: newEmail.trim(), code, expires_at: expires });
-    await fetch("/api/send-otp", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: newEmail.trim(), code }) });
-    setOtpSent(true);
+    try {
+      await emailjs.send(
+        process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID!,
+        process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID!,
+        { to_email: newEmail.trim(), otp_code: code },
+        process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY!
+      );
+      setOtpSent(true);
+    } catch {
+      setOtpError("Failed to send code. Please try again.");
+    }
     setOtpLoading(false);
   };
 
