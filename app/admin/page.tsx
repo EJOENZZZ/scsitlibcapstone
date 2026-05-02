@@ -145,6 +145,7 @@ export default function AdminPage() {
     await supabase.from("reviews").delete().eq("user_id", deleteUserTarget.id);
     await supabase.from("user_sessions").delete().eq("user_id", deleteUserTarget.id);
     await supabase.from("profiles").delete().eq("id", deleteUserTarget.id);
+    await supabase.rpc("delete_user", { user_id: deleteUserTarget.id });
     setDeleteUserTarget(null);
     setLoading(false);
     await fetchData();
