@@ -112,7 +112,11 @@ export default function AdminPage() {
 
   const handleApproveBorrow = async (b: Borrower) => {
     setReturningId(b.id);
-    await supabase.from("books").update({ available: false }).eq("id", b.book_id);
+    const { data: bookData } = await supabase.from("books").select("copies").eq("id", b.book_id).single();
+    if (bookData) {
+      const newCopies = Math.max(0, bookData.copies - 1);
+      await supabase.from("books").update({ copies: newCopies, available: newCopies > 0 }).eq("id", b.book_id);
+    }
     await supabase.from("borrow_records").update({ status: "Active" }).eq("id", b.id);
     await fetchData();
     setReturningId(null);
@@ -126,7 +130,10 @@ export default function AdminPage() {
   const handleReturn = async (b: Borrower) => {
     setReturningId(b.id);
     if (b.book_id) {
-      const { error: bookErr } = await supabase.from("books").update({ available: true }).eq("id", b.book_id);
+      const { data: bookData, error: fetchErr } = await supabase.from("books").select("copies").eq("id", b.book_id).single();
+      if (fetchErr) { alert("Book fetch failed: " + fetchErr.message); setReturningId(null); return; }
+      const newCopies = (bookData?.copies ?? 0) + 1;
+      const { error: bookErr } = await supabase.from("books").update({ copies: newCopies, available: true }).eq("id", b.book_id);
       if (bookErr) { alert("Book update failed: " + bookErr.message); setReturningId(null); return; }
     }
     const { error: updateErr } = await supabase.from("borrow_records").update({ status: "Returned" }).eq("id", b.id);
