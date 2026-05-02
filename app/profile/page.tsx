@@ -140,7 +140,10 @@ function ProfileContent() {
     setOtpError("");
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { setOtpError("Session expired. Please sign out and sign in again."); setOtpLoading(false); return; }
-    const { error } = await supabase.auth.updateUser({ email: editEmail.trim() });
+    const { error } = await supabase.auth.updateUser(
+      { email: editEmail.trim() },
+      { emailRedirectTo: "https://scsitlibcapstone.vercel.app/auth-callback" }
+    );
     if (error) { setOtpError(error.message); setOtpLoading(false); return; }
     setOtpSent(true);
     setOtpLoading(false);
