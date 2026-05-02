@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState, useRef, Suspense } from "react";
-import { supabase } from "@/lib/supabase";
+import { supabase, getAuthUser } from "@/lib/supabase";
 
 type BorrowRecord = {
   id: string;
@@ -61,7 +61,7 @@ function ProfileContent() {
 
   useEffect(() => {
     const fetchData = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const user = await getAuthUser();
       if (user) {
         userIdRef.current = user.id;
         setUserId(user.id);
@@ -166,7 +166,7 @@ function ProfileContent() {
     if (!editEmail.trim() || editEmail === email) return;
     setOtpLoading(true);
     setOtpError("");
-    const { data: { user } } = await supabase.auth.getUser();
+    const user = await getAuthUser();
     if (!user) { setOtpError("Session expired. Please sign out and sign in again."); setOtpLoading(false); return; }
     const { error } = await supabase.auth.updateUser(
       { email: editEmail.trim() },

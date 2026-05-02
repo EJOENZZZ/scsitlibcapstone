@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { supabase } from "@/lib/supabase";
+import { supabase, getAuthUser } from "@/lib/supabase";
 
 type Book = { id: string; title: string; author: string; genre: string; available: boolean; shelf?: string; copies?: number; description?: string; image?: string; };
 
@@ -53,7 +53,7 @@ function BorrowBookContent() {
     setLoading(true);
     setError("");
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const user = await getAuthUser();
     if (!user) { setError("Please log in first."); setLoading(false); return; }
 
     const { error: borrowError } = await supabase.from("borrow_records").insert({
@@ -74,7 +74,7 @@ function BorrowBookContent() {
   };
 
   const handleSignOut = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
+    const user = await getAuthUser();
     if (user) await supabase.from("user_sessions").delete().eq("user_id", user.id);
     await supabase.auth.signOut();
     window.location.href = "/login";

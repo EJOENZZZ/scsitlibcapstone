@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useState, useEffect, Suspense } from "react";
-import { supabase } from "@/lib/supabase";
+import { supabase, getAuthUser } from "@/lib/supabase";
 
 type Book = { id: string; title: string; author: string; genre: string; available: boolean; copies: number; image?: string; shelf?: string; description?: string; };
 type BorrowRecord = { id: string; book_title: string; book_author: string; borrow_date: string; due_date: string; status: string; book_id: string; };
@@ -37,7 +37,7 @@ function ReviewForm({ username, onSubmit }: { username: string; onSubmit: () => 
     if (!comment.trim()) { setError("Please write a comment."); return; }
     setLoading(true);
     setError("");
-    const { data: { user } } = await supabase.auth.getUser();
+    const user = await getAuthUser();
     if (!user) { setError("Please log in first."); setLoading(false); return; }
 
     const { error: insertError } = await supabase.from("reviews").insert({
@@ -169,7 +169,7 @@ function DashboardContent() {
       const { data: booksData } = await supabase.from("books").select("*").order("title");
       if (booksData) setBooks(booksData);
 
-      const { data: { user } } = await supabase.auth.getUser();
+      const user = await getAuthUser();
       if (user) {
         const { data: profile } = await supabase.from("profiles").select("username").eq("id", user.id).single();
         if (profile?.username) setUsername(profile.username);
@@ -226,7 +226,7 @@ function DashboardContent() {
 
     // Update last_seen every 2 minutes to keep user online
     const interval = setInterval(async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const user = await getAuthUser();
       if (user) {
         await supabase.from("user_sessions").update({ last_seen: new Date().toISOString() }).eq("user_id", user.id);
       }
@@ -256,7 +256,7 @@ function DashboardContent() {
   const totalFine = borrows.reduce((sum, b) => sum + calcFine(b.due_date, b.status), 0);
 
   const handleRequestReturn = async (b: BorrowRecord) => {
-    const { data: { user } } = await supabase.auth.getUser();
+    const user = await getAuthUser();
     await supabase.from("borrow_records").update({ status: "Pending Return" }).eq("id", b.id);
     if (user) {
       const { data: borrowData } = await supabase.from("borrow_records").select("*").eq("user_id", user.id).order("created_at", { ascending: false });
@@ -265,7 +265,7 @@ function DashboardContent() {
   };
 
   const handleSignOut = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
+    const user = await getAuthUser();
     if (user) {
       await supabase.from("user_sessions").delete().eq("user_id", user.id);
     }
