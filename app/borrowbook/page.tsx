@@ -47,12 +47,11 @@ function BorrowBookContent() {
       book_author: selected.author,
       borrow_date: borrowDate,
       due_date: dueDate,
-      status: "Active",
+      status: "Pending",
     });
 
     if (borrowError) { setError(borrowError.message); setLoading(false); return; }
 
-    await supabase.from("books").update({ available: false }).eq("id", selected.id);
     setSuccess(true);
     setSelected(null);
     setLoading(false);
@@ -79,13 +78,13 @@ function BorrowBookContent() {
       <main className="flex-1 max-w-2xl mx-auto w-full px-6 py-10">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-slate-800">Borrow a Book</h1>
-          <p className="text-slate-400 text-sm mt-1">Confirm your borrow request below.</p>
+          <p className="text-slate-400 text-sm mt-1">Submit your borrow request for admin approval.</p>
         </div>
 
         <div className="bg-white p-8 rounded-2xl border border-slate-100 shadow-sm">
           {success && (
-            <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 text-center py-3 rounded-xl mb-6 text-sm font-medium">
-              ✅ Book borrowed successfully!
+            <div className="bg-blue-50 border border-blue-200 text-blue-700 text-center py-3 rounded-xl mb-6 text-sm font-medium">
+              ⏳ Borrow request submitted! Waiting for admin approval.
             </div>
           )}
           {error && (
@@ -135,7 +134,7 @@ function BorrowBookContent() {
             disabled={loading || !selected}
             className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white w-full py-3 rounded-xl transition font-semibold mt-6 text-sm shadow-sm"
           >
-            {loading ? "Processing..." : "Confirm Borrow"}
+            {loading ? "Processing..." : "Submit Borrow Request"}
           </button>
           <p className="text-center text-xs text-slate-400 mt-3">Please return the book by the due date to avoid penalties.</p>
         </div>

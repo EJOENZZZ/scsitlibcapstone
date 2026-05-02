@@ -109,6 +109,19 @@ export default function AdminPage() {
     closeModal();
   };
 
+  const handleApproveBorrow = async (b: Borrower) => {
+    setReturningId(b.id);
+    await supabase.from("books").update({ available: false }).eq("id", b.book_id);
+    await supabase.from("borrow_records").update({ status: "Active" }).eq("id", b.id);
+    await fetchData();
+    setReturningId(null);
+  };
+
+  const handleRejectBorrow = async (b: Borrower) => {
+    await supabase.from("borrow_records").delete().eq("id", b.id);
+    await fetchData();
+  };
+
   const handleReturn = async (b: Borrower) => {
     setReturningId(b.id);
     if (b.book_id) {
@@ -161,7 +174,7 @@ export default function AdminPage() {
     { label: "Total Books", value: books.length, icon: "📚", color: "bg-blue-50 text-blue-700" },
     { label: "Available", value: books.filter((b) => b.available).length, icon: "✅", color: "bg-emerald-50 text-emerald-700" },
     { label: "Borrowers", value: borrowers.length, icon: "👥", color: "bg-purple-50 text-purple-700" },
-    { label: "Users", value: users.length, icon: "👤", color: "bg-amber-50 text-amber-700" },
+    { label: "Pending", value: borrowers.filter((b) => b.status === "Pending").length, icon: "⏳", color: "bg-amber-50 text-amber-700" },
   ];
 
   if (!authed) {
@@ -269,6 +282,23 @@ export default function AdminPage() {
         </header>
 
         <main className="flex-1 px-8 py-8">
+          {borrowers.filter(b => b.status === "Pending").length > 0 && (
+            <div className="bg-blue-50 border border-blue-200 rounded-2xl px-6 py-4 mb-6 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">📬</span>
+                <div>
+                  <p className="font-semibold text-blue-800 text-sm">
+                    {borrowers.filter(b => b.status === "Pending").length} borrow request{borrowers.filter(b => b.status === "Pending").length > 1 ? "s" : ""} waiting for approval
+                  </p>
+                  <p className="text-xs text-blue-600 mt-0.5">Go to Borrowers tab to approve or reject.</p>
+                </div>
+              </div>
+              <button onClick={() => setActiveTab("borrowers")}
+                className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white text-xs font-semibold rounded-xl transition">
+                View Requests
+              </button>
+            </div>
+          )}
           {borrowers.filter(b => b.status === "Pending Return").length > 0 && (
             <div className="bg-amber-50 border border-amber-200 rounded-2xl px-6 py-4 mb-6 flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -307,9 +337,9 @@ export default function AdminPage() {
                 {tab === "books" ? "📚 Books" : tab === "borrowers" ? (
                   <span className="flex items-center gap-2">
                     👥 Borrowers
-                    {borrowers.filter(b => b.status === "Pending Return").length > 0 && (
-                      <span className="bg-amber-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">
-                        {borrowers.filter(b => b.status === "Pending Return").length}
+                    {(borrowers.filter(b => b.status === "Pending").length + borrowers.filter(b => b.status === "Pending Return").length) > 0 && (
+                      <span className="bg-blue-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">
+                        {borrowers.filter(b => b.status === "Pending").length + borrowers.filter(b => b.status === "Pending Return").length}
                       </span>
                     )}
                   </span>
@@ -379,6 +409,11 @@ export default function AdminPage() {
               <div className="px-6 py-5 border-b border-slate-100 flex justify-between items-center">
                 <h3 className="font-semibold text-slate-700">Borrower Records</h3>
                 <div className="flex items-center gap-3">
+                  {borrowers.filter(b => b.status === "Pending").length > 0 && (
+                    <span className="bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1 rounded-full">
+                      🆕 {borrowers.filter(b => b.status === "Pending").length} borrow request{borrowers.filter(b => b.status === "Pending").length > 1 ? "s" : ""}
+                    </span>
+                  )}
                   {borrowers.filter(b => b.status === "Pending Return").length > 0 && (
                     <span className="bg-amber-100 text-amber-700 text-xs font-bold px-3 py-1 rounded-full">
                       ⏳ {borrowers.filter(b => b.status === "Pending Return").length} pending return{borrowers.filter(b => b.status === "Pending Return").length > 1 ? "s" : ""}
@@ -407,6 +442,7 @@ export default function AdminPage() {
                         <td className="px-6 py-4 text-slate-500">{b.due_date}</td>
                         <td className="px-6 py-4">
                           <span className={`text-xs px-2.5 py-1 rounded-full font-semibold ${
+                            b.status === "Pending" ? "bg-blue-50 text-blue-600" :
                             b.status === "Active" ? "bg-emerald-50 text-emerald-700" :
                             b.status === "Pending Return" ? "bg-amber-50 text-amber-600" :
                             b.status === "Overdue" ? "bg-red-50 text-red-600" : "bg-slate-100 text-slate-500"
@@ -414,6 +450,18 @@ export default function AdminPage() {
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex gap-2">
+                            {b.status === "Pending" && (
+                              <>
+                                <button onClick={() => handleApproveBorrow(b)} disabled={returningId === b.id}
+                                  className="px-3 py-1.5 text-xs font-medium border border-blue-200 text-blue-600 rounded-lg hover:bg-blue-50 transition disabled:opacity-50">
+                                  {returningId === b.id ? "Processing..." : "✅ Approve"}
+                                </button>
+                                <button onClick={() => handleRejectBorrow(b)}
+                                  className="px-3 py-1.5 text-xs font-medium border border-red-200 text-red-500 rounded-lg hover:bg-red-50 transition">
+                                  ✗ Reject
+                                </button>
+                              </>
+                            )}
                             {b.status === "Pending Return" && (
                               <button onClick={() => handleReturn(b)} disabled={returningId === b.id}
                                 className="px-3 py-1.5 text-xs font-medium border border-emerald-200 text-emerald-600 rounded-lg hover:bg-emerald-50 transition disabled:opacity-50">
