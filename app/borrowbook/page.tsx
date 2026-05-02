@@ -85,7 +85,7 @@ function BorrowBookContent() {
           <Link href="/dashboard" className="px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-700 transition">Home</Link>
           <Link href="/borrowbook" className="px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white">Borrow</Link>
           <Link href="/about" className="px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-700 transition">About</Link>
-          <Link href="/dashboard#reviews" className="px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-700 transition">Reviews</Link>
+          <Link href="/reviews" className="px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-700 transition">Reviews</Link>
         </div>
         <div className="relative">
           <button onClick={() => setProfileOpen(!profileOpen)}

@@ -268,7 +268,7 @@ function DashboardContent() {
           <Link href="/dashboard" className="px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white">Home</Link>
           <Link href="/borrowbook" className="px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-700 transition">Borrow</Link>
           <Link href="/about" className="px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-700 transition">About</Link>
-          <Link href="/dashboard#reviews" className="px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-700 transition">Reviews</Link>
+          <Link href="/reviews" className="px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-700 transition">Reviews</Link>
         </div>
         <div className="relative">
           <button onClick={() => setProfileOpen(!profileOpen)}
@@ -432,23 +432,6 @@ function DashboardContent() {
               </div>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* LEAVE A REVIEW */}
-      <section className="py-16 bg-gradient-to-b from-slate-50 to-blue-50">
-        <div className="max-w-6xl mx-auto px-10">
-          <div className="text-center mb-10">
-            <span className="text-xs font-bold text-blue-600 uppercase tracking-widest">Share Your Experience</span>
-            <h2 className="text-4xl font-bold text-slate-800 mt-3 mb-2">What Students Say</h2>
-            <p className="text-slate-500 text-sm">Leave a review and help other students know about the library!</p>
-          </div>
-
-          {/* REVIEW FORM */}
-          <ReviewForm username={username} onSubmit={() => window.location.reload()} />
-
-          {/* REVIEWS LIST */}
-          <ReviewsList />
         </div>
       </section>
 
