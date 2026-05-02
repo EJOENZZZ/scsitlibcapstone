@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
-type Book = { id: string; title: string; author: string; genre: string; available: boolean; shelf?: string; };
+type Book = { id: string; title: string; author: string; genre: string; available: boolean; shelf?: string; copies?: number; description?: string; image?: string; };
 
 function BorrowBookContent() {
   const searchParams = useSearchParams();
@@ -149,6 +149,37 @@ function BorrowBookContent() {
                 </div>
               )}
               <div className="space-y-4">
+                {/* BOOK PREVIEW CARD */}
+                {selected && (
+                  <div className="flex gap-5 p-5 bg-slate-50 rounded-2xl border border-slate-200 mb-2">
+                    <img
+                      src={selected.image || "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=300&h=400&fit=crop"}
+                      alt={selected.title}
+                      className="w-20 h-28 object-cover rounded-xl shadow-md flex-shrink-0"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start gap-2 flex-wrap mb-1">
+                        <span className="text-xs font-semibold bg-blue-100 text-blue-700 px-2.5 py-0.5 rounded-full">{selected.genre}</span>
+                        <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${
+                          selected.available ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-600"
+                        }`}>{selected.available ? "✓ Available" : "✗ Unavailable"}</span>
+                      </div>
+                      <h3 className="font-bold text-slate-800 text-base leading-tight mt-1">{selected.title}</h3>
+                      <p className="text-slate-500 text-sm mt-0.5">by <span className="font-semibold text-slate-700">{selected.author}</span></p>
+                      <div className="flex gap-3 mt-2 flex-wrap">
+                        {selected.shelf && (
+                          <span className="text-xs bg-amber-50 border border-amber-100 text-amber-700 px-2.5 py-1 rounded-lg font-medium">📍 Shelf {selected.shelf}</span>
+                        )}
+                        {selected.copies !== undefined && (
+                          <span className="text-xs bg-slate-100 text-slate-600 px-2.5 py-1 rounded-lg font-medium">📚 {selected.copies} {selected.copies === 1 ? "copy" : "copies"}</span>
+                        )}
+                      </div>
+                      {selected.description && (
+                        <p className="text-xs text-slate-500 mt-2 leading-relaxed line-clamp-3">{selected.description}</p>
+                      )}
+                    </div>
+                  </div>
+                )}
                 <div>
                   <label className="text-sm font-medium text-slate-700 mb-1.5 block">Selected Book</label>
                   <div className="border border-slate-200 p-3 w-full rounded-xl text-sm bg-slate-50 text-slate-600 min-h-[44px]">

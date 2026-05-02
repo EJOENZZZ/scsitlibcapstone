@@ -4,7 +4,7 @@ import { useSearchParams } from "next/navigation";
 import { useState, useEffect, Suspense } from "react";
 import { supabase } from "@/lib/supabase";
 
-type Book = { id: string; title: string; author: string; genre: string; available: boolean; copies: number; image?: string; shelf?: string; };
+type Book = { id: string; title: string; author: string; genre: string; available: boolean; copies: number; image?: string; shelf?: string; description?: string; };
 type BorrowRecord = { id: string; book_title: string; book_author: string; borrow_date: string; due_date: string; status: string; book_id: string; };
 
 const calcFine = (due_date: string, status: string) => {
@@ -157,6 +157,7 @@ function DashboardContent() {
   const [selectedGenre, setSelectedGenre] = useState("All");
   const [loading, setLoading] = useState(true);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [previewBook, setPreviewBook] = useState<Book | null>(null);
   const [approvedBooks, setApprovedBooks] = useState<BorrowRecord[]>([]);
   const [dismissedApprovals, setDismissedApprovals] = useState<string[]>(() => {
     if (typeof window === "undefined") return [];
@@ -405,7 +406,7 @@ function DashboardContent() {
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-12">
               {filteredBooks.map((book) => (
-                <div key={book.id} className="group relative bg-white rounded-3xl overflow-hidden border border-slate-200/50 hover:border-blue-300 hover:shadow-2xl hover:shadow-blue-100 transition-all duration-500 transform hover:-translate-y-3 cursor-pointer">
+                <div key={book.id} onClick={() => setPreviewBook(book)} className="group relative bg-white rounded-3xl overflow-hidden border border-slate-200/50 hover:border-blue-300 hover:shadow-2xl hover:shadow-blue-100 transition-all duration-500 transform hover:-translate-y-3 cursor-pointer">
                   <div className="relative overflow-hidden h-56">
                     <img
                       src={book.image || "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=300&h=400&fit=crop"}
@@ -427,9 +428,9 @@ function DashboardContent() {
                       <p className="text-white font-bold text-sm leading-tight mb-1">{book.title}</p>
                       <p className="text-blue-200 text-xs mb-1">{book.author}</p>
                       {book.shelf && <p className="text-amber-300 text-xs mb-3">📍 Shelf {book.shelf}</p>}
-                      <Link href={`/borrowbook?bookId=${book.id}`} className="w-full text-center bg-white text-blue-700 hover:bg-blue-50 font-bold text-xs py-2.5 rounded-xl transition shadow-lg">
-                        📚 Borrow This Book
-                      </Link>
+                      <button onClick={() => setPreviewBook(book)} className="w-full text-center bg-white text-blue-700 hover:bg-blue-50 font-bold text-xs py-2.5 rounded-xl transition shadow-lg">
+                        👁 View Details
+                      </button>
                     </div>
                   </div>
                   <div className="p-5 space-y-2">
@@ -478,6 +479,76 @@ function DashboardContent() {
       <footer className="bg-white border-t border-slate-200 text-center py-5 text-slate-400 text-xs">
         © {new Date().getFullYear()} SCSIT Library. All rights reserved.
       </footer>
+
+      {/* BOOK PREVIEW MODAL */}
+      {previewBook && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 px-4" onClick={() => setPreviewBook(null)}>
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+            <div className="flex">
+              {/* LEFT: Cover */}
+              <div className="w-48 flex-shrink-0 relative">
+                <img
+                  src={previewBook.image || "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=300&h=400&fit=crop"}
+                  alt={previewBook.title}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                <span className={`absolute top-3 left-3 text-white text-xs px-2.5 py-1 rounded-full font-bold shadow ${
+                  previewBook.available ? "bg-emerald-500" : "bg-red-500"
+                }`}>
+                  {previewBook.available ? "✓ Available" : "✗ Unavailable"}
+                </span>
+              </div>
+              {/* RIGHT: Details */}
+              <div className="flex-1 p-7 flex flex-col">
+                <div className="flex items-start justify-between mb-1">
+                  <span className="text-xs font-semibold bg-blue-100 text-blue-700 px-3 py-1 rounded-full">{previewBook.genre}</span>
+                  <button onClick={() => setPreviewBook(null)} className="text-slate-400 hover:text-slate-600 text-xl leading-none">&times;</button>
+                </div>
+                <h2 className="text-xl font-bold text-slate-800 mt-3 leading-tight">{previewBook.title}</h2>
+                <p className="text-slate-500 text-sm mt-1">by <span className="font-semibold text-slate-700">{previewBook.author}</span></p>
+
+                <div className="flex gap-4 mt-4">
+                  {previewBook.shelf && (
+                    <div className="flex items-center gap-1.5 bg-amber-50 border border-amber-100 px-3 py-1.5 rounded-xl">
+                      <span className="text-sm">📍</span>
+                      <span className="text-xs font-semibold text-amber-700">Shelf {previewBook.shelf}</span>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-100 px-3 py-1.5 rounded-xl">
+                    <span className="text-sm">📚</span>
+                    <span className="text-xs font-semibold text-slate-600">{previewBook.copies} {previewBook.copies === 1 ? "copy" : "copies"} available</span>
+                  </div>
+                </div>
+
+                <div className="mt-4 flex-1">
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">About this book</p>
+                  <p className="text-sm text-slate-600 leading-relaxed">
+                    {previewBook.description || "No description available for this book. Visit the library or ask the librarian for more details about this title."}
+                  </p>
+                </div>
+
+                <div className="mt-6 flex gap-3">
+                  <button onClick={() => setPreviewBook(null)}
+                    className="flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-600 text-sm font-medium hover:bg-slate-50 transition">
+                    Close
+                  </button>
+                  {previewBook.available ? (
+                    <Link href={`/borrowbook?bookId=${previewBook.id}`}
+                      className="flex-1 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold text-center transition shadow-sm">
+                      📚 Borrow This Book
+                    </Link>
+                  ) : (
+                    <button disabled className="flex-1 py-2.5 rounded-xl bg-slate-100 text-slate-400 text-sm font-semibold cursor-not-allowed">
+                      Not Available
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

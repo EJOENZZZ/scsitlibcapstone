@@ -3,11 +3,11 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 
-type Book = { id: string; title: string; author: string; genre: string; copies: number; available: boolean; image?: string; shelf?: string; };
+type Book = { id: string; title: string; author: string; genre: string; copies: number; available: boolean; image?: string; shelf?: string; description?: string; };
 type Borrower = { id: string; user_name: string; book_title: string; borrow_date: string; due_date: string; status: string; book_id: string; };
 type Review = { id: string; username: string; course: string; comment: string; rating: number; approved: boolean; created_at: string; };
 type UserProfile = { id: string; username: string; full_name: string; course: string; year: string; contact_number: string; created_at: string; };
-const emptyForm = { title: "", author: "", genre: "", copies: 1, available: true, image: "", shelf: "" };
+const emptyForm = { title: "", author: "", genre: "", copies: 1, available: true, image: "", shelf: "", description: "" };
 
 export default function AdminPage() {
   const [authed, setAuthed] = useState(false);
@@ -71,7 +71,7 @@ export default function AdminPage() {
   };
 
   const openAdd = () => { setForm(emptyForm); setModal("add"); };
-  const openEdit = (b: Book) => { setSelected(b); setForm({ title: b.title, author: b.author, genre: b.genre, copies: b.copies, available: b.available, image: b.image || "", shelf: b.shelf || "" }); setModal("edit"); };
+  const openEdit = (b: Book) => { setSelected(b); setForm({ title: b.title, author: b.author, genre: b.genre, copies: b.copies, available: b.available, image: b.image || "", shelf: b.shelf || "", description: b.description || "" }); setModal("edit"); };
   const openDelete = (b: Book) => { setSelected(b); setModal("delete"); };
   const closeModal = () => { setModal(null); setSelected(null); };
 
@@ -695,6 +695,13 @@ export default function AdminPage() {
                       className="border border-slate-200 px-3 py-2 w-full rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-400 transition" />
                   </div>
                 ))}
+              </div>
+              <div>
+                <label className="text-xs font-medium text-slate-600 mb-1 block">Description</label>
+                <textarea placeholder="Brief description of the book..." value={form.description}
+                  onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3}
+                  className="border border-slate-200 px-3 py-2 w-full rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-400 transition resize-none" />
+              </div>
               </div>
               <div>
                 <label className="text-xs font-medium text-slate-600 mb-1 block">Book Cover Image</label>
