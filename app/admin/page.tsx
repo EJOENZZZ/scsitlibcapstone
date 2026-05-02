@@ -40,13 +40,7 @@ export default function AdminPage() {
   };
 
   useEffect(() => {
-    const session = sessionStorage.getItem("adminAuthed");
-    if (session === "1") setAuthed(true);
-  }, []);
-
-  useEffect(() => {
     if (authed) {
-      sessionStorage.setItem("adminAuthed", "1");
       fetchData();
       const interval = setInterval(fetchData, 10000);
       return () => clearInterval(interval);
@@ -69,7 +63,8 @@ export default function AdminPage() {
     const adminPass = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || "1234";
     if (loginForm.username === adminUser && loginForm.password === adminPass) {
       sessionStorage.setItem("adminAuthed", "1");
-      setAuthed(true); setLoginError("");
+      setAuthed(true);
+      setLoginError("");
     } else {
       setLoginError("Invalid username or password.");
     }
@@ -280,9 +275,9 @@ export default function AdminPage() {
           ))}
         </nav>
         <div className="px-4 py-6 border-t border-slate-700">
-          <button onClick={() => { sessionStorage.removeItem("adminAuthed"); setAuthed(false); setLoginForm({ username: "", password: "" }); window.location.href = "/login"; }}
+          <button onClick={() => { setAuthed(false); setLoginForm({ username: "", password: "" }); }}
             className="flex items-center gap-2 text-sm text-slate-400 hover:text-red-400 transition w-full">
-            <span>🚪</span> Sign Out
+            <span>&#128682;</span> Sign Out
           </button>
         </div>
       </aside>
@@ -310,7 +305,7 @@ export default function AdminPage() {
                   <p className="text-xs text-slate-400">SCSIT Library Admin</p>
                   <span className="inline-block mt-1.5 text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-medium">&#9679; System Online</span>
                 </div>
-                <button onClick={() => { sessionStorage.removeItem("adminAuthed"); setAuthed(false); setLoginForm({ username: "", password: "" }); setAdminProfileOpen(false); window.location.href = "/login"; }}
+                <button onClick={() => { setAuthed(false); setLoginForm({ username: "", password: "" }); setAdminProfileOpen(false); }}
                   className="flex items-center gap-2 px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition w-full text-left">
                   &#128682; Sign Out
                 </button>
