@@ -146,6 +146,8 @@ function ReviewsList() {
 function DashboardContent() {
   const searchParams = useSearchParams();
   const urlUsername = searchParams.get("user") || "";
+  const justBorrowed = searchParams.get("borrowed") === "1";
+  const [borrowedBanner, setBorrowedBanner] = useState(justBorrowed);
   const [username, setUsername] = useState(urlUsername);
   const [books, setBooks] = useState<Book[]>([]);
   const [borrows, setBorrows] = useState<BorrowRecord[]>([]);
@@ -315,6 +317,17 @@ function DashboardContent() {
         </div>
       </nav>
 
+
+      {/* BORROW SUBMITTED BANNER */}
+      {borrowedBanner && (
+        <div className="bg-blue-50 border border-blue-200 px-10 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="text-xl">⏳</span>
+            <p className="text-sm font-semibold text-blue-800">Borrow request submitted! Please wait for admin confirmation.</p>
+          </div>
+          <button onClick={() => setBorrowedBanner(false)} className="text-blue-400 hover:text-blue-600 text-lg font-bold ml-4">✕</button>
+        </div>
+      )}
 
       {/* APPROVAL NOTIFICATIONS */}
       {approvedBooks.filter(b => !dismissedApprovals.includes(b.id)).map(b => (

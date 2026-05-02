@@ -63,10 +63,8 @@ function BorrowBookContent() {
 
     if (borrowError) { setError(borrowError.message); setLoading(false); return; }
 
-    setSuccess(true);
-    setSelected(null);
     setLoading(false);
-    setTimeout(() => setSuccess(false), 4000);
+    window.location.href = "/dashboard?borrowed=1";
   };
 
   const handleSignOut = async () => {
