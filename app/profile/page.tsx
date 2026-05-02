@@ -163,7 +163,7 @@ function ProfileContent() {
     if (!editEmail.trim() || editEmail === email) return;
     setOtpLoading(true);
     setOtpError("");
-    const { error } = await supabase.auth.updateUser({ email: editEmail.trim() });
+    const { error } = await supabase.auth.signInWithOtp({ email: editEmail.trim(), options: { shouldCreateUser: false } });
     if (error) { setOtpError(error.message); setOtpLoading(false); return; }
     setOtpSent(true);
     setOtpLoading(false);
@@ -172,8 +172,10 @@ function ProfileContent() {
   const handleVerifyOtp = async () => {
     setOtpLoading(true);
     setOtpError("");
-    const { error } = await supabase.auth.verifyOtp({ email: editEmail.trim(), token: otpCode, type: "email_change" });
+    const { error } = await supabase.auth.verifyOtp({ email: editEmail.trim(), token: otpCode, type: "magiclink" });
     if (error) { setOtpError(error.message); setOtpLoading(false); return; }
+    // Update email in profiles table
+    if (userId) await supabase.from("profiles").update({ email: editEmail.trim() }).eq("id", userId);
     setEmail(editEmail.trim());
     setOtpSent(false);
     setOtpCode("");
