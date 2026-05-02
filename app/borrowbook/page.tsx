@@ -19,6 +19,7 @@ function BorrowBookContent() {
   const [username, setUsername] = useState("");
   const [profileOpen, setProfileOpen] = useState(false);
   const [existingBorrow, setExistingBorrow] = useState<{ book_title: string; status: string } | null>(null);
+  const [activeBorrowCount, setActiveBorrowCount] = useState(0);
 
   useEffect(() => {
     const today = new Date().toISOString().split("T")[0];
@@ -31,8 +32,13 @@ function BorrowBookContent() {
           setUsername(data?.username || user.user_metadata?.username || user.email?.split("@")[0] || "");
         });
         supabase.from("borrow_records").select("book_title, status").eq("user_id", user.id)
-          .in("status", ["Pending", "Active", "Pending Return"]).limit(1).single()
-          .then(({ data }) => { if (data) setExistingBorrow(data); });
+          .in("status", ["Pending", "Active", "Pending Return", "Early Return"])
+          .then(({ data }) => {
+            if (data && data.length >= 3) {
+              setExistingBorrow(data[0]);
+              setActiveBorrowCount(data.length);
+            }
+          });
       }
     });
     if (bookId) {
@@ -126,15 +132,14 @@ function BorrowBookContent() {
 
         <div className="bg-white p-8 rounded-2xl border border-slate-100 shadow-sm">
           {existingBorrow ? (
-            <div className="text-center py-6">
-              <div className="text-5xl mb-4">📚</div>
-              <p className="font-bold text-slate-800 text-lg mb-2">You already have an active borrow</p>
-              <p className="text-slate-500 text-sm mb-1">Book: <span className="font-semibold text-slate-700">&ldquo;{existingBorrow.book_title}&rdquo;</span></p>
-              <p className="text-slate-500 text-sm mb-6">Status: <span className={`font-semibold ${
-                existingBorrow.status === "Active" ? "text-emerald-600" :
-                existingBorrow.status === "Pending Return" ? "text-amber-600" : "text-blue-600"
-              }`}>{existingBorrow.status}</span></p>
-              <p className="text-xs text-slate-400">Please return your current book before borrowing another one.</p>
+            <div className="text-center py-8">
+              <div className="w-16 h-16 bg-amber-50 rounded-full flex items-center justify-center text-3xl mx-auto mb-4">📚</div>
+              <p className="font-bold text-slate-800 text-lg mb-1">Borrow limit reached</p>
+              <p className="text-slate-500 text-sm mb-4">You already have <span className="font-semibold text-slate-700">{activeBorrowCount} active borrow{activeBorrowCount > 1 ? "s" : ""}</span>. The maximum is 3 books at a time.</p>
+              <p className="text-xs text-slate-400 mb-6">Please return a book before borrowing another one.</p>
+              <Link href="/profile" className="inline-block px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl transition">
+                View My Borrows
+              </Link>
             </div>
           ) : (
             <>
@@ -177,27 +182,6 @@ function BorrowBookContent() {
                       {selected.description && (
                         <p className="text-xs text-slate-500 mt-2 leading-relaxed line-clamp-3">{selected.description}</p>
                       )}
-                    </div>
-                  </div>
-                )}
-                <div>
-                  <label className="text-sm font-medium text-slate-700 mb-1.5 block">Selected Book</label>
-                  <div className="border border-slate-200 p-3 w-full rounded-xl text-sm bg-slate-50 text-slate-600 min-h-[44px]">
-                    {selected ? selected.title : <span className="text-slate-400">No book selected</span>}
-                  </div>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-slate-700 mb-1.5 block">Author</label>
-                  <div className="border border-slate-200 p-3 w-full rounded-xl text-sm bg-slate-50 text-slate-600 min-h-[44px]">
-                    {selected ? selected.author : <span className="text-slate-400">—</span>}
-                  </div>
-                </div>
-                {selected?.shelf && (
-                  <div className="bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 flex items-center gap-2">
-                    <span className="text-lg">📍</span>
-                    <div>
-                      <p className="text-xs text-blue-500 font-medium">Shelf Location</p>
-                      <p className="text-sm font-bold text-blue-700">Shelf {selected.shelf}</p>
                     </div>
                   </div>
                 )}
