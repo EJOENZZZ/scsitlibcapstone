@@ -296,8 +296,8 @@ function ProfileContent() {
                           return (
                           <tr key={b.id} className={`transition-colors ${isOverdue ? "bg-red-50 hover:bg-red-100" : "hover:bg-blue-50/30"}`}>
                             <td className="px-8 py-5 font-semibold text-slate-800">{b.book_title}</td>
-                            <td className="px-8 py-5 text-slate-600">{b.borrow_date}</td>
-                            <td className={`px-8 py-5 font-medium ${isOverdue ? "text-red-600" : "text-slate-600"}`}>{b.due_date}</td>
+                            <td className="px-8 py-5 text-slate-600 whitespace-nowrap">{new Date(b.borrow_date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</td>
+                            <td className={`px-8 py-5 font-semibold whitespace-nowrap ${isOverdue ? "text-red-600" : "text-slate-700"}`}>{new Date(b.due_date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</td>
                             <td className="px-8 py-5">
                               <span className={`px-4 py-2 rounded-full text-xs font-semibold shadow-sm ${
                                 isOverdue ? "bg-red-100 text-red-700 border border-red-300" :
