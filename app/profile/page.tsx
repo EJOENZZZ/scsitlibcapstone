@@ -147,10 +147,6 @@ function ProfileContent() {
           <Link href="/profile" className="px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white">Profile</Link>
         </div>
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 bg-slate-800 px-3 py-2 rounded-xl">
-            <div className="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center text-xs font-bold text-white">{username.charAt(0).toUpperCase()}</div>
-            <span className="text-sm font-medium text-white">{username}</span>
-          </div>
           <button onClick={handleSignOut} className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-sm font-medium transition">Sign Out</button>
         </div>
       </nav>
