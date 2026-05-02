@@ -53,8 +53,10 @@ function ProfileContent() {
   const [editEmail, setEditEmail] = useState("");
   // email OTP flow
   const [otpSent, setOtpSent] = useState(false);
+  const [otpCode, setOtpCode] = useState("");
   const [otpLoading, setOtpLoading] = useState(false);
   const [otpError, setOtpError] = useState("");
+  const [otpVerified, setOtpVerified] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -130,8 +132,35 @@ function ProfileContent() {
     setEditYear(year);
     setEditEmail(email);
     setOtpSent(false);
+    setOtpCode("");
     setOtpError("");
+    setOtpVerified(false);
     setEditOpen(true);
+  };
+
+  const handleEmailChange = async (newEmail: string) => {
+    setEditEmail(newEmail);
+    setOtpSent(false);
+    setOtpCode("");
+    setOtpError("");
+    setOtpVerified(false);
+    if (!newEmail.trim() || newEmail === email || !newEmail.includes("@") || !newEmail.includes(".")) return;
+    setOtpLoading(true);
+    const { error } = await supabase.auth.signInWithOtp({ email: newEmail.trim(), options: { shouldCreateUser: true } });
+    if (error) { setOtpError(error.message); setOtpLoading(false); return; }
+    setOtpSent(true);
+    setOtpLoading(false);
+  };
+
+  const handleVerifyOtp = async () => {
+    if (!otpCode.trim()) return;
+    setOtpLoading(true);
+    setOtpError("");
+    const { error } = await supabase.auth.verifyOtp({ email: editEmail.trim(), token: otpCode.trim(), type: "magiclink" });
+    if (error) { setOtpError("Invalid or expired code."); setOtpLoading(false); return; }
+    setOtpVerified(true);
+    setEmail(editEmail.trim());
+    setOtpLoading(false);
   };
 
   const handleSaveProfile = async () => {
@@ -155,16 +184,6 @@ function ProfileContent() {
     setEditOpen(false);
     setSaveMsg("Profile updated! ✅");
     setTimeout(() => setSaveMsg(""), 3000);
-  };
-
-  const handleSendOtp = async () => {
-    if (!editEmail.trim() || editEmail === email) return;
-    setOtpLoading(true);
-    setOtpError("");
-    const { error } = await supabase.auth.updateUser({ email: editEmail.trim() });
-    if (error) { setOtpError(error.message); setOtpLoading(false); return; }
-    setOtpSent(true);
-    setOtpLoading(false);
   };
 
   const activeCount = borrows.filter((b) => b.status === "Active").length;
@@ -414,24 +433,26 @@ function ProfileContent() {
               {/* EMAIL CHANGE */}
               <div className="border-t border-slate-100 pt-3">
                 <label className="text-xs font-medium text-slate-600 mb-1 block">Email Address</label>
-                <div className="flex gap-2">
-                  <input value={editEmail} onChange={(e) => { setEditEmail(e.target.value); setOtpSent(false); setOtpError(""); }}
-                    placeholder="New email address"
-                    className="border border-slate-200 px-3 py-2 flex-1 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition" />
-                  {editEmail !== email && editEmail.trim() && !otpSent && (
-                    <button onClick={handleSendOtp} disabled={otpLoading}
-                      className="px-3 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white text-xs font-semibold rounded-xl transition whitespace-nowrap">
-                      {otpLoading ? "Sending..." : "Send Link"}
-                    </button>
-                  )}
-                </div>
-                {editEmail === email && <p className="text-xs text-slate-400 mt-1">Current email. Change to update.</p>}
-                {otpSent && (
-                  <div className="mt-2 bg-emerald-50 border border-emerald-200 rounded-xl px-3 py-2">
-                    <p className="text-xs text-emerald-700 font-medium">Confirmation link sent to <span className="font-bold">{editEmail}</span>.</p>
-                    <p className="text-xs text-emerald-600 mt-0.5">Open your email and click the link to confirm the change.</p>
+                <input value={editEmail} onChange={(e) => handleEmailChange(e.target.value)}
+                  placeholder="New email address"
+                  className="border border-slate-200 px-3 py-2 w-full rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition" />
+                {editEmail === email && <p className="text-xs text-slate-400 mt-1">Current email. Type a new one to change.</p>}
+                {otpLoading && <p className="text-xs text-blue-500 mt-1">Sending code to {editEmail}...</p>}
+                {otpSent && !otpVerified && (
+                  <div className="mt-2 space-y-2">
+                    <p className="text-xs text-emerald-600 font-medium">Code sent to <span className="font-bold">{editEmail}</span>. Check your inbox.</p>
+                    <div className="flex gap-2">
+                      <input value={otpCode} onChange={(e) => setOtpCode(e.target.value)}
+                        placeholder="Enter 6-digit code"
+                        className="border border-slate-200 px-3 py-2 flex-1 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition" />
+                      <button onClick={handleVerifyOtp} disabled={otpLoading || !otpCode.trim()}
+                        className="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white text-xs font-semibold rounded-xl transition">
+                        Verify
+                      </button>
+                    </div>
                   </div>
                 )}
+                {otpVerified && <p className="text-xs text-emerald-600 font-medium mt-1">✅ Email verified!</p>}
                 {otpError && <p className="text-xs text-red-500 mt-1">{otpError}</p>}
               </div>
             </div>
