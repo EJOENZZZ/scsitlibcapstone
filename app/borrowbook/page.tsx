@@ -18,6 +18,7 @@ function BorrowBookContent() {
   const [error, setError] = useState("");
   const [username, setUsername] = useState("");
   const [profileOpen, setProfileOpen] = useState(false);
+  const [existingBorrow, setExistingBorrow] = useState<{ book_title: string; status: string } | null>(null);
 
   useEffect(() => {
     const today = new Date().toISOString().split("T")[0];
@@ -29,6 +30,9 @@ function BorrowBookContent() {
         supabase.from("profiles").select("username").eq("id", user.id).single().then(({ data }) => {
           setUsername(data?.username || user.user_metadata?.username || user.email?.split("@")[0] || "");
         });
+        supabase.from("borrow_records").select("book_title, status").eq("user_id", user.id)
+          .in("status", ["Pending", "Active", "Pending Return"]).limit(1).single()
+          .then(({ data }) => { if (data) setExistingBorrow(data); });
       }
     });
     if (bookId) {
@@ -123,63 +127,76 @@ function BorrowBookContent() {
         </div>
 
         <div className="bg-white p-8 rounded-2xl border border-slate-100 shadow-sm">
-          {success && (
-            <div className="bg-blue-50 border border-blue-200 text-blue-700 text-center py-3 rounded-xl mb-6 text-sm font-medium">
-              ⏳ Borrow request submitted! Waiting for admin approval.
+          {existingBorrow ? (
+            <div className="text-center py-6">
+              <div className="text-5xl mb-4">📚</div>
+              <p className="font-bold text-slate-800 text-lg mb-2">You already have an active borrow</p>
+              <p className="text-slate-500 text-sm mb-1">Book: <span className="font-semibold text-slate-700">&ldquo;{existingBorrow.book_title}&rdquo;</span></p>
+              <p className="text-slate-500 text-sm mb-6">Status: <span className={`font-semibold ${
+                existingBorrow.status === "Active" ? "text-emerald-600" :
+                existingBorrow.status === "Pending Return" ? "text-amber-600" : "text-blue-600"
+              }`}>{existingBorrow.status}</span></p>
+              <p className="text-xs text-slate-400">Please return your current book before borrowing another one.</p>
             </div>
-          )}
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-600 text-center py-3 rounded-xl mb-6 text-sm">
-              {error}
-            </div>
-          )}
-
-          <div className="space-y-4">
-            <div>
-              <label className="text-sm font-medium text-slate-700 mb-1.5 block">Selected Book</label>
-              <div className="border border-slate-200 p-3 w-full rounded-xl text-sm bg-slate-50 text-slate-600 min-h-[44px]">
-                {selected ? selected.title : <span className="text-slate-400">No book selected</span>}
-              </div>
-            </div>
-            <div>
-              <label className="text-sm font-medium text-slate-700 mb-1.5 block">Author</label>
-              <div className="border border-slate-200 p-3 w-full rounded-xl text-sm bg-slate-50 text-slate-600 min-h-[44px]">
-                {selected ? selected.author : <span className="text-slate-400">—</span>}
-              </div>
-            </div>
-            {selected?.shelf && (
-              <div className="bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 flex items-center gap-2">
-                <span className="text-lg">📍</span>
+          ) : (
+            <>
+              {success && (
+                <div className="bg-blue-50 border border-blue-200 text-blue-700 text-center py-3 rounded-xl mb-6 text-sm font-medium">
+                  ⏳ Borrow request submitted! Waiting for admin approval.
+                </div>
+              )}
+              {error && (
+                <div className="bg-red-50 border border-red-200 text-red-600 text-center py-3 rounded-xl mb-6 text-sm">
+                  {error}
+                </div>
+              )}
+              <div className="space-y-4">
                 <div>
-                  <p className="text-xs text-blue-500 font-medium">Shelf Location</p>
-                  <p className="text-sm font-bold text-blue-700">Shelf {selected.shelf}</p>
+                  <label className="text-sm font-medium text-slate-700 mb-1.5 block">Selected Book</label>
+                  <div className="border border-slate-200 p-3 w-full rounded-xl text-sm bg-slate-50 text-slate-600 min-h-[44px]">
+                    {selected ? selected.title : <span className="text-slate-400">No book selected</span>}
+                  </div>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-slate-700 mb-1.5 block">Author</label>
+                  <div className="border border-slate-200 p-3 w-full rounded-xl text-sm bg-slate-50 text-slate-600 min-h-[44px]">
+                    {selected ? selected.author : <span className="text-slate-400">—</span>}
+                  </div>
+                </div>
+                {selected?.shelf && (
+                  <div className="bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 flex items-center gap-2">
+                    <span className="text-lg">📍</span>
+                    <div>
+                      <p className="text-xs text-blue-500 font-medium">Shelf Location</p>
+                      <p className="text-sm font-bold text-blue-700">Shelf {selected.shelf}</p>
+                    </div>
+                  </div>
+                )}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium text-slate-700 mb-1.5 block">Borrow Date</label>
+                    <div className="border border-slate-200 p-3 w-full rounded-xl text-sm bg-slate-50 text-slate-700 font-semibold">
+                      {borrowDate}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-slate-700 mb-1.5 block">Due Date</label>
+                    <div className="border border-slate-200 p-3 w-full rounded-xl text-sm bg-slate-50 text-slate-700 font-semibold">
+                      {dueDate}
+                    </div>
+                  </div>
                 </div>
               </div>
-            )}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm font-medium text-slate-700 mb-1.5 block">Borrow Date</label>
-                <div className="border border-slate-200 p-3 w-full rounded-xl text-sm bg-slate-50 text-slate-700 font-semibold">
-                  {borrowDate}
-                </div>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-slate-700 mb-1.5 block">Due Date</label>
-                <div className="border border-slate-200 p-3 w-full rounded-xl text-sm bg-slate-50 text-slate-700 font-semibold">
-                  {dueDate}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <button
-            onClick={handleBorrow}
-            disabled={loading || !selected}
-            className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white w-full py-3 rounded-xl transition font-semibold mt-6 text-sm shadow-sm"
-          >
-            {loading ? "Processing..." : "Submit Borrow Request"}
-          </button>
-          <p className="text-center text-xs text-slate-400 mt-3">Please return the book by the due date to avoid penalties.</p>
+              <button
+                onClick={handleBorrow}
+                disabled={loading || !selected}
+                className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white w-full py-3 rounded-xl transition font-semibold mt-6 text-sm shadow-sm"
+              >
+                {loading ? "Processing..." : "Submit Borrow Request"}
+              </button>
+              <p className="text-center text-xs text-slate-400 mt-3">Please return the book by the due date to avoid penalties.</p>
+            </>
+          )}
         </div>
       </main>
 

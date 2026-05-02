@@ -155,6 +155,8 @@ function DashboardContent() {
   const [selectedGenre, setSelectedGenre] = useState("All");
   const [loading, setLoading] = useState(true);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [approvedBooks, setApprovedBooks] = useState<BorrowRecord[]>([]);
+  const [dismissedApprovals, setDismissedApprovals] = useState<string[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -169,7 +171,10 @@ function DashboardContent() {
 
         const { data: borrowData } = await supabase
           .from("borrow_records").select("*").eq("user_id", user.id).order("created_at", { ascending: false });
-        if (borrowData) setBorrows(borrowData);
+        if (borrowData) {
+          setBorrows(borrowData);
+          setApprovedBooks(borrowData.filter((b: BorrowRecord) => b.status === "Active"));
+        }
 
         // Mark user as online
         const { data: existing } = await supabase
@@ -199,6 +204,13 @@ function DashboardContent() {
     };
     fetchData();
 
+    // Realtime subscription for borrow_records changes
+    const borrowChannel = supabase.channel("borrow-changes")
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "borrow_records" }, () => {
+        fetchData();
+      })
+      .subscribe();
+
     // Realtime subscription for new books
     const channel = supabase.channel("books-changes")
       .on("postgres_changes", { event: "*", schema: "public", table: "books" }, () => {
@@ -217,6 +229,7 @@ function DashboardContent() {
     return () => {
       clearInterval(interval);
       supabase.removeChannel(channel);
+      supabase.removeChannel(borrowChannel);
     };
   }, [username]);
 
@@ -299,6 +312,17 @@ function DashboardContent() {
         </div>
       </nav>
 
+
+      {/* APPROVAL NOTIFICATIONS */}
+      {approvedBooks.filter(b => !dismissedApprovals.includes(b.id)).map(b => (
+        <div key={b.id} className="bg-emerald-50 border border-emerald-200 px-10 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="text-xl">✅</span>
+            <p className="text-sm font-semibold text-emerald-800">Your borrow request for <span className="font-bold">&ldquo;{b.book_title}&rdquo;</span> has been approved! You may now pick it up at the library.</p>
+          </div>
+          <button onClick={() => setDismissedApprovals(prev => [...prev, b.id])} className="text-emerald-500 hover:text-emerald-700 text-lg font-bold ml-4">✕</button>
+        </div>
+      ))}
 
       {/* GREETING */}
       <section className="pt-10 pb-0 bg-slate-50">
