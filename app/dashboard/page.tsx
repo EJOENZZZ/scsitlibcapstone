@@ -275,6 +275,14 @@ function DashboardContent() {
       </nav>
 
 
+      {/* GREETING */}
+      <section className="pt-10 pb-0 bg-slate-50">
+        <div className="max-w-6xl mx-auto px-10">
+          <h2 className="text-2xl font-bold text-slate-800">Hi, {username}! 👋</h2>
+          <p className="text-slate-400 text-sm mt-1">Welcome back to SCSIT Library.</p>
+        </div>
+      </section>
+
       {/* MY ACTIVITY */}
       <section className="py-10 bg-slate-50 border-b border-slate-100">
         <div className="max-w-6xl mx-auto px-10">
