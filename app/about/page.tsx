@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase";
 export default function AboutPage() {
   const [username, setUsername] = useState("");
   const [loggedIn, setLoggedIn] = useState(false);
+  const [authLoading, setAuthLoading] = useState(true);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -15,6 +16,7 @@ export default function AboutPage() {
           setUsername(data?.username || user.user_metadata?.username || user.email?.split("@")[0] || "");
         });
       }
+      setAuthLoading(false);
     });
   }, []);
 
@@ -37,7 +39,7 @@ export default function AboutPage() {
           <span className="text-lg font-bold text-white tracking-tight">SCSIT Library</span>
         </div>
 
-        {loggedIn ? (
+        {authLoading ? null : loggedIn ? (
           <>
             <div className="hidden md:flex items-center gap-1 bg-slate-800 rounded-xl p-1">
               <Link href="/dashboard" className="px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-700 transition">Home</Link>
