@@ -130,7 +130,6 @@ function ProfileContent() {
     setEditYear(year);
     setEditEmail(email);
     setOtpSent(false);
-    setOtpCode("");
     setOtpError("");
     setEditOpen(true);
   };
