@@ -156,7 +156,10 @@ function DashboardContent() {
   const [loading, setLoading] = useState(true);
   const [profileOpen, setProfileOpen] = useState(false);
   const [approvedBooks, setApprovedBooks] = useState<BorrowRecord[]>([]);
-  const [dismissedApprovals, setDismissedApprovals] = useState<string[]>([]);
+  const [dismissedApprovals, setDismissedApprovals] = useState<string[]>(() => {
+    if (typeof window === "undefined") return [];
+    return JSON.parse(localStorage.getItem("dismissedApprovals") || "[]");
+  });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -320,7 +323,7 @@ function DashboardContent() {
             <span className="text-xl">✅</span>
             <p className="text-sm font-semibold text-emerald-800">Your borrow request for <span className="font-bold">&ldquo;{b.book_title}&rdquo;</span> has been approved! You may now pick it up at the library.</p>
           </div>
-          <button onClick={() => setDismissedApprovals(prev => [...prev, b.id])} className="text-emerald-500 hover:text-emerald-700 text-lg font-bold ml-4">✕</button>
+          <button onClick={() => setDismissedApprovals(prev => { const next = [...prev, b.id]; localStorage.setItem("dismissedApprovals", JSON.stringify(next)); return next; })} className="text-emerald-500 hover:text-emerald-700 text-lg font-bold ml-4">✕</button>
         </div>
       ))}
 
