@@ -159,13 +159,15 @@ function BorrowBookContent() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="text-sm font-medium text-slate-700 mb-1.5 block">Borrow Date</label>
-                <input type="date" value={borrowDate} onChange={(e) => setBorrowDate(e.target.value)}
-                  className="border border-slate-200 p-3 w-full rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition" />
+                <div className="border border-slate-200 p-3 w-full rounded-xl text-sm bg-slate-50 text-slate-700 font-semibold">
+                  {borrowDate}
+                </div>
               </div>
               <div>
                 <label className="text-sm font-medium text-slate-700 mb-1.5 block">Due Date</label>
-                <input type="date" value={dueDate} readOnly
-                  className="border border-slate-200 p-3 w-full rounded-xl text-base font-semibold text-slate-700 bg-slate-50 cursor-not-allowed tracking-wide" />
+                <div className="border border-slate-200 p-3 w-full rounded-xl text-sm bg-slate-50 text-slate-700 font-semibold">
+                  {dueDate}
+                </div>
               </div>
             </div>
           </div>
