@@ -165,6 +165,14 @@ export default function AdminPage() {
     await fetchData();
   };
 
+  const calcOverdue = (due_date: string, status: string) => {
+    if (status !== "Active") return 0;
+    const today = new Date(); today.setHours(0,0,0,0);
+    const due = new Date(due_date); due.setHours(0,0,0,0);
+    const days = Math.floor((today.getTime() - due.getTime()) / 86400000);
+    return days > 0 ? days : 0;
+  };
+
   const filtered = books.filter((b) =>
     b.title.toLowerCase().includes(search.toLowerCase()) ||
     b.author.toLowerCase().includes(search.toLowerCase()) ||
@@ -176,6 +184,7 @@ export default function AdminPage() {
     { label: "Available", value: books.filter((b) => b.available).length, icon: "✅", color: "bg-emerald-50 text-emerald-700" },
     { label: "Borrowers", value: borrowers.length, icon: "👥", color: "bg-purple-50 text-purple-700" },
     { label: "Pending", value: borrowers.filter((b) => b.status === "Pending").length, icon: "⏳", color: "bg-amber-50 text-amber-700" },
+    { label: "Overdue", value: borrowers.filter((b) => calcOverdue(b.due_date, b.status) > 0).length, icon: "⚠️", color: "bg-red-50 text-red-700" },
   ];
 
   if (!authed) {
@@ -338,7 +347,7 @@ export default function AdminPage() {
               </button>
             </div>
           )}
-          <div className="grid grid-cols-4 gap-5 mb-8">
+          <div className="grid grid-cols-5 gap-5 mb-8">
             {stats.map((s) => (
               <div key={s.label} className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm flex items-center gap-4">
                 <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl ${s.color}`}>{s.icon}</div>
@@ -456,19 +465,23 @@ export default function AdminPage() {
                   {borrowers.length === 0 ? (
                     <tr><td colSpan={5} className="px-6 py-12 text-center text-slate-400">No borrow records yet.</td></tr>
                   ) : (
-                    borrowers.map((b) => (
-                      <tr key={b.id} className={`transition ${b.status === "Pending" ? "bg-blue-50 hover:bg-blue-100" : b.status === "Pending Return" ? "bg-amber-50 hover:bg-amber-100" : "hover:bg-slate-50"}`}>
+                    borrowers.map((b) => {
+                      const overdueDays = calcOverdue(b.due_date, b.status);
+                      const isOverdue = overdueDays > 0;
+                      return (
+                      <tr key={b.id} className={`transition ${isOverdue ? "bg-red-50 hover:bg-red-100" : b.status === "Pending" ? "bg-blue-50 hover:bg-blue-100" : b.status === "Pending Return" ? "bg-amber-50 hover:bg-amber-100" : "hover:bg-slate-50"}`}>
                         <td className="px-6 py-4 font-semibold text-slate-800">{b.user_name}</td>
                         <td className="px-6 py-4 text-slate-500">{b.book_title}</td>
                         <td className="px-6 py-4 text-slate-500">{b.borrow_date}</td>
-                        <td className="px-6 py-4 text-slate-500">{b.due_date}</td>
+                        <td className={`px-6 py-4 font-medium ${isOverdue ? "text-red-600" : "text-slate-500"}`}>{b.due_date}</td>
                         <td className="px-6 py-4">
                           <span className={`text-xs px-2.5 py-1 rounded-full font-semibold ${
+                            isOverdue ? "bg-red-100 text-red-700" :
                             b.status === "Pending" ? "bg-blue-50 text-blue-600" :
                             b.status === "Active" ? "bg-emerald-50 text-emerald-700" :
                             b.status === "Pending Return" ? "bg-amber-50 text-amber-600" :
-                            b.status === "Overdue" ? "bg-red-50 text-red-600" : "bg-slate-100 text-slate-500"
-                          }`}>{b.status}</span>
+                            "bg-slate-100 text-slate-500"
+                          }`}>{isOverdue ? `Overdue (${overdueDays}d)` : b.status}</span>
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex gap-2">
@@ -490,8 +503,11 @@ export default function AdminPage() {
                                 {returningId === b.id ? "Processing..." : "✅ Confirm Return"}
                               </button>
                             )}
-                            {b.status === "Active" && (
+                            {b.status === "Active" && !isOverdue && (
                               <span className="text-xs text-slate-400">Waiting for user</span>
+                            )}
+                            {isOverdue && (
+                              <span className="text-xs font-semibold text-red-500">₱{overdueDays}.00 fine</span>
                             )}
                             {b.status === "Returned" && (
                               <button onClick={() => handleRemoveBorrowRecord(b.id)}
@@ -502,7 +518,8 @@ export default function AdminPage() {
                           </div>
                         </td>
                       </tr>
-                    ))
+                      );
+                    })
                   )}
                 </tbody>
               </table>

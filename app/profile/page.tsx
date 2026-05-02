@@ -266,21 +266,6 @@ function ProfileContent() {
                 ))}
               </div>
             </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              {[
-                { label: "Total Borrowed", value: borrows.length, color: "from-blue-500 to-blue-600", icon: "📚" },
-                { label: "Active", value: activeCount, color: "from-emerald-500 to-emerald-600", icon: "📖" },
-                { label: "Returned", value: returnedCount, color: "from-slate-500 to-slate-600", icon: "✅" },
-                { label: "Overdue", value: overdueCount, color: "from-red-500 to-red-600", icon: "⏰" },
-              ].map((s) => (
-                <div key={s.label} className="bg-white/70 backdrop-blur-sm rounded-2xl p-5 border border-white/50 shadow-lg text-center">
-                  <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${s.color} flex items-center justify-center text-xl mx-auto mb-3 shadow-md`}>{s.icon}</div>
-                  <p className={`text-2xl font-bold bg-gradient-to-r ${s.color} bg-clip-text text-transparent`}>{s.value}</p>
-                  <p className="text-xs text-slate-500 mt-1">{s.label}</p>
-                </div>
-              ))}
-            </div>
           </div>
 
           <div className="lg:col-span-2">
