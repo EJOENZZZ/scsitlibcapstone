@@ -58,9 +58,11 @@ function ProfileContent() {
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
+    let userId = "";
     const fetchData = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
+        userId = user.id;
         setUserId(user.id);
         setEmail(user.email || "");
 
@@ -85,6 +87,17 @@ function ProfileContent() {
       setLoading(false);
     };
     fetchData();
+
+    const channel = supabase.channel("profile-borrow-changes")
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "borrow_records" }, async () => {
+        if (!userId) return;
+        const { data } = await supabase
+          .from("borrow_records").select("*").eq("user_id", userId).order("created_at", { ascending: false });
+        if (data) setBorrows(data);
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
   }, [urlUsername]);
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {

@@ -28,6 +28,7 @@ export default function AdminPage() {
   const [imageUploading, setImageUploading] = useState(false);
   const [adminProfileOpen, setAdminProfileOpen] = useState(false);
   const [earlyReturnTarget, setEarlyReturnTarget] = useState<Borrower | null>(null);
+  const [earlyReturnDone, setEarlyReturnDone] = useState<string>("");
 
   const handleImageUpload = async (file: File) => {
     setImageUploading(true);
@@ -330,6 +331,15 @@ export default function AdminPage() {
         </header>
 
         <main className="flex-1 px-8 py-8">
+          {earlyReturnDone && (
+            <div className="bg-emerald-50 border border-emerald-200 rounded-2xl px-6 py-4 mb-6 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">✅</span>
+                <p className="font-semibold text-emerald-800 text-sm">“{earlyReturnDone}” has been marked as returned successfully.</p>
+              </div>
+              <button onClick={() => setEarlyReturnDone("")} className="text-emerald-500 hover:text-emerald-700 text-lg font-bold ml-4">✕</button>
+            </div>
+          )}
           {borrowers.filter(b => b.status === "Pending").length > 0 && (
             <div className="bg-blue-50 border border-blue-200 rounded-2xl px-6 py-4 mb-6 flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -757,7 +767,13 @@ export default function AdminPage() {
             <div className="flex gap-3">
               <button onClick={() => setEarlyReturnTarget(null)} className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 text-sm font-medium hover:bg-slate-50 transition">Cancel</button>
               <button
-                onClick={async () => { await handleConfirmEarlyReturn(earlyReturnTarget); setEarlyReturnTarget(null); }}
+                onClick={async () => {
+                  const bookTitle = earlyReturnTarget.book_title;
+                  await handleConfirmEarlyReturn(earlyReturnTarget);
+                  setEarlyReturnTarget(null);
+                  setEarlyReturnDone(bookTitle);
+                  setTimeout(() => setEarlyReturnDone(""), 4000);
+                }}
                 disabled={returningId === earlyReturnTarget.id}
                 className="flex-1 py-3 rounded-xl bg-purple-600 hover:bg-purple-700 disabled:opacity-60 text-white text-sm font-semibold transition">
                 {returningId === earlyReturnTarget.id ? "Processing..." : "Yes, Confirm"}
