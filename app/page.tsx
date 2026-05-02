@@ -182,8 +182,8 @@ export default async function Home() {
 
           {/* LIBRARIAN */}
           <div className="mt-12 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-3xl p-10 border border-blue-100 flex flex-col md:flex-row items-center gap-8">
-            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-4xl shadow-xl flex-shrink-0">
-              👩‍💼
+            <div className="w-24 h-24 rounded-full overflow-hidden shadow-xl flex-shrink-0 border-4 border-blue-200">
+              <img src="/edith.jpg" alt="Miss Edith Laborte" className="w-full h-full object-cover" />
             </div>
             <div>
               <span className="text-xs font-bold text-blue-600 uppercase tracking-widest">Meet Our Librarian</span>
