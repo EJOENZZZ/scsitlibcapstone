@@ -34,15 +34,28 @@ function ProfileContent() {
   const [contact, setContact] = useState("");
   const [course, setCourse] = useState("");
   const [year, setYear] = useState("");
+  const [fullName, setFullName] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
   const [username, setUsername] = useState("");
-  const [newNickname, setNewNickname] = useState("");
-  const [editingNickname, setEditingNickname] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState("");
+  const [saveErr, setSaveErr] = useState("");
   const [userId, setUserId] = useState("");
   const [profileOpen, setProfileOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  // edit form state
+  const [editName, setEditName] = useState("");
+  const [editUsername, setEditUsername] = useState("");
+  const [editContact, setEditContact] = useState("");
+  const [editCourse, setEditCourse] = useState("");
+  const [editYear, setEditYear] = useState("");
+  const [editEmail, setEditEmail] = useState("");
+  // email OTP flow
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpCode, setOtpCode] = useState("");
+  const [otpLoading, setOtpLoading] = useState(false);
+  const [otpError, setOtpError] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -56,13 +69,12 @@ function ProfileContent() {
         if (profile) {
           setAvatarUrl(profile.avatar_url || "");
           setUsername(profile.username || user.user_metadata?.username || urlUsername);
-          setNewNickname(profile.username || user.user_metadata?.username || urlUsername);
+          setFullName(profile.full_name || "");
           setCourse(profile.course || user.user_metadata?.course || "");
           setYear(profile.year || user.user_metadata?.year || "");
           setContact(profile.contact_number || "");
         } else {
           setUsername(user.user_metadata?.username || urlUsername);
-          setNewNickname(user.user_metadata?.username || urlUsername);
           setCourse(user.user_metadata?.course || "");
           setYear(user.user_metadata?.year || "");
         }
@@ -111,14 +123,62 @@ function ProfileContent() {
     reader.readAsDataURL(file);
   };
 
-  const handleSaveNickname = async () => {
-    if (!newNickname.trim() || !userId) return;
+  const openEdit = () => {
+    setEditName(fullName);
+    setEditUsername(username);
+    setEditContact(contact);
+    setEditCourse(course);
+    setEditYear(year);
+    setEditEmail(email);
+    setOtpSent(false);
+    setOtpCode("");
+    setOtpError("");
+    setEditOpen(true);
+  };
+
+  const handleSaveProfile = async () => {
+    if (!userId) return;
     setSaving(true);
-    await supabase.from("profiles").upsert({ id: userId, username: newNickname.trim() });
-    setUsername(newNickname.trim());
-    setEditingNickname(false);
+    setSaveErr("");
+    await supabase.from("profiles").upsert({
+      id: userId,
+      username: editUsername.trim(),
+      full_name: editName.trim(),
+      contact_number: editContact.trim(),
+      course: editCourse.trim(),
+      year: editYear.trim(),
+    });
+    setUsername(editUsername.trim());
+    setFullName(editName.trim());
+    setContact(editContact.trim());
+    setCourse(editCourse.trim());
+    setYear(editYear.trim());
     setSaving(false);
-    setSaveMsg("Username updated! ✅");
+    setEditOpen(false);
+    setSaveMsg("Profile updated! ✅");
+    setTimeout(() => setSaveMsg(""), 3000);
+  };
+
+  const handleSendOtp = async () => {
+    if (!editEmail.trim() || editEmail === email) return;
+    setOtpLoading(true);
+    setOtpError("");
+    const { error } = await supabase.auth.updateUser({ email: editEmail.trim() });
+    if (error) { setOtpError(error.message); setOtpLoading(false); return; }
+    setOtpSent(true);
+    setOtpLoading(false);
+  };
+
+  const handleVerifyOtp = async () => {
+    setOtpLoading(true);
+    setOtpError("");
+    const { error } = await supabase.auth.verifyOtp({ email: editEmail.trim(), token: otpCode, type: "email_change" });
+    if (error) { setOtpError(error.message); setOtpLoading(false); return; }
+    setEmail(editEmail.trim());
+    setOtpSent(false);
+    setOtpCode("");
+    setOtpLoading(false);
+    setSaveMsg("Email updated! ✅");
     setTimeout(() => setSaveMsg(""), 3000);
   };
 
@@ -186,6 +246,9 @@ function ProfileContent() {
         {saveMsg && (
           <div className="mb-6 bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm px-4 py-3 rounded-xl">{saveMsg}</div>
         )}
+        {saveErr && (
+          <div className="mb-6 bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-3 rounded-xl">{saveErr}</div>
+        )}
 
         {totalFine > 0 && (
           <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-5 py-4 rounded-xl flex items-center gap-3">
@@ -220,32 +283,9 @@ function ProfileContent() {
                 <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
               </div>
 
-              {/* NICKNAME */}
-              {editingNickname ? (
-                <div className="mb-3">
-                  <input
-                    value={newNickname}
-                    onChange={(e) => setNewNickname(e.target.value)}
-                    className="border border-blue-300 p-2 w-full rounded-xl text-sm text-center focus:outline-none focus:ring-2 focus:ring-blue-400"
-                    placeholder="Enter username"
-                  />
-                  <div className="flex gap-2 mt-2">
-                    <button onClick={handleSaveNickname} disabled={saving}
-                      className="flex-1 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded-lg font-semibold transition">
-                      {saving ? "Saving..." : "Save"}
-                    </button>
-                    <button onClick={() => setEditingNickname(false)}
-                      className="flex-1 py-1.5 border border-slate-200 text-slate-500 text-xs rounded-lg hover:bg-slate-50 transition">
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex items-center justify-center gap-2 mb-1">
-                  <h2 className="text-2xl font-bold text-slate-800">{username}</h2>
-                  <button onClick={() => setEditingNickname(true)} className="text-slate-400 hover:text-blue-600 transition text-sm" title="Edit username">✏️</button>
-                </div>
-              )}
+              <div className="flex items-center justify-center gap-2 mb-1">
+                <h2 className="text-2xl font-bold text-slate-800">{username}</h2>
+              </div>
 
               <p className="text-slate-500 text-sm">{course} {year ? `— ${year}` : ""}</p>
               <span className="inline-block mt-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-xs px-4 py-2 rounded-full font-medium shadow-md">Active Student</span>
@@ -255,6 +295,7 @@ function ProfileContent() {
                   { icon: "📧", label: "Email", value: email },
                   { icon: "📱", label: "Contact", value: contact || "—" },
                   { icon: "👤", label: "Username", value: `@${username}` },
+                  { icon: "🙍", label: "Full Name", value: fullName || "—" },
                   { icon: "🎓", label: "Course", value: course || "—" },
                   { icon: "📅", label: "Year Level", value: year || "—" },
                 ].map((item) => (
@@ -267,6 +308,10 @@ function ProfileContent() {
                   </div>
                 ))}
               </div>
+              <button onClick={openEdit}
+                className="mt-6 w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl transition shadow-sm">
+                ✏️ Edit Profile
+              </button>
             </div>
           </div>
 
@@ -334,6 +379,95 @@ function ProfileContent() {
       <footer className="bg-white/50 backdrop-blur-sm border-t border-slate-200/50 text-center py-6 text-slate-500 text-xs">
         © {new Date().getFullYear()} SCSIT Library. All rights reserved.
       </footer>
+
+      {/* EDIT PROFILE MODAL */}
+      {editOpen && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 px-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 max-h-[90vh] overflow-y-auto">
+            <h2 className="text-base font-bold text-slate-800 mb-1">Edit Profile</h2>
+            <p className="text-xs text-slate-400 mb-4">Update your personal information below.</p>
+            <div className="space-y-3">
+              <div>
+                <label className="text-xs font-medium text-slate-600 mb-1 block">Full Name</label>
+                <input value={editName} onChange={(e) => setEditName(e.target.value)}
+                  placeholder="Your full name"
+                  className="border border-slate-200 px-3 py-2 w-full rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition" />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-slate-600 mb-1 block">Username</label>
+                <input value={editUsername} onChange={(e) => setEditUsername(e.target.value)}
+                  placeholder="Your username"
+                  className="border border-slate-200 px-3 py-2 w-full rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition" />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-slate-600 mb-1 block">Contact Number</label>
+                <input value={editContact} onChange={(e) => setEditContact(e.target.value)}
+                  placeholder="e.g. 09XXXXXXXXX"
+                  className="border border-slate-200 px-3 py-2 w-full rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition" />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-medium text-slate-600 mb-1 block">Course</label>
+                  <select value={editCourse} onChange={(e) => setEditCourse(e.target.value)}
+                    className="border border-slate-200 px-3 py-2 w-full rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition bg-white">
+                    {["", "BSIT", "BSCS", "BSCE", "BSBA", "BSN", "BSHM", "BSCRIM"].map((c) => (
+                      <option key={c} value={c}>{c || "Select course"}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-slate-600 mb-1 block">Year Level</label>
+                  <select value={editYear} onChange={(e) => setEditYear(e.target.value)}
+                    className="border border-slate-200 px-3 py-2 w-full rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition bg-white">
+                    {["", "1st Year", "2nd Year", "3rd Year", "4th Year"].map((y) => (
+                      <option key={y} value={y}>{y || "Select year"}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* EMAIL CHANGE */}
+              <div className="border-t border-slate-100 pt-3">
+                <label className="text-xs font-medium text-slate-600 mb-1 block">Email Address</label>
+                <div className="flex gap-2">
+                  <input value={editEmail} onChange={(e) => { setEditEmail(e.target.value); setOtpSent(false); setOtpCode(""); setOtpError(""); }}
+                    placeholder="New email address"
+                    className="border border-slate-200 px-3 py-2 flex-1 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition" />
+                  {editEmail !== email && editEmail.trim() && !otpSent && (
+                    <button onClick={handleSendOtp} disabled={otpLoading}
+                      className="px-3 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white text-xs font-semibold rounded-xl transition whitespace-nowrap">
+                      {otpLoading ? "Sending..." : "Send Code"}
+                    </button>
+                  )}
+                </div>
+                {editEmail === email && <p className="text-xs text-slate-400 mt-1">Current email. Change to update.</p>}
+                {otpSent && (
+                  <div className="mt-2 space-y-2">
+                    <p className="text-xs text-emerald-600">Verification code sent to {editEmail}. Check your inbox.</p>
+                    <div className="flex gap-2">
+                      <input value={otpCode} onChange={(e) => setOtpCode(e.target.value)}
+                        placeholder="Enter 6-digit code"
+                        className="border border-slate-200 px-3 py-2 flex-1 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition" />
+                      <button onClick={handleVerifyOtp} disabled={otpLoading || !otpCode.trim()}
+                        className="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white text-xs font-semibold rounded-xl transition">
+                        {otpLoading ? "Verifying..." : "Verify"}
+                      </button>
+                    </div>
+                  </div>
+                )}
+                {otpError && <p className="text-xs text-red-500 mt-1">{otpError}</p>}
+              </div>
+            </div>
+            <div className="flex gap-3 mt-5">
+              <button onClick={() => setEditOpen(false)} className="flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-600 text-sm font-medium hover:bg-slate-50 transition">Cancel</button>
+              <button onClick={handleSaveProfile} disabled={saving}
+                className="flex-1 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white text-sm font-semibold transition">
+                {saving ? "Saving..." : "Save Changes"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

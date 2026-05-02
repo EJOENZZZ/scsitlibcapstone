@@ -138,6 +138,19 @@ export default function AdminPage() {
     setReturningId(null);
   };
 
+  const handleEarlyReturn = async (b: Borrower) => {
+    setReturningId(b.id);
+    if (b.book_id) {
+      const { data: bookData } = await supabase.from("books").select("copies").eq("id", b.book_id).single();
+      const newCopies = (bookData?.copies ?? 0) + 1;
+      await supabase.from("books").update({ copies: newCopies, available: true }).eq("id", b.book_id);
+    }
+    const returnedDate = new Date().toISOString().split("T")[0];
+    await supabase.from("borrow_records").update({ status: "Returned", returned_date: returnedDate }).eq("id", b.id);
+    await fetchData();
+    setReturningId(null);
+  };
+
   const handleRemoveBorrowRecord = async (id: string) => {
     await supabase.from("borrow_records").delete().eq("id", id);
     await fetchData();
@@ -507,7 +520,10 @@ export default function AdminPage() {
                               </button>
                             )}
                             {b.status === "Active" && !isOverdue && (
-                              <span className="text-xs text-slate-400">Waiting for user</span>
+                              <button onClick={() => handleEarlyReturn(b)} disabled={returningId === b.id}
+                                className="px-3 py-1.5 text-xs font-medium border border-blue-200 text-blue-600 rounded-lg hover:bg-blue-50 transition disabled:opacity-50">
+                                {returningId === b.id ? "Processing..." : "↩ Early Return"}
+                              </button>
                             )}
                             {isOverdue && (
                               <span className="text-xs font-semibold text-red-500">₱{overdueDays}.00 fine</span>
