@@ -435,7 +435,7 @@ export default function AdminPage() {
                     <tr><td colSpan={5} className="px-6 py-12 text-center text-slate-400">No borrow records yet.</td></tr>
                   ) : (
                     borrowers.map((b) => (
-                      <tr key={b.id} className={`transition ${b.status === "Pending Return" ? "bg-amber-50 hover:bg-amber-100" : "hover:bg-slate-50"}`}>
+                      <tr key={b.id} className={`transition ${b.status === "Pending" ? "bg-blue-50 hover:bg-blue-100" : b.status === "Pending Return" ? "bg-amber-50 hover:bg-amber-100" : "hover:bg-slate-50"}`}>
                         <td className="px-6 py-4 font-semibold text-slate-800">{b.user_name}</td>
                         <td className="px-6 py-4 text-slate-500">{b.book_title}</td>
                         <td className="px-6 py-4 text-slate-500">{b.borrow_date}</td>
