@@ -154,6 +154,7 @@ function DashboardContent() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedGenre, setSelectedGenre] = useState("All");
   const [loading, setLoading] = useState(true);
+  const [profileOpen, setProfileOpen] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -267,10 +268,33 @@ function DashboardContent() {
           <Link href="/dashboard" className="px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white">Home</Link>
           <Link href="/borrowbook" className="px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-700 transition">Borrow</Link>
           <Link href="/about" className="px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-700 transition">About</Link>
-          <Link href={`/profile?user=${encodeURIComponent(username)}`} className="px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-700 transition">Profile</Link>
         </div>
-        <div className="flex items-center gap-3">
-          <button onClick={handleSignOut} className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-sm font-medium transition">Sign Out</button>
+        <div className="relative">
+          <button onClick={() => setProfileOpen(!profileOpen)}
+            className="flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white transition">
+            <div className="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center text-xs font-bold">
+              {username.charAt(0).toUpperCase()}
+            </div>
+            <span className="hidden md:block text-slate-300 text-xs">{username}</span>
+            <svg className="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+          </button>
+          {profileOpen && (
+            <div className="absolute right-0 mt-2 w-48 bg-white rounded-2xl shadow-xl border border-slate-100 py-2 z-50">
+              <div className="px-4 py-3 border-b border-slate-100">
+                <p className="text-xs font-semibold text-slate-800">{username}</p>
+                <p className="text-xs text-slate-400">Student</p>
+              </div>
+              <Link href={`/profile?user=${encodeURIComponent(username)}`}
+                onClick={() => setProfileOpen(false)}
+                className="flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition w-full">
+                &#128100; My Profile
+              </Link>
+              <button onClick={handleSignOut}
+                className="flex items-center gap-2 px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition w-full text-left">
+                &#128682; Sign Out
+              </button>
+            </div>
+          )}
         </div>
       </nav>
 

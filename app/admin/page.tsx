@@ -26,6 +26,7 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(false);
   const [returningId, setReturningId] = useState<string | null>(null);
   const [imageUploading, setImageUploading] = useState(false);
+  const [adminProfileOpen, setAdminProfileOpen] = useState(false);
 
   const handleImageUpload = async (file: File) => {
     setImageUploading(true);
@@ -276,8 +277,29 @@ export default function AdminPage() {
             <h1 className="text-xl font-bold text-slate-800">Library Management</h1>
             <p className="text-xs text-slate-400 mt-0.5">Manage books, borrowers, and library records</p>
           </div>
-          <div className="flex items-center gap-3">
-            <span className="text-xs bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full font-medium">● System Online</span>
+          <div className="relative">
+            <button onClick={() => setAdminProfileOpen(!adminProfileOpen)}
+              className="flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 transition">
+              <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-white text-sm font-bold">A</div>
+              <div className="hidden md:block text-left">
+                <p className="text-xs font-semibold text-slate-800">Administrator</p>
+                <p className="text-xs text-slate-400">Admin Panel</p>
+              </div>
+              <svg className="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+            </button>
+            {adminProfileOpen && (
+              <div className="absolute right-0 mt-2 w-52 bg-white rounded-2xl shadow-xl border border-slate-100 py-2 z-50">
+                <div className="px-4 py-3 border-b border-slate-100">
+                  <p className="text-xs font-semibold text-slate-800">Administrator</p>
+                  <p className="text-xs text-slate-400">SCSIT Library Admin</p>
+                  <span className="inline-block mt-1.5 text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-medium">&#9679; System Online</span>
+                </div>
+                <button onClick={() => { sessionStorage.removeItem("adminAuthed"); setAuthed(false); setLoginForm({ username: "", password: "" }); setAdminProfileOpen(false); window.location.href = "/login"; }}
+                  className="flex items-center gap-2 px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition w-full text-left">
+                  &#128682; Sign Out
+                </button>
+              </div>
+            )}
           </div>
         </header>
 
