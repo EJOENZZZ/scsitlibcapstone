@@ -1,5 +1,5 @@
 "use client";
-import { useState, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
@@ -10,6 +10,18 @@ function ResetPasswordContent() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    // Handle the token from the email link
+    supabase.auth.onAuthStateChange((event) => {
+      if (event === "PASSWORD_RECOVERY") setReady(true);
+    });
+    // Also check if already has session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) setReady(true);
+    });
+  }, []);
 
   const handleReset = async () => {
     if (!password || !confirm) { setError("Please fill in all fields."); return; }
@@ -35,7 +47,11 @@ function ResetPasswordContent() {
         </div>
         <h1 className="text-2xl font-bold text-slate-800 mb-1">Reset Password</h1>
         <p className="text-slate-400 text-sm mb-6">Enter your new password below.</p>
-        {success ? (
+        {!ready ? (
+          <div className="bg-amber-50 border border-amber-200 text-amber-700 text-sm px-4 py-3 rounded-xl">
+            ⏳ Verifying reset link... Please wait.
+          </div>
+        ) : success ? (
           <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm px-4 py-3 rounded-xl">
             ✅ Password updated! Redirecting to login...
           </div>
