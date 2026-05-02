@@ -20,12 +20,20 @@ export default function Register() {
     }
     setLoading(true);
     setError("");
-    const { error: otpError } = await supabase.auth.signInWithOtp({
+    const { data, error: authError } = await supabase.auth.signUp({
       email: form.email,
-      options: { shouldCreateUser: false },
+      password: form.password,
+      options: { data: { username: form.username, full_name: form.name, course: form.course, year: form.year } },
     });
-    if (otpError && !otpError.message.includes("not found")) {
-      setError(otpError.message); setLoading(false); return;
+    if (authError) { setError(authError.message); setLoading(false); return; }
+    if (data.user) {
+      await supabase.from("profiles").upsert({
+        id: data.user.id,
+        username: form.username,
+        full_name: form.name,
+        course: form.course,
+        year: form.year,
+      });
     }
     setLoading(false);
     setStep("otp");
@@ -38,43 +46,9 @@ export default function Register() {
     const { error: verifyError } = await supabase.auth.verifyOtp({
       email: form.email,
       token: otp,
-      type: "email",
+      type: "signup",
     });
-    if (verifyError) {
-      const { data, error: signUpError } = await supabase.auth.signUp({
-        email: form.email,
-        password: form.password,
-        options: { data: { username: form.username, full_name: form.name, course: form.course, year: form.year } },
-      });
-      if (signUpError) { setError(signUpError.message); setVerifying(false); return; }
-      if (data.user) {
-        await supabase.from("profiles").upsert({
-          id: data.user.id,
-          username: form.username,
-          full_name: form.name,
-          course: form.course,
-          year: form.year,
-        });
-      }
-    } else {
-      const { data, error: signUpError } = await supabase.auth.signUp({
-        email: form.email,
-        password: form.password,
-        options: { data: { username: form.username, full_name: form.name, course: form.course, year: form.year } },
-      });
-      if (signUpError && !signUpError.message.includes("already registered")) {
-        setError(signUpError.message); setVerifying(false); return;
-      }
-      if (data.user) {
-        await supabase.from("profiles").upsert({
-          id: data.user.id,
-          username: form.username,
-          full_name: form.name,
-          course: form.course,
-          year: form.year,
-        });
-      }
-    }
+    if (verifyError) { setError(verifyError.message); setVerifying(false); return; }
     setVerifying(false);
     window.location.href = `/dashboard?user=${encodeURIComponent(form.username)}`;
   };
