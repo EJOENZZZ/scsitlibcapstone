@@ -11,6 +11,7 @@ type BorrowRecord = {
   borrow_date: string;
   due_date: string;
   status: string;
+  returned_date?: string;
 };
 
 const calcFine = (due_date: string, status: string) => {
@@ -294,6 +295,7 @@ function ProfileContent() {
                         borrows.map((b) => {
                           const fine = calcFine(b.due_date, b.status);
                           const isOverdue = fine > 0 && b.status !== "Returned";
+                          const isEarlyReturn = b.status === "Returned" && !!b.returned_date && b.returned_date < b.due_date;
                           return (
                           <tr key={b.id} className={`transition-colors ${isOverdue ? "bg-red-50 hover:bg-red-100" : "hover:bg-blue-50/30"}`}>
                             <td className="px-8 py-5 font-semibold text-slate-800">{b.book_title}</td>
@@ -302,10 +304,11 @@ function ProfileContent() {
                             <td className="px-8 py-5">
                               <span className={`px-4 py-2 rounded-full text-xs font-semibold shadow-sm ${
                                 isOverdue ? "bg-red-100 text-red-700 border border-red-300" :
+                                isEarlyReturn ? "bg-blue-100 text-blue-700 border border-blue-300" :
                                 b.status === "Active" ? "bg-emerald-100 text-emerald-800 border border-emerald-300" :
                                 "bg-slate-100 text-slate-600 border border-slate-300"
                               }`}>
-                                {isOverdue ? "⚠️ Overdue" : b.status}
+                                {isOverdue ? "Overdue" : isEarlyReturn ? "Returned Early" : b.status}
                               </span>
                             </td>
                             <td className="px-8 py-5">

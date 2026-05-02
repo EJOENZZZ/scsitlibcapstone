@@ -131,7 +131,8 @@ export default function AdminPage() {
       const { error: bookErr } = await supabase.from("books").update({ copies: newCopies, available: true }).eq("id", b.book_id);
       if (bookErr) { alert("Book update failed: " + bookErr.message); setReturningId(null); return; }
     }
-    const { error: updateErr } = await supabase.from("borrow_records").update({ status: "Returned" }).eq("id", b.id);
+    const returnedDate = new Date().toISOString().split("T")[0];
+    const { error: updateErr } = await supabase.from("borrow_records").update({ status: "Returned", returned_date: returnedDate }).eq("id", b.id);
     if (updateErr) { alert("Update failed: " + updateErr.message); setReturningId(null); return; }
     await fetchData();
     setReturningId(null);
