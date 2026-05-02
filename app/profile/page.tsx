@@ -30,12 +30,13 @@ function ProfileContent() {
   const [borrows, setBorrows] = useState<BorrowRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [email, setEmail] = useState("");
+  const [contact, setContact] = useState("");
   const [course, setCourse] = useState("");
   const [year, setYear] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
   const [username, setUsername] = useState("");
-  const [editingNickname, setEditingNickname] = useState(false);
   const [newNickname, setNewNickname] = useState("");
+  const [editingNickname, setEditingNickname] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState("");
@@ -56,6 +57,7 @@ function ProfileContent() {
           setNewNickname(profile.username || user.user_metadata?.username || urlUsername);
           setCourse(profile.course || user.user_metadata?.course || "");
           setYear(profile.year || user.user_metadata?.year || "");
+          setContact(profile.contact_number || "");
         } else {
           setUsername(user.user_metadata?.username || urlUsername);
           setNewNickname(user.user_metadata?.username || urlUsername);
@@ -228,6 +230,7 @@ function ProfileContent() {
               <div className="mt-8 space-y-4 text-left border-t border-slate-100 pt-6">
                 {[
                   { icon: "📧", label: "Email", value: email },
+                  { icon: "📱", label: "Contact", value: contact || "—" },
                   { icon: "👤", label: "Username", value: `@${username}` },
                   { icon: "🎓", label: "Course", value: course || "—" },
                   { icon: "📅", label: "Year Level", value: year || "—" },

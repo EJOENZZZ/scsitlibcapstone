@@ -6,7 +6,7 @@ import { supabase } from "@/lib/supabase";
 type Book = { id: string; title: string; author: string; genre: string; copies: number; available: boolean; image?: string; shelf?: string; };
 type Borrower = { id: string; user_name: string; book_title: string; borrow_date: string; due_date: string; status: string; book_id: string; };
 type Review = { id: string; username: string; course: string; comment: string; rating: number; approved: boolean; created_at: string; };
-type UserProfile = { id: string; username: string; full_name: string; course: string; year: string; created_at: string; };
+type UserProfile = { id: string; username: string; full_name: string; course: string; year: string; contact_number: string; created_at: string; };
 const emptyForm = { title: "", author: "", genre: "", copies: 1, available: true, image: "", shelf: "" };
 
 export default function AdminPage() {
@@ -446,14 +446,14 @@ export default function AdminPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-slate-50 border-b border-slate-100">
-                    {["Username", "Full Name", "Course", "Year", "Joined", "Action"].map((h) => (
+                    {["Username", "Full Name", "Course", "Year", "Contact", "Joined", "Action"].map((h) => (
                       <th key={h} className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50">
                   {users.length === 0 ? (
-                    <tr><td colSpan={6} className="px-6 py-12 text-center text-slate-400">No registered users yet.</td></tr>
+                    <tr><td colSpan={7} className="px-6 py-12 text-center text-slate-400">No registered users yet.</td></tr>
                   ) : (
                     users.map((u) => (
                       <tr key={u.id} className="hover:bg-slate-50 transition">
@@ -461,6 +461,7 @@ export default function AdminPage() {
                         <td className="px-6 py-4 text-slate-600">{u.full_name}</td>
                         <td className="px-6 py-4 text-slate-500">{u.course}</td>
                         <td className="px-6 py-4 text-slate-500">{u.year}</td>
+                        <td className="px-6 py-4 text-slate-500">{u.contact_number || "—"}</td>
                         <td className="px-6 py-4 text-slate-400 text-xs">{new Date(u.created_at).toLocaleDateString()}</td>
                         <td className="px-6 py-4">
                           <button onClick={() => setDeleteUserTarget(u)}

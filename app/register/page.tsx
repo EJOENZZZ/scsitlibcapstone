@@ -7,7 +7,7 @@ const courses = ["BSIT", "BSCS", "BSCE", "BSBA", "BSN", "BSHM", "BSCRIM", "BSED"
 const yearLevels = ["1st Year", "2nd Year", "3rd Year", "4th Year"];
 
 export default function Register() {
-  const [form, setForm] = useState({ name: "", email: "", username: "", password: "", confirmPassword: "", course: "", year: "" });
+  const [form, setForm] = useState({ name: "", email: "", username: "", password: "", confirmPassword: "", course: "", year: "", contact: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState<"form" | "otp">("form");
@@ -36,6 +36,7 @@ export default function Register() {
         full_name: form.name,
         course: form.course,
         year: form.year,
+        contact_number: form.contact,
       });
     }
     setLoading(false);
@@ -171,6 +172,12 @@ export default function Register() {
                   <input type="password" placeholder="Re-enter your password"
                     className="border border-slate-200 p-3 w-full rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition shadow-sm"
                     onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })} />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-slate-700 mb-1.5 block">Contact Number</label>
+                  <input type="tel" placeholder="e.g. 09123456789"
+                    className="border border-slate-200 p-3 w-full rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition shadow-sm"
+                    onChange={(e) => setForm({ ...form, contact: e.target.value })} />
                 </div>
               </div>
               <button onClick={handleRegister} disabled={loading}
