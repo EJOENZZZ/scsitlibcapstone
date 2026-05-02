@@ -10,29 +10,11 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [totalBooks, setTotalBooks] = useState(0);
-  const [satisfaction, setSatisfaction] = useState(98);
-  const [totalUsers, setTotalUsers] = useState(0);
   const [forgotMode, setForgotMode] = useState(false);
   const [forgotEmail, setForgotEmail] = useState("");
   const [forgotMsg, setForgotMsg] = useState("");
   const [forgotLoading, setForgotLoading] = useState(false);
   const [cooldown, setCooldown] = useState(0);
-
-  useEffect(() => {
-    const fetchStats = async () => {
-      const { count: books } = await supabase.from("books").select("*", { count: "exact", head: true });
-      setTotalBooks(books || 0);
-      const { count: totalBorrows } = await supabase.from("reviews").select("*", { count: "exact", head: true });
-      const { count: returned } = await supabase.from("reviews").select("*", { count: "exact", head: true }).gte("rating", 4);
-      if (totalBorrows && totalBorrows > 0) {
-        setSatisfaction(Math.round(((returned || 0) / totalBorrows) * 100));
-      }
-      const { count: users } = await supabase.from("profiles").select("*", { count: "exact", head: true });
-      setTotalUsers(users || 0);
-    };
-    fetchStats();
-  }, []);
 
   const handleLogin = async () => {
     if (!email || !password) { setError("Please fill in all fields."); return; }
@@ -94,20 +76,7 @@ export default function Login() {
           <p className="text-blue-200 text-sm leading-relaxed">
             Access thousands of books, manage your borrowing history, and stay on top of your reading — all in one place.
           </p>
-          <div className="flex gap-4 mt-8">
-            {(
-              [
-                { value: `${totalBooks}+`, label: "Total Books" },
-                { value: `${satisfaction}%`, label: "Satisfaction" },
-                { value: `${totalUsers}`, label: "Registered Users" },
-              ] as { value: string; label: string }[]
-            ).map((s) => (
-              <div key={s.label} className="bg-white/10 backdrop-blur-sm rounded-2xl px-4 py-3 text-center flex-1">
-                <p className="text-2xl font-bold text-white">{s.value}</p>
-                <p className="text-xs text-blue-300">{s.label}</p>
-              </div>
-            ))}
-          </div>
+
         </div>
 
         <p className="relative z-10 text-xs text-blue-400">© {new Date().getFullYear()} SCSIT Library</p>
