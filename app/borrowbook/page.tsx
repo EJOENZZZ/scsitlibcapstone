@@ -164,7 +164,7 @@ function BorrowBookContent() {
               <div>
                 <label className="text-sm font-medium text-slate-700 mb-1.5 block">Due Date</label>
                 <input type="date" value={dueDate} readOnly
-                  className="border border-slate-200 p-3 w-full rounded-xl text-sm bg-slate-50 text-slate-600 cursor-not-allowed" />
+                  className="border border-slate-200 p-3 w-full rounded-xl text-base font-semibold text-slate-700 bg-slate-50 cursor-not-allowed tracking-wide" />
               </div>
             </div>
           </div>
