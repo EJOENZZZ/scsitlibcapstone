@@ -9,6 +9,9 @@ const supabase = createClient(
 
 export default async function Home() {
   noStore();
+  const { data: books } = await supabase.from("books").select("*").order("title");
+  const totalBooks = books?.length || 0;
+  const totalGenres = new Set(books?.map((b) => b.genre) || []).size;
   const { data: reviews } = await supabase.from("reviews").select("*").eq("approved", true).order("created_at", { ascending: false }).limit(6);
 
   return (
@@ -32,6 +35,62 @@ export default async function Home() {
           <Link href="/register" className="px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white transition">Sign Up</Link>
         </div>
       </nav>
+
+      {/* FEATURED BOOKS */}
+      <section id="books" className="py-24 bg-gradient-to-b from-white to-slate-50">
+        <div className="max-w-7xl mx-auto px-10">
+          <div className="text-center mb-16">
+            <h2 className="text-5xl font-bold text-slate-800 mb-4 tracking-tight">Featured Books</h2>
+            <p className="text-slate-500 max-w-2xl mx-auto text-lg">
+              Over <span className="font-bold text-blue-600">{totalBooks}</span> books across <span className="font-bold text-blue-600">{totalGenres}</span> genres.
+            </p>
+          </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-12">
+            {(books || []).map((book) => (
+              <div key={book.id} className="group relative bg-white rounded-3xl overflow-hidden border border-slate-200/50 hover:border-blue-300 hover:shadow-2xl hover:shadow-blue-100 transition-all duration-500 transform hover:-translate-y-3 cursor-pointer">
+                <div className="relative overflow-hidden h-56">
+                  <img
+                    src={book.image || "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=300&h=400&fit=crop"}
+                    alt={book.title}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                  <div className="absolute top-3 left-3">
+                    <span className={`text-white text-xs px-3 py-1 rounded-full font-bold shadow-lg ${book.available ? "bg-emerald-500" : "bg-red-500"}`}>
+                      {book.available ? "✓ Available" : "✗ Borrowed"}
+                    </span>
+                  </div>
+                  <div className="absolute top-3 right-3">
+                    <span className="bg-blue-600/90 backdrop-blur-sm text-white text-xs px-2.5 py-1 rounded-full font-semibold">{book.genre}</span>
+                  </div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-blue-900/95 via-blue-800/80 to-blue-600/40 opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col justify-end p-5">
+                    <p className="text-white font-bold text-sm leading-tight mb-1">{book.title}</p>
+                    <p className="text-blue-200 text-xs mb-4">{book.author}</p>
+                    <Link href="/login" className="w-full text-center bg-white text-blue-700 hover:bg-blue-50 font-bold text-xs py-2.5 rounded-xl transition shadow-lg">
+                      📚 Borrow This Book
+                    </Link>
+                  </div>
+                </div>
+                <div className="p-5 space-y-2">
+                  <h3 className="font-bold text-slate-800 text-sm leading-tight line-clamp-2 group-hover:text-blue-600 transition-colors duration-300">{book.title}</h3>
+                  <p className="text-slate-400 text-xs">{book.author}</p>
+                  <div className="flex items-center justify-between pt-1">
+                    <span className="text-xs text-slate-400">📖 {book.genre}</span>
+                    <span className={`text-xs font-semibold ${book.available ? "text-emerald-600" : "text-red-500"}`}>
+                      {book.available ? "Free to borrow" : "Unavailable"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="text-center">
+            <Link href="/login" className="px-6 py-3 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold hover:from-blue-600 hover:to-blue-700 transition shadow-lg text-sm">
+              Browse All Books →
+            </Link>
+          </div>
+        </div>
+      </section>
 
       {/* ABOUT US */}
       <section id="about" className="py-24 bg-white">
