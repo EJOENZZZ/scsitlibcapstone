@@ -172,6 +172,11 @@ function ProfileContent() {
     setTimeout(() => setSaveMsg(""), 3000);
   };
 
+  const handleRequestEarlyReturn = async (id: string) => {
+    await supabase.from("borrow_records").update({ status: "Early Return" }).eq("id", id);
+    setBorrows((prev) => prev.map((b) => b.id === id ? { ...b, status: "Early Return" } : b));
+  };
+
   const activeCount = borrows.filter((b) => b.status === "Active").length;
   const returnedCount = borrows.filter((b) => b.status === "Returned").length;
   const overdueCount = borrows.filter((b) => b.status !== "Returned" && calcFine(b.due_date, b.status) > 0).length;
@@ -337,14 +342,23 @@ function ProfileContent() {
                             <td className="px-8 py-5 text-slate-600 whitespace-nowrap">{new Date(b.borrow_date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</td>
                             <td className={`px-8 py-5 font-semibold whitespace-nowrap ${isOverdue ? "text-red-600" : "text-slate-700"}`}>{new Date(b.due_date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</td>
                             <td className="px-8 py-5">
-                              <span className={`px-4 py-2 rounded-full text-xs font-semibold shadow-sm ${
-                                isOverdue ? "bg-red-100 text-red-700 border border-red-300" :
-                                isEarlyReturn ? "bg-blue-100 text-blue-700 border border-blue-300" :
-                                b.status === "Active" ? "bg-emerald-100 text-emerald-800 border border-emerald-300" :
-                                "bg-slate-100 text-slate-600 border border-slate-300"
-                              }`}>
-                                {isOverdue ? "Overdue" : isEarlyReturn ? "Returned Early" : b.status}
-                              </span>
+                              <div className="flex flex-col gap-2">
+                                <span className={`px-4 py-2 rounded-full text-xs font-semibold shadow-sm w-fit ${
+                                  isOverdue ? "bg-red-100 text-red-700 border border-red-300" :
+                                  isEarlyReturn ? "bg-blue-100 text-blue-700 border border-blue-300" :
+                                  b.status === "Early Return" ? "bg-purple-100 text-purple-700 border border-purple-300" :
+                                  b.status === "Active" ? "bg-emerald-100 text-emerald-800 border border-emerald-300" :
+                                  "bg-slate-100 text-slate-600 border border-slate-300"
+                                }`}>
+                                  {isOverdue ? "Overdue" : isEarlyReturn ? "Returned Early" : b.status === "Early Return" ? "⏳ Early Return Pending" : b.status}
+                                </span>
+                                {b.status === "Active" && !isOverdue && (
+                                  <button onClick={() => handleRequestEarlyReturn(b.id)}
+                                    className="px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold rounded-lg transition w-fit">
+                                    ↩ Request Early Return
+                                  </button>
+                                )}
+                              </div>
                             </td>
                             <td className="px-8 py-5">
                               {fine > 0 && b.status !== "Returned" ? (

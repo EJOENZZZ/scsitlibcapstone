@@ -138,7 +138,7 @@ export default function AdminPage() {
     setReturningId(null);
   };
 
-  const handleEarlyReturn = async (b: Borrower) => {
+  const handleConfirmEarlyReturn = async (b: Borrower) => {
     setReturningId(b.id);
     if (b.book_id) {
       const { data: bookData } = await supabase.from("books").select("copies").eq("id", b.book_id).single();
@@ -363,6 +363,23 @@ export default function AdminPage() {
               </button>
             </div>
           )}
+          {borrowers.filter(b => b.status === "Early Return").length > 0 && (
+            <div className="bg-purple-50 border border-purple-200 rounded-2xl px-6 py-4 mb-6 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">↩</span>
+                <div>
+                  <p className="font-semibold text-purple-800 text-sm">
+                    {borrowers.filter(b => b.status === "Early Return").length} early return request{borrowers.filter(b => b.status === "Early Return").length > 1 ? "s" : ""} waiting for your confirmation
+                  </p>
+                  <p className="text-xs text-purple-600 mt-0.5">Go to Borrowers tab to confirm.</p>
+                </div>
+              </div>
+              <button onClick={() => setActiveTab("borrowers")}
+                className="px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white text-xs font-semibold rounded-xl transition">
+                View Requests
+              </button>
+            </div>
+          )}
           <div className="grid grid-cols-5 gap-5 mb-8">
             {stats.map((s) => (
               <div key={s.label} className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm flex items-center gap-4">
@@ -384,9 +401,9 @@ export default function AdminPage() {
                 {tab === "books" ? "📚 Books" : tab === "borrowers" ? (
                   <span className="flex items-center gap-2">
                     👥 Borrowers
-                    {(borrowers.filter(b => b.status === "Pending").length + borrowers.filter(b => b.status === "Pending Return").length) > 0 && (
+                    {(borrowers.filter(b => b.status === "Pending").length + borrowers.filter(b => b.status === "Pending Return").length + borrowers.filter(b => b.status === "Early Return").length) > 0 && (
                       <span className="bg-blue-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">
-                        {borrowers.filter(b => b.status === "Pending").length + borrowers.filter(b => b.status === "Pending Return").length}
+                        {borrowers.filter(b => b.status === "Pending").length + borrowers.filter(b => b.status === "Pending Return").length + borrowers.filter(b => b.status === "Early Return").length}
                       </span>
                     )}
                   </span>
@@ -466,6 +483,11 @@ export default function AdminPage() {
                       ⏳ {borrowers.filter(b => b.status === "Pending Return").length} pending return{borrowers.filter(b => b.status === "Pending Return").length > 1 ? "s" : ""}
                     </span>
                   )}
+                  {borrowers.filter(b => b.status === "Early Return").length > 0 && (
+                    <span className="bg-purple-100 text-purple-700 text-xs font-bold px-3 py-1 rounded-full">
+                      ↩ {borrowers.filter(b => b.status === "Early Return").length} early return{borrowers.filter(b => b.status === "Early Return").length > 1 ? "s" : ""}
+                    </span>
+                  )}
                   <span className="text-xs text-slate-400">{borrowers.length} records</span>
                 </div>
               </div>
@@ -485,7 +507,7 @@ export default function AdminPage() {
                       const overdueDays = calcOverdue(b.due_date, b.status);
                       const isOverdue = overdueDays > 0;
                       return (
-                      <tr key={b.id} className={`transition ${isOverdue ? "bg-red-50 hover:bg-red-100" : b.status === "Pending" ? "bg-blue-50 hover:bg-blue-100" : b.status === "Pending Return" ? "bg-amber-50 hover:bg-amber-100" : "hover:bg-slate-50"}`}>
+                      <tr key={b.id} className={`transition ${isOverdue ? "bg-red-50 hover:bg-red-100" : b.status === "Pending" ? "bg-blue-50 hover:bg-blue-100" : b.status === "Pending Return" ? "bg-amber-50 hover:bg-amber-100" : b.status === "Early Return" ? "bg-purple-50 hover:bg-purple-100" : "hover:bg-slate-50"}`}>
                         <td className="px-6 py-4 font-semibold text-slate-800">{b.user_name}</td>
                         <td className="px-6 py-4 text-slate-500">{b.book_title}</td>
                         <td className="px-6 py-4 text-slate-500">{b.borrow_date}</td>
@@ -496,6 +518,7 @@ export default function AdminPage() {
                             b.status === "Pending" ? "bg-blue-50 text-blue-600" :
                             b.status === "Active" ? "bg-emerald-50 text-emerald-700" :
                             b.status === "Pending Return" ? "bg-amber-50 text-amber-600" :
+                            b.status === "Early Return" ? "bg-purple-100 text-purple-700" :
                             "bg-slate-100 text-slate-500"
                           }`}>{isOverdue ? `Overdue (${overdueDays}d)` : b.status}</span>
                         </td>
@@ -519,10 +542,10 @@ export default function AdminPage() {
                                 {returningId === b.id ? "Processing..." : "✅ Confirm Return"}
                               </button>
                             )}
-                            {b.status === "Active" && !isOverdue && (
-                              <button onClick={() => handleEarlyReturn(b)} disabled={returningId === b.id}
-                                className="px-3 py-1.5 text-xs font-medium border border-blue-200 text-blue-600 rounded-lg hover:bg-blue-50 transition disabled:opacity-50">
-                                {returningId === b.id ? "Processing..." : "↩ Early Return"}
+                            {b.status === "Early Return" && (
+                              <button onClick={() => handleConfirmEarlyReturn(b)} disabled={returningId === b.id}
+                                className="px-3 py-1.5 text-xs font-medium border border-purple-200 text-purple-600 rounded-lg hover:bg-purple-50 transition disabled:opacity-50">
+                                {returningId === b.id ? "Processing..." : "✅ Confirm Early Return"}
                               </button>
                             )}
                             {isOverdue && (
