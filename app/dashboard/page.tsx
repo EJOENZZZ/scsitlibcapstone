@@ -266,6 +266,7 @@ function DashboardContent() {
         <div className="hidden md:flex items-center gap-1 bg-slate-800 rounded-xl p-1">
           <Link href="/dashboard" className="px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white">Home</Link>
           <Link href="/borrowbook" className="px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-700 transition">Borrow</Link>
+          <Link href="/about" className="px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-700 transition">About</Link>
           <Link href={`/profile?user=${encodeURIComponent(username)}`} className="px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-700 transition">Profile</Link>
         </div>
         <div className="flex items-center gap-3">
