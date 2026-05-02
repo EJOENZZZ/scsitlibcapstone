@@ -146,8 +146,10 @@ function ProfileContent() {
     setOtpVerified(false);
     if (!newEmail.trim() || newEmail === email || !newEmail.includes("@") || !newEmail.includes(".")) return;
     setOtpLoading(true);
-    const { error } = await supabase.auth.signInWithOtp({ email: newEmail.trim(), options: { shouldCreateUser: true } });
-    if (error) { setOtpError(error.message); setOtpLoading(false); return; }
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const expires = new Date(Date.now() + 10 * 60 * 1000).toISOString();
+    await supabase.from("email_verifications").upsert({ user_id: userId, new_email: newEmail.trim(), code, expires_at: expires });
+    await fetch("/api/send-otp", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: newEmail.trim(), code }) });
     setOtpSent(true);
     setOtpLoading(false);
   };
@@ -156,8 +158,9 @@ function ProfileContent() {
     if (!otpCode.trim()) return;
     setOtpLoading(true);
     setOtpError("");
-    const { error } = await supabase.auth.verifyOtp({ email: editEmail.trim(), token: otpCode.trim(), type: "email" });
-    if (error) { setOtpError("Invalid or expired code."); setOtpLoading(false); return; }
+    const { data } = await supabase.from("email_verifications").select("*").eq("user_id", userId).eq("new_email", editEmail.trim()).eq("code", otpCode.trim()).single();
+    if (!data || new Date(data.expires_at) < new Date()) { setOtpError("Invalid or expired code."); setOtpLoading(false); return; }
+    await supabase.from("email_verifications").delete().eq("user_id", userId);
     setOtpVerified(true);
     setEmail(editEmail.trim());
     setOtpLoading(false);
