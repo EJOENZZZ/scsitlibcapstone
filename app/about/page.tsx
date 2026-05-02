@@ -1,6 +1,30 @@
+"use client";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
 
 export default function AboutPage() {
+  const [username, setUsername] = useState("");
+  const [loggedIn, setLoggedIn] = useState(false);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) {
+        setLoggedIn(true);
+        supabase.from("profiles").select("username").eq("id", user.id).single().then(({ data }) => {
+          setUsername(data?.username || user.user_metadata?.username || user.email?.split("@")[0] || "");
+        });
+      }
+    });
+  }, []);
+
+  const handleSignOut = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) await supabase.from("user_sessions").delete().eq("user_id", user.id);
+    await supabase.auth.signOut();
+    window.location.href = "/login";
+  };
+
   return (
     <div className="flex flex-col min-h-screen font-sans bg-white">
 
@@ -12,16 +36,37 @@ export default function AboutPage() {
           </div>
           <span className="text-lg font-bold text-white tracking-tight">SCSIT Library</span>
         </div>
-        <div className="hidden md:flex items-center gap-1 bg-slate-800 rounded-xl p-1">
-          <Link href="/" className="px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-700 transition">Home</Link>
-          <Link href="/#features" className="px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-700 transition">Features</Link>
-          <Link href="/about" className="px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white">About</Link>
-          <Link href="/#reviews" className="px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-700 transition">Reviews</Link>
-        </div>
-        <div className="flex items-center gap-2">
-          <Link href="/login" className="px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-700 transition">Sign In</Link>
-          <Link href="/register" className="px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white transition">Sign Up</Link>
-        </div>
+
+        {loggedIn ? (
+          <>
+            <div className="hidden md:flex items-center gap-1 bg-slate-800 rounded-xl p-1">
+              <Link href="/dashboard" className="px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-700 transition">Home</Link>
+              <Link href="/borrowbook" className="px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-700 transition">Borrow</Link>
+              <Link href="/about" className="px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white">About</Link>
+              <Link href="/profile" className="px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-700 transition">Profile</Link>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 bg-slate-800 px-3 py-2 rounded-xl">
+                <div className="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center text-xs font-bold text-white">{username.charAt(0).toUpperCase()}</div>
+                <span className="text-sm font-medium text-white">{username}</span>
+              </div>
+              <button onClick={handleSignOut} className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-sm font-medium transition">Sign Out</button>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="hidden md:flex items-center gap-1 bg-slate-800 rounded-xl p-1">
+              <Link href="/" className="px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-700 transition">Home</Link>
+              <Link href="/#features" className="px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-700 transition">Features</Link>
+              <Link href="/about" className="px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white">About</Link>
+              <Link href="/#reviews" className="px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-700 transition">Reviews</Link>
+            </div>
+            <div className="flex items-center gap-2">
+              <Link href="/login" className="px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-700 transition">Sign In</Link>
+              <Link href="/register" className="px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white transition">Sign Up</Link>
+            </div>
+          </>
+        )}
       </nav>
 
       {/* HERO */}
