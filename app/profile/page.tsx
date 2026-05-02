@@ -3,7 +3,6 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState, useRef, Suspense } from "react";
 import { supabase } from "@/lib/supabase";
-import emailjs from "@emailjs/browser";
 
 type BorrowRecord = {
   id: string;
@@ -52,12 +51,10 @@ function ProfileContent() {
   const [editCourse, setEditCourse] = useState("");
   const [editYear, setEditYear] = useState("");
   const [editEmail, setEditEmail] = useState("");
-  // email OTP flow
+  // email change
   const [otpSent, setOtpSent] = useState(false);
-  const [otpCode, setOtpCode] = useState("");
   const [otpLoading, setOtpLoading] = useState(false);
   const [otpError, setOtpError] = useState("");
-  const [otpVerified, setOtpVerified] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -133,46 +130,17 @@ function ProfileContent() {
     setEditYear(year);
     setEditEmail(email);
     setOtpSent(false);
-    setOtpCode("");
     setOtpError("");
-    setOtpVerified(false);
     setEditOpen(true);
   };
 
-  const handleEmailChange = async (newEmail: string) => {
-    setEditEmail(newEmail);
-    setOtpSent(false);
-    setOtpCode("");
-    setOtpError("");
-    setOtpVerified(false);
-    if (!newEmail.trim() || newEmail === email || !newEmail.includes("@") || !newEmail.includes(".")) return;
-    setOtpLoading(true);
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
-    const expires = new Date(Date.now() + 10 * 60 * 1000).toISOString();
-    await supabase.from("email_verifications").upsert({ user_id: userId, new_email: newEmail.trim(), code, expires_at: expires });
-    try {
-      await emailjs.send(
-        process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID!,
-        process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID!,
-        { to_email: newEmail.trim(), otp_code: code },
-        process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY!
-      );
-      setOtpSent(true);
-    } catch {
-      setOtpError("Failed to send code. Please try again.");
-    }
-    setOtpLoading(false);
-  };
-
-  const handleVerifyOtp = async () => {
-    if (!otpCode.trim()) return;
+  const handleRequestEmailChange = async () => {
+    if (!editEmail.trim() || editEmail === email) return;
     setOtpLoading(true);
     setOtpError("");
-    const { data } = await supabase.from("email_verifications").select("*").eq("user_id", userId).eq("new_email", editEmail.trim()).eq("code", otpCode.trim()).single();
-    if (!data || new Date(data.expires_at) < new Date()) { setOtpError("Invalid or expired code."); setOtpLoading(false); return; }
-    await supabase.from("email_verifications").delete().eq("user_id", userId);
-    setOtpVerified(true);
-    setEmail(editEmail.trim());
+    const { error } = await supabase.auth.updateUser({ email: editEmail.trim() });
+    if (error) { setOtpError(error.message); setOtpLoading(false); return; }
+    setOtpSent(true);
     setOtpLoading(false);
   };
 
@@ -445,27 +413,25 @@ function ProfileContent() {
 
               {/* EMAIL CHANGE */}
               <div className="border-t border-slate-100 pt-3">
-                <label className="text-xs font-medium text-slate-600 mb-1 block">Email Address</label>
-                <input value={editEmail} onChange={(e) => handleEmailChange(e.target.value)}
-                  placeholder="New email address"
-                  className="border border-slate-200 px-3 py-2 w-full rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition" />
-                {editEmail === email && <p className="text-xs text-slate-400 mt-1">Current email. Type a new one to change.</p>}
-                {otpLoading && <p className="text-xs text-blue-500 mt-1">Sending code to {editEmail}...</p>}
-                {otpSent && !otpVerified && (
-                  <div className="mt-2 space-y-2">
-                    <p className="text-xs text-emerald-600 font-medium">Code sent to <span className="font-bold">{editEmail}</span>. Check your inbox.</p>
-                    <div className="flex gap-2">
-                      <input value={otpCode} onChange={(e) => setOtpCode(e.target.value)}
-                        placeholder="Enter 6-digit code"
-                        className="border border-slate-200 px-3 py-2 flex-1 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition" />
-                      <button onClick={handleVerifyOtp} disabled={otpLoading || !otpCode.trim()}
-                        className="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white text-xs font-semibold rounded-xl transition">
-                        Verify
-                      </button>
-                    </div>
+                <label className="text-xs font-medium text-slate-600 mb-1 block">Change Email Address</label>
+                <div className="flex gap-2">
+                  <input value={editEmail} onChange={(e) => { setEditEmail(e.target.value); setOtpSent(false); setOtpError(""); }}
+                    placeholder="New email address"
+                    className="border border-slate-200 px-3 py-2 flex-1 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition" />
+                  {editEmail !== email && editEmail.trim() && !otpSent && (
+                    <button onClick={handleRequestEmailChange} disabled={otpLoading}
+                      className="px-3 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white text-xs font-semibold rounded-xl transition whitespace-nowrap">
+                      {otpLoading ? "Sending..." : "Send Confirmation"}
+                    </button>
+                  )}
+                </div>
+                {editEmail === email && <p className="text-xs text-slate-400 mt-1">Type a new email to change it.</p>}
+                {otpSent && (
+                  <div className="mt-2 bg-emerald-50 border border-emerald-200 rounded-xl px-3 py-2">
+                    <p className="text-xs text-emerald-700 font-medium">✅ Confirmation sent to <span className="font-bold">{email}</span>.</p>
+                    <p className="text-xs text-emerald-600 mt-0.5">Check your current email and click the link to confirm the change to {editEmail}.</p>
                   </div>
                 )}
-                {otpVerified && <p className="text-xs text-emerald-600 font-medium mt-1">✅ Email verified!</p>}
                 {otpError && <p className="text-xs text-red-500 mt-1">{otpError}</p>}
               </div>
             </div>
