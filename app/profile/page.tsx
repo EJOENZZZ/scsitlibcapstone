@@ -350,8 +350,11 @@ function ProfileContent() {
                                   b.status === "Active" ? "bg-emerald-100 text-emerald-800 border border-emerald-300" :
                                   "bg-slate-100 text-slate-600 border border-slate-300"
                                 }`}>
-                                  {isOverdue ? "Overdue" : isEarlyReturn ? "Returned Early" : b.status === "Early Return" ? "⏳ Early Return Pending" : b.status}
+                                  {isOverdue ? "Overdue" : isEarlyReturn ? "Returned Early" : b.status === "Early Return" ? "Return Requested" : b.status}
                                 </span>
+                                {b.status === "Early Return" && (
+                                  <span className="text-xs text-purple-500">Awaiting librarian confirmation</span>
+                                )}
                                 {b.status === "Active" && !isOverdue && (
                                   <button onClick={() => handleRequestEarlyReturn(b.id)}
                                     className="px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold rounded-lg transition w-fit">
