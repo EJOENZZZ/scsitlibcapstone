@@ -138,6 +138,8 @@ function ProfileContent() {
     if (!editEmail.trim() || editEmail === email) return;
     setOtpLoading(true);
     setOtpError("");
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { setOtpError("Session expired. Please sign out and sign in again."); setOtpLoading(false); return; }
     const { error } = await supabase.auth.updateUser({ email: editEmail.trim() });
     if (error) { setOtpError(error.message); setOtpLoading(false); return; }
     setOtpSent(true);
