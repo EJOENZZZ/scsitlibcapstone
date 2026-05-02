@@ -702,7 +702,6 @@ export default function AdminPage() {
                   onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3}
                   className="border border-slate-200 px-3 py-2 w-full rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-400 transition resize-none" />
               </div>
-              </div>
               <div>
                 <label className="text-xs font-medium text-slate-600 mb-1 block">Book Cover Image</label>
                 <input type="file" accept="image/*"
