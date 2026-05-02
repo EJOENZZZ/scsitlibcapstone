@@ -55,14 +55,14 @@ function ProfileContent() {
   const [otpSent, setOtpSent] = useState(false);
   const [otpLoading, setOtpLoading] = useState(false);
   const [otpError, setOtpError] = useState("");
+  const userIdRef = useRef("");
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    let userId = "";
     const fetchData = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        userId = user.id;
+        userIdRef.current = user.id;
         setUserId(user.id);
         setEmail(user.email || "");
 
@@ -90,9 +90,10 @@ function ProfileContent() {
 
     const channel = supabase.channel("profile-borrow-changes")
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "borrow_records" }, async () => {
-        if (!userId) return;
+        const uid = userIdRef.current;
+        if (!uid) return;
         const { data } = await supabase
-          .from("borrow_records").select("*").eq("user_id", userId).order("created_at", { ascending: false });
+          .from("borrow_records").select("*").eq("user_id", uid).order("created_at", { ascending: false });
         if (data) setBorrows(data);
       })
       .subscribe();
