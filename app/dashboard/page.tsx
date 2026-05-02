@@ -483,36 +483,34 @@ function DashboardContent() {
       {/* BOOK PREVIEW MODAL */}
       {previewBook && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 px-4" onClick={() => setPreviewBook(null)}>
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden" onClick={(e) => e.stopPropagation()}>
-            {/* FULL COVER IMAGE */}
-            <div className="relative h-64 w-full">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden flex" onClick={(e) => e.stopPropagation()}>
+            {/* LEFT: COVER IMAGE */}
+            <div className="relative w-64 flex-shrink-0">
               <img
-                src={previewBook.image || "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600&h=400&fit=crop"}
+                src={previewBook.image || "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&h=600&fit=crop"}
                 alt={previewBook.title}
                 className="w-full h-full object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-              {/* Close button */}
-              <button onClick={() => setPreviewBook(null)}
-                className="absolute top-4 right-4 w-8 h-8 bg-black/40 hover:bg-black/60 text-white rounded-full flex items-center justify-center text-lg leading-none transition">
-                &times;
-              </button>
-              {/* Badges */}
-              <div className="absolute top-4 left-4 flex gap-2">
-                <span className={`text-white text-xs px-3 py-1 rounded-full font-bold shadow ${
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+              <div className="absolute top-4 left-4 flex flex-col gap-2">
+                <span className={`text-white text-xs px-3 py-1 rounded-full font-bold shadow w-fit ${
                   previewBook.available ? "bg-emerald-500" : "bg-red-500"
                 }`}>{previewBook.available ? "✓ Available" : "✗ Unavailable"}</span>
-                <span className="bg-blue-600/90 backdrop-blur-sm text-white text-xs px-3 py-1 rounded-full font-semibold">{previewBook.genre}</span>
-              </div>
-              {/* Title overlay on image */}
-              <div className="absolute bottom-4 left-5 right-5">
-                <h2 className="text-xl font-bold text-white leading-tight drop-shadow">{previewBook.title}</h2>
-                <p className="text-white/80 text-sm mt-0.5">by <span className="font-semibold text-white">{previewBook.author}</span></p>
+                <span className="bg-blue-600/90 backdrop-blur-sm text-white text-xs px-3 py-1 rounded-full font-semibold w-fit">{previewBook.genre}</span>
               </div>
             </div>
-            {/* DETAILS */}
-            <div className="p-6">
-              <div className="flex gap-3 mb-4">
+            {/* RIGHT: DETAILS */}
+            <div className="flex-1 p-7 flex flex-col">
+              <div className="flex items-start justify-between mb-3">
+                <div />
+                <button onClick={() => setPreviewBook(null)}
+                  className="w-8 h-8 bg-slate-100 hover:bg-slate-200 text-slate-500 rounded-full flex items-center justify-center text-lg leading-none transition">
+                  &times;
+                </button>
+              </div>
+              <h2 className="text-xl font-bold text-slate-800 leading-tight">{previewBook.title}</h2>
+              <p className="text-slate-500 text-sm mt-1">by <span className="font-semibold text-slate-700">{previewBook.author}</span></p>
+              <div className="flex gap-2 mt-4 flex-wrap">
                 {previewBook.shelf && (
                   <div className="flex items-center gap-1.5 bg-amber-50 border border-amber-100 px-3 py-1.5 rounded-xl">
                     <span className="text-sm">📍</span>
@@ -521,13 +519,15 @@ function DashboardContent() {
                 )}
                 <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-100 px-3 py-1.5 rounded-xl">
                   <span className="text-sm">📚</span>
-                  <span className="text-xs font-semibold text-slate-600">{previewBook.copies} {previewBook.copies === 1 ? "copy" : "copies"} available</span>
+                  <span className="text-xs font-semibold text-slate-600">{previewBook.copies} {previewBook.copies === 1 ? "copy" : "copies"}</span>
                 </div>
               </div>
-              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">About this book</p>
-              <p className="text-sm text-slate-600 leading-relaxed">
-                {previewBook.description || "No description available for this book. Visit the library or ask the librarian for more details about this title."}
-              </p>
+              <div className="mt-5 flex-1">
+                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">About this book</p>
+                <p className="text-sm text-slate-600 leading-relaxed">
+                  {previewBook.description || "No description available for this book. Visit the library or ask the librarian for more details about this title."}
+                </p>
+              </div>
               <div className="mt-6 flex gap-3">
                 <button onClick={() => setPreviewBook(null)}
                   className="flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-600 text-sm font-medium hover:bg-slate-50 transition">
