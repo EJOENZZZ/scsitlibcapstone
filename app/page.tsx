@@ -67,38 +67,23 @@ export default async function Home() {
             </p>
             <div className="flex items-center justify-center gap-4 flex-wrap">
               <Link href="/register" className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl text-sm transition shadow-lg shadow-blue-900/40">
-                Get Started — It&apos;s Free
+                Get Started
               </Link>
               <Link href="/login" className="px-6 py-3 bg-white/10 hover:bg-white/15 text-white font-semibold rounded-xl text-sm transition border border-white/10">
-                Sign In to Your Account
+                Sign In
               </Link>
             </div>
           </div>
 
-          {/* STATS ROW */}
-          <div className="flex items-center justify-center gap-10 mb-12">
-            {[
-              { value: totalBooks, label: "Total Books" },
-              { value: availableBooks, label: "Available Now" },
-              { value: totalGenres, label: "Genres" },
-              { value: departments.length, label: "Departments" },
-            ].map((s) => (
-              <div key={s.label} className="text-center">
-                <p className="text-3xl font-bold text-white">{s.value}</p>
-                <p className="text-slate-400 text-xs mt-0.5">{s.label}</p>
-              </div>
-            ))}
-          </div>
-
           {/* DEPARTMENT STRIP */}
-          <div className="border-t border-slate-700/60 py-5">
+          <div className="border-t border-slate-700/60 py-6">
             <p className="text-xs text-slate-500 font-semibold uppercase tracking-widest text-center mb-4">Serving all departments</p>
-            <div className="flex flex-wrap justify-center gap-3">
+            <div className="flex flex-wrap justify-center gap-2">
               {departments.map((d) => (
-                <div key={d.code} className="flex items-center gap-2 bg-slate-800/80 border border-slate-700 px-4 py-2 rounded-xl hover:border-blue-500/50 hover:bg-slate-700/80 transition cursor-default">
+                <div key={d.code} className="flex items-center gap-1.5 bg-slate-800/80 border border-slate-700 px-3 py-1.5 rounded-lg hover:border-blue-500/50 hover:bg-slate-700/80 transition cursor-default">
                   <span className="text-blue-400 font-bold text-xs">{d.code}</span>
-                  <span className="text-slate-400 text-xs hidden sm:block">·</span>
-                  <span className="text-slate-300 text-xs hidden sm:block">{d.name}</span>
+                  <span className="text-slate-600 text-xs">·</span>
+                  <span className="text-slate-400 text-xs">{d.name}</span>
                 </div>
               ))}
             </div>
@@ -111,10 +96,9 @@ export default async function Home() {
         <div className="max-w-7xl mx-auto px-10">
           <div className="flex items-end justify-between mb-10">
             <div>
-              <span className="text-xs font-bold text-blue-600 uppercase tracking-widest">Library Collection</span>
-              <h2 className="text-3xl font-bold text-slate-800 mt-2">Featured Books</h2>
+              <h2 className="text-3xl font-bold text-slate-800">Featured Books</h2>
               <p className="text-slate-500 text-sm mt-1">
-                <span className="font-semibold text-slate-700">{totalBooks}</span> books across <span className="font-semibold text-slate-700">{totalGenres}</span> genres — <span className="text-emerald-600 font-semibold">{availableBooks} available</span> now.
+                <span className="font-semibold text-slate-700">{totalBooks}</span> books across <span className="font-semibold text-slate-700">{totalGenres}</span> genres
               </p>
             </div>
             <Link href="/login" className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition shadow-sm hidden md:block">
