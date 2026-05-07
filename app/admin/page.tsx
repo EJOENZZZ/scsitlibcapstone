@@ -450,18 +450,22 @@ export default function AdminPage() {
           )}
           {activeTab === "dashboard" && (
             <>
-              <div className="mb-6">
-                <h2 className="text-xl font-bold text-slate-800">Dashboard</h2>
-                <p className="text-xs text-slate-400 mt-0.5">Library overview at a glance</p>
+              <div className="mb-8">
+                <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1">Overview</p>
+                <h2 className="text-2xl font-bold text-slate-800">Dashboard</h2>
               </div>
-              <div className="grid grid-cols-5 gap-5">
-                {stats.map((s) => (
-                  <div key={s.label} className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm flex items-center gap-4">
-                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl ${s.color}`}>{s.icon}</div>
-                    <div>
-                      <p className="text-2xl font-bold text-slate-800">{s.value}</p>
-                      <p className="text-xs text-slate-400 mt-0.5">{s.label}</p>
-                    </div>
+              <div className="grid grid-cols-5 gap-4">
+                {[
+                  { label: "Total Books", value: books.length, sub: "In the library", color: "border-l-blue-500", num: "text-blue-600" },
+                  { label: "Available", value: books.filter((b) => b.available).length, sub: "Ready to borrow", color: "border-l-emerald-500", num: "text-emerald-600" },
+                  { label: "Borrowers", value: borrowers.filter(b => b.status === "Active").length, sub: "Active borrows", color: "border-l-violet-500", num: "text-violet-600" },
+                  { label: "Pending", value: borrowers.filter((b) => b.status === "Pending").length, sub: "Awaiting approval", color: "border-l-amber-500", num: "text-amber-600" },
+                  { label: "Overdue", value: borrowers.filter((b) => calcOverdue(b.due_date, b.status) > 0).length, sub: "Past due date", color: "border-l-red-500", num: "text-red-600" },
+                ].map((s) => (
+                  <div key={s.label} className={`bg-white rounded-2xl p-6 border border-slate-100 border-l-4 ${s.color} shadow-sm`}>
+                    <p className={`text-3xl font-bold ${s.num}`}>{s.value}</p>
+                    <p className="text-sm font-semibold text-slate-700 mt-1">{s.label}</p>
+                    <p className="text-xs text-slate-400 mt-0.5">{s.sub}</p>
                   </div>
                 ))}
               </div>
@@ -838,30 +842,33 @@ export default function AdminPage() {
           )}
 
           {activeTab === "chat" && (
-            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden flex" style={{height:"600px"}}>
+            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden flex" style={{height:"calc(100vh - 160px)"}}>
               {/* USER LIST */}
-              <div className="w-64 border-r border-slate-100 flex flex-col">
-                <div className="px-4 py-4 border-b border-slate-100">
-                  <h3 className="font-semibold text-slate-700 text-sm">Student Messages</h3>
+              <div className="w-72 border-r border-slate-100 flex flex-col bg-slate-50">
+                <div className="px-5 py-4 border-b border-slate-100 bg-white">
+                  <h3 className="font-semibold text-slate-800 text-sm">Messages</h3>
                   <p className="text-xs text-slate-400 mt-0.5">{chatUsers.length} conversation{chatUsers.length !== 1 ? "s" : ""}</p>
                 </div>
                 <div className="flex-1 overflow-y-auto">
                   {chatUsers.length === 0 ? (
-                    <p className="text-xs text-slate-400 text-center mt-8 px-4">No messages yet.</p>
+                    <div className="flex flex-col items-center justify-center h-full text-center px-6">
+                      <div className="w-12 h-12 rounded-full bg-slate-200 flex items-center justify-center text-slate-400 text-xl mb-3">💬</div>
+                      <p className="text-xs text-slate-400">No messages yet</p>
+                    </div>
                   ) : (
                     chatUsers.map((u) => (
                       <button key={u.user_id}
                         onClick={() => { setActiveChatUser({ user_id: u.user_id, username: u.username }); loadChatThread(u.user_id); }}
-                        className={`w-full px-4 py-3 text-left border-b border-slate-50 hover:bg-slate-50 transition ${
-                          activeChatUser?.user_id === u.user_id ? "bg-blue-50" : ""
+                        className={`w-full px-5 py-4 text-left border-b border-slate-100 hover:bg-white transition ${
+                          activeChatUser?.user_id === u.user_id ? "bg-white border-l-2 border-l-blue-500" : ""
                         }`}>
-                        <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-xs flex-shrink-0">
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
                             {u.username.charAt(0).toUpperCase()}
                           </div>
                           <div className="min-w-0">
                             <p className="text-xs font-semibold text-slate-800 truncate">{u.username}</p>
-                            <p className="text-xs text-slate-400 truncate">{u.last_message}</p>
+                            <p className="text-xs text-slate-400 truncate mt-0.5">{u.last_message}</p>
                           </div>
                         </div>
                       </button>
@@ -874,36 +881,45 @@ export default function AdminPage() {
                 {!activeChatUser ? (
                   <div className="flex-1 flex items-center justify-center">
                     <div className="text-center">
-                      <div className="text-4xl mb-3">💬</div>
-                      <p className="text-slate-400 text-sm">Select a conversation to reply</p>
+                      <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center text-3xl mx-auto mb-4">💬</div>
+                      <p className="text-slate-600 font-semibold text-sm">Select a conversation</p>
+                      <p className="text-slate-400 text-xs mt-1">Choose a user from the left to view and reply</p>
                     </div>
                   </div>
                 ) : (
                   <>
-                    <div className="px-5 py-4 border-b border-slate-100 flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-xs">
+                    <div className="px-6 py-4 border-b border-slate-100 flex items-center gap-3 bg-white">
+                      <div className="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-sm">
                         {activeChatUser.username.charAt(0).toUpperCase()}
                       </div>
-                      <p className="font-semibold text-slate-800 text-sm">{activeChatUser.username}</p>
+                      <div>
+                        <p className="font-semibold text-slate-800 text-sm">{activeChatUser.username}</p>
+                        <p className="text-xs text-slate-400">Student</p>
+                      </div>
                     </div>
-                    <div className="flex-1 overflow-y-auto p-5 space-y-3 bg-slate-50">
+                    <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-slate-50">
                       {chatMessages.map((m) => (
                         <div key={m.id} className={`flex ${m.is_admin ? "justify-end" : "justify-start"}`}>
-                          <div className={`max-w-[70%] px-3 py-2 rounded-2xl text-xs ${
-                            m.is_admin ? "bg-blue-600 text-white rounded-tr-sm" : "bg-white border border-slate-200 text-slate-700 rounded-tl-sm"
+                          <div className={`max-w-[65%] px-4 py-2.5 rounded-2xl text-xs leading-relaxed ${
+                            m.is_admin
+                              ? "bg-blue-600 text-white rounded-br-sm"
+                              : "bg-white border border-slate-200 text-slate-700 rounded-bl-sm shadow-sm"
                           }`}>
-                            {!m.is_admin && <p className="font-bold text-blue-600 mb-0.5">{m.username}</p>}
+                            {!m.is_admin && <p className="font-semibold text-blue-600 mb-1 text-xs">{m.username}</p>}
                             <p>{m.message}</p>
                           </div>
                         </div>
                       ))}
                     </div>
-                    <div className="p-4 border-t border-slate-100 bg-white flex gap-2">
+                    <div className="px-6 py-4 border-t border-slate-100 bg-white flex gap-3">
                       <input value={chatReply} onChange={(e) => setChatReply(e.target.value)}
                         onKeyDown={(e) => e.key === "Enter" && sendAdminReply()}
-                        placeholder="Type a reply..."
-                        className="flex-1 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-400" />
-                      <button onClick={sendAdminReply} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-xs font-semibold transition">Send</button>
+                        placeholder="Write a reply..."
+                        className="flex-1 border border-slate-200 rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-400 bg-slate-50" />
+                      <button onClick={sendAdminReply}
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl text-xs font-semibold transition flex items-center gap-1.5">
+                        Send
+                      </button>
                     </div>
                   </>
                 )}
@@ -938,18 +954,10 @@ export default function AdminPage() {
                         <td className="px-6 py-4 text-slate-500">{u.contact_number || "—"}</td>
                         <td className="px-6 py-4 text-slate-400 text-xs">{new Date(u.created_at).toLocaleDateString()}</td>
                         <td className="px-6 py-4">
-                          <div className="relative">
-                            <button onClick={() => setOpenDropdown(openDropdown === u.id ? null : u.id)}
-                              className="px-3 py-1.5 text-xs font-medium border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 transition flex items-center gap-1">
-                              Actions <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                            </button>
-                            {openDropdown === u.id && (
-                              <div className="absolute right-0 mt-1 w-36 bg-white rounded-xl shadow-xl border border-slate-100 py-1 z-20">
-                                <button onClick={() => { setDeleteUserTarget(u); setOpenDropdown(null); }}
-                                  className="w-full text-left px-4 py-2 text-xs text-red-500 hover:bg-red-50 transition">Remove</button>
-                              </div>
-                            )}
-                          </div>
+                          <button onClick={() => setDeleteUserTarget(u)}
+                            className="px-3 py-1.5 text-xs font-medium text-red-500 border border-red-200 rounded-lg hover:bg-red-50 transition">
+                            Remove
+                          </button>
                         </td>
                       </tr>
                     ))
