@@ -12,7 +12,9 @@ type ChatMessage = { id: string; user_id: string; username: string; message: str
 const emptyForm = { title: "", author: "", genre: "", copies: 1, available: true, image: "", shelf: "", description: "" };
 const emptyEnroll = { student_id: "", full_name: "", course: "", year: "" };
 const emptyFaculty = { employee_id: "", full_name: "", department: "" };
+const emptyStaff = { staff_id: "", full_name: "", position: "" };
 const masterlistDepts = ["BSIT","BSCS","BSCE","BSBA","BSN","BSHM","BSCRIM","BSED","General Education","Mathematics","English","Filipino","NSTP"];
+const staffPositions = ["Library Staff","Administrative Staff","Registrar","Cashier","Security","Maintenance","IT Staff","Guidance","Other"];
 
 export default function AdminPage() {
   const [authed, setAuthed] = useState(false);
@@ -41,7 +43,10 @@ export default function AdminPage() {
   const [facultyList, setFacultyList] = useState<{id:string;employee_id:string;full_name:string;department:string}[]>([]);
   const [facultyForm, setFacultyForm] = useState(emptyFaculty);
   const [facultyLoading, setFacultyLoading] = useState(false);
-  const [masterlistTab, setMasterlistTab] = useState<"students"|"faculty">("students");
+  const [masterlistTab, setMasterlistTab] = useState<"students"|"faculty"|"staff">("students");
+  const [staffList, setStaffList] = useState<{id:string;staff_id:string;full_name:string;position:string}[]>([]);
+  const [staffForm, setStaffForm] = useState(emptyStaff);
+  const [staffLoading, setStaffLoading] = useState(false);
   const [chatUsers, setChatUsers] = useState<{user_id: string; username: string; last_message: string}[]>([]);
   const [activeChatUser, setActiveChatUser] = useState<{user_id: string; username: string} | null>(null);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
@@ -79,6 +84,8 @@ export default function AdminPage() {
     if (enrollData) setEnrolledStudents(enrollData);
     const { data: facData } = await supabase.from("faculty_masterlist").select("*").order("full_name");
     if (facData) setFacultyList(facData);
+    const { data: staffData } = await supabase.from("staff_masterlist").select("*").order("full_name");
+    if (staffData) setStaffList(staffData);
     // Load chat user list (distinct users who sent messages)
     const { data: chatData } = await supabase.from("chat_messages").select("*").eq("is_admin", false).order("created_at", { ascending: false });
     if (chatData) {
@@ -118,6 +125,21 @@ export default function AdminPage() {
 
   const handleDeleteFaculty = async (id: string) => {
     await supabase.from("faculty_masterlist").delete().eq("id", id);
+    await fetchData();
+  };
+
+  const handleAddStaff = async () => {
+    if (!staffForm.staff_id || !staffForm.full_name || !staffForm.position) return;
+    setStaffLoading(true);
+    const { error } = await supabase.from("staff_masterlist").insert(staffForm);
+    if (error) { alert("Failed: " + error.message); setStaffLoading(false); return; }
+    setStaffForm(emptyStaff);
+    await fetchData();
+    setStaffLoading(false);
+  };
+
+  const handleDeleteStaff = async (id: string) => {
+    await supabase.from("staff_masterlist").delete().eq("id", id);
     await fetchData();
   };
 
@@ -681,6 +703,10 @@ export default function AdminPage() {
                   className={`px-5 py-2 rounded-t-xl text-sm font-semibold border-b-2 transition ${
                     masterlistTab === "faculty" ? "border-emerald-600 text-emerald-700 bg-emerald-50" : "border-transparent text-slate-500 hover:text-slate-700"
                   }`}>👨🏫 Faculty ({facultyList.length})</button>
+                <button onClick={() => setMasterlistTab("staff")}
+                  className={`px-5 py-2 rounded-t-xl text-sm font-semibold border-b-2 transition ${
+                    masterlistTab === "staff" ? "border-purple-600 text-purple-700 bg-purple-50" : "border-transparent text-slate-500 hover:text-slate-700"
+                  }`}>🏢 Staff ({staffList.length})</button>
               </div>
 
               {masterlistTab === "students" && (
@@ -739,6 +765,60 @@ export default function AdminPage() {
                   </table>
                   <div className="px-6 py-3 border-t border-slate-100 bg-slate-50 text-xs text-slate-400">
                     {enrolledStudents.length} enrolled students
+                  </div>
+                </>
+              )}
+
+              {masterlistTab === "staff" && (
+                <>
+                  <div className="px-6 py-5 border-b border-slate-100">
+                    <p className="text-xs text-slate-500 mb-3">Staff members must be on this list to register. Their Staff ID will be verified during sign-up.</p>
+                    <div className="grid grid-cols-3 gap-3">
+                      <input placeholder="Staff ID (e.g. STF-2024-001)" value={staffForm.staff_id}
+                        onChange={(e) => setStaffForm({ ...staffForm, staff_id: e.target.value })}
+                        className="border border-slate-200 px-3 py-2 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-purple-400" />
+                      <input placeholder="Full Name" value={staffForm.full_name}
+                        onChange={(e) => setStaffForm({ ...staffForm, full_name: e.target.value })}
+                        className="border border-slate-200 px-3 py-2 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-purple-400" />
+                      <select value={staffForm.position} onChange={(e) => setStaffForm({ ...staffForm, position: e.target.value })}
+                        className="border border-slate-200 px-3 py-2 rounded-xl text-xs bg-white focus:outline-none focus:ring-2 focus:ring-purple-400">
+                        <option value="">Position</option>
+                        {staffPositions.map((p) => <option key={p} value={p}>{p}</option>)}
+                      </select>
+                    </div>
+                    <button onClick={handleAddStaff} disabled={staffLoading}
+                      className="mt-3 px-5 py-2 bg-purple-600 hover:bg-purple-700 disabled:opacity-60 text-white text-xs font-semibold rounded-xl transition">
+                      {staffLoading ? "Adding..." : "+ Add Staff"}
+                    </button>
+                  </div>
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="bg-slate-50 border-b border-slate-100">
+                        {["Staff ID","Full Name","Position","Action"].map((h) => (
+                          <th key={h} className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-50">
+                      {staffList.length === 0 ? (
+                        <tr><td colSpan={4} className="px-6 py-12 text-center text-slate-400">No staff members yet.</td></tr>
+                      ) : (
+                        staffList.map((s) => (
+                          <tr key={s.id} className="hover:bg-slate-50 transition">
+                            <td className="px-6 py-4 font-mono text-slate-700 text-xs">{s.staff_id}</td>
+                            <td className="px-6 py-4 font-semibold text-slate-800">{s.full_name}</td>
+                            <td className="px-6 py-4"><span className="bg-purple-50 text-purple-700 text-xs px-2.5 py-1 rounded-full font-medium">{s.position}</span></td>
+                            <td className="px-6 py-4">
+                              <button onClick={() => handleDeleteStaff(s.id)}
+                                className="px-3 py-1.5 text-xs font-medium border border-red-200 text-red-500 rounded-lg hover:bg-red-50 transition">Remove</button>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                  <div className="px-6 py-3 border-t border-slate-100 bg-slate-50 text-xs text-slate-400">
+                    {staffList.length} staff members
                   </div>
                 </>
               )}

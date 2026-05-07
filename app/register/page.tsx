@@ -6,13 +6,42 @@ import { supabase } from "@/lib/supabase";
 const courses = ["BSIT", "BSCS", "BSCE", "BSBA", "BSN", "BSHM", "BSCRIM", "BSED"];
 const yearLevels = ["1st Year", "2nd Year", "3rd Year", "4th Year"];
 const departments = ["BSIT", "BSCS", "BSCE", "BSBA", "BSN", "BSHM", "BSCRIM", "BSED", "General Education", "Mathematics", "English", "Filipino", "NSTP"];
+const staffPositions = ["Library Staff", "Administrative Staff", "Registrar", "Cashier", "Security", "Maintenance", "IT Staff", "Guidance", "Other"];
+
+type Role = "student" | "faculty" | "staff";
+
+const roleConfig: Record<Role, { emoji: string; label: string; color: string; btnActive: string; badge: string; idLabel: string; idPlaceholder: string; idHint: string; table: string; tableKey: string; heading: string; subtext: string }> = {
+  student: {
+    emoji: "🎓", label: "Student", color: "blue",
+    btnActive: "text-blue-700", badge: "bg-blue-50 border-blue-100 text-blue-700",
+    idLabel: "Student ID", idPlaceholder: "e.g. 2021-00001", idHint: "Must match the enrollment masterlist.",
+    table: "enrolled_students", tableKey: "student_id",
+    heading: "Join thousands of students reading smarter.",
+    subtext: "Create your free account and get instant access to our full catalog of books and academic resources.",
+  },
+  faculty: {
+    emoji: "👨‍🏫", label: "Faculty", color: "emerald",
+    btnActive: "text-emerald-700", badge: "bg-emerald-50 border-emerald-100 text-emerald-700",
+    idLabel: "Employee ID", idPlaceholder: "e.g. FAC-2024-001", idHint: "Must match the faculty masterlist.",
+    table: "faculty_masterlist", tableKey: "employee_id",
+    heading: "Welcome, Faculty Member.",
+    subtext: "Create your faculty account to access the SCSIT Library system and manage your reading resources.",
+  },
+  staff: {
+    emoji: "🏢", label: "Staff", color: "purple",
+    btnActive: "text-purple-700", badge: "bg-purple-50 border-purple-100 text-purple-700",
+    idLabel: "Staff ID", idPlaceholder: "e.g. STF-2024-001", idHint: "Must match the staff masterlist.",
+    table: "staff_masterlist", tableKey: "staff_id",
+    heading: "Welcome, Library Staff.",
+    subtext: "Create your staff account to access the SCSIT Library system.",
+  },
+};
 
 export default function Register() {
-  const [role, setRole] = useState<"student" | "faculty">("student");
+  const [role, setRole] = useState<Role>("student");
   const [form, setForm] = useState({
     name: "", email: "", username: "", password: "", confirmPassword: "",
-    course: "", year: "", contact: "", studentId: "",
-    employeeId: "", department: "",
+    course: "", year: "", contact: "", verifyId: "", department: "", position: "",
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -21,44 +50,32 @@ export default function Register() {
   const [verifying, setVerifying] = useState(false);
 
   const f = (key: string, val: string) => setForm((prev) => ({ ...prev, [key]: val }));
+  const cfg = roleConfig[role];
 
   const handleRegister = async () => {
-    const baseValid = form.name && form.email && form.username && form.password && form.confirmPassword && form.contact;
-    const studentValid = role === "student" ? (form.studentId && form.course && form.year) : true;
-    const facultyValid = role === "faculty" ? (form.employeeId && form.department) : true;
+    const baseValid = form.name && form.email && form.username && form.password && form.confirmPassword && form.contact && form.verifyId;
+    const studentValid = role === "student" ? (form.course && form.year) : true;
+    const facultyValid = role === "faculty" ? form.department : true;
+    const staffValid = role === "staff" ? form.position : true;
 
-    if (!baseValid || !studentValid || !facultyValid) {
+    if (!baseValid || !studentValid || !facultyValid || !staffValid) {
       setError("Please fill in all required fields."); return;
     }
-    if (form.password !== form.confirmPassword) {
-      setError("Passwords do not match."); return;
-    }
-    if (form.password.length < 6) {
-      setError("Password must be at least 6 characters."); return;
-    }
+    if (form.password !== form.confirmPassword) { setError("Passwords do not match."); return; }
+    if (form.password.length < 6) { setError("Password must be at least 6 characters."); return; }
 
     setLoading(true);
     setError("");
 
-    if (role === "student") {
-      const { data: enrolled, error: enrollErr } = await supabase
-        .from("enrolled_students").select("id").eq("student_id", form.studentId.trim()).single();
-      if (enrollErr || !enrolled) {
-        setError("Student ID not found in the enrollment masterlist. Please contact the librarian.");
-        setLoading(false); return;
-      }
-    } else {
-      const { data: faculty, error: facErr } = await supabase
-        .from("faculty_masterlist").select("id").eq("employee_id", form.employeeId.trim()).single();
-      if (facErr || !faculty) {
-        setError("Employee ID not found in the faculty masterlist. Please contact the librarian.");
-        setLoading(false); return;
-      }
+    const { data: verified, error: verifyErr } = await supabase
+      .from(cfg.table).select("id").eq(cfg.tableKey, form.verifyId.trim()).single();
+    if (verifyErr || !verified) {
+      setError(`${cfg.idLabel} not found in the ${cfg.label.toLowerCase()} masterlist. Please contact the librarian.`);
+      setLoading(false); return;
     }
 
     const { data, error: authError } = await supabase.auth.signUp({
-      email: form.email,
-      password: form.password,
+      email: form.email, password: form.password,
       options: { data: { username: form.username, full_name: form.name, role } },
     });
     if (authError) { setError(authError.message); setLoading(false); return; }
@@ -67,13 +84,15 @@ export default function Register() {
         id: data.user.id,
         username: form.username,
         full_name: form.name,
+        contact_number: form.contact,
+        role,
         course: role === "student" ? form.course : null,
         year: role === "student" ? form.year : null,
-        contact_number: form.contact,
-        student_id: role === "student" ? form.studentId : null,
-        employee_id: role === "faculty" ? form.employeeId : null,
+        student_id: role === "student" ? form.verifyId : null,
+        employee_id: role === "faculty" ? form.verifyId : null,
         department: role === "faculty" ? form.department : null,
-        role,
+        staff_id: role === "staff" ? form.verifyId : null,
+        position: role === "staff" ? form.position : null,
       });
     }
     setLoading(false);
@@ -82,8 +101,7 @@ export default function Register() {
 
   const handleVerify = async () => {
     if (!otp || otp.length < 6) { setError("Please enter the 6-digit code."); return; }
-    setVerifying(true);
-    setError("");
+    setVerifying(true); setError("");
     const { error: verifyError } = await supabase.auth.verifyOtp({ email: form.email, token: otp, type: "signup" });
     if (verifyError) { setError(verifyError.message); setVerifying(false); return; }
     setVerifying(false);
@@ -93,9 +111,14 @@ export default function Register() {
   const inputCls = "border border-slate-200 p-3 w-full rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition shadow-sm";
   const labelCls = "text-sm font-medium text-slate-700 mb-1.5 block";
 
+  const btnColor: Record<Role, string> = {
+    student: "bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800",
+    faculty: "bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800",
+    staff: "bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800",
+  };
+
   return (
     <div className="flex min-h-screen font-sans">
-
       {/* LEFT PANEL */}
       <div className="hidden lg:flex w-5/12 flex-col justify-between p-12 relative overflow-hidden">
         <img src="/scsitbuilding.jpg" alt="SCSIT Building" className="absolute inset-0 w-full h-full object-cover" />
@@ -105,20 +128,13 @@ export default function Register() {
           <span className="text-white font-bold text-lg">SCSIT Library</span>
         </div>
         <div className="relative z-10">
-          <div className="text-6xl mb-6 select-none">{role === "faculty" ? "👨‍🏫" : "🎓"}</div>
-          <h2 className="text-4xl font-bold text-white leading-tight mb-4">
-            {role === "faculty" ? "Welcome,\nFaculty Member." : "Join thousands of\nstudents reading smarter."}
-          </h2>
-          <p className="text-blue-200 text-sm leading-relaxed">
-            {role === "faculty"
-              ? "Create your faculty account to access the SCSIT Library system and manage your reading resources."
-              : "Create your free account and get instant access to our full catalog of books, journals, and academic resources."}
-          </p>
+          <div className="text-6xl mb-6 select-none">{cfg.emoji}</div>
+          <h2 className="text-4xl font-bold text-white leading-tight mb-4">{cfg.heading}</h2>
+          <p className="text-blue-200 text-sm leading-relaxed">{cfg.subtext}</p>
           <div className="mt-8 space-y-3">
-            {(role === "faculty"
-              ? ["✅ Access the full book catalog", "✅ Borrow up to 3 books at a time", "✅ Track your borrowing history"]
-              : ["✅ Free access to books", "✅ Track your borrowing history", "✅ Get due date reminders"]
-            ).map((f) => <p key={f} className="text-sm text-blue-100">{f}</p>)}
+            {["✅ Access the full book catalog", "✅ Borrow up to 3 books at a time", "✅ Track your borrowing history"].map((item) => (
+              <p key={item} className="text-sm text-blue-100">{item}</p>
+            ))}
           </div>
         </div>
         <p className="relative z-10 text-xs text-blue-400">© {new Date().getFullYear()} SCSIT Library</p>
@@ -162,46 +178,29 @@ export default function Register() {
               </div>
 
               {/* ROLE TOGGLE */}
-              <div className="flex bg-slate-100 rounded-2xl p-1 mb-6">
-                <button onClick={() => setRole("student")}
-                  className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition ${role === "student" ? "bg-white text-blue-700 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}>
-                  🎓 Student
-                </button>
-                <button onClick={() => setRole("faculty")}
-                  className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition ${role === "faculty" ? "bg-white text-emerald-700 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}>
-                  👨‍🏫 Faculty
-                </button>
+              <div className="flex bg-slate-100 rounded-2xl p-1 mb-5">
+                {(["student", "faculty", "staff"] as Role[]).map((r) => (
+                  <button key={r} onClick={() => setRole(r)}
+                    className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition ${role === r ? `bg-white shadow-sm ${roleConfig[r].btnActive}` : "text-slate-500 hover:text-slate-700"}`}>
+                    {roleConfig[r].emoji} {roleConfig[r].label}
+                  </button>
+                ))}
               </div>
 
               {/* ROLE BADGE */}
-              <div className={`flex items-center gap-2 px-4 py-2.5 rounded-xl mb-5 text-xs font-medium border ${
-                role === "student" ? "bg-blue-50 border-blue-100 text-blue-700" : "bg-emerald-50 border-emerald-100 text-emerald-700"
-              }`}>
-                <span>{role === "student" ? "🎓" : "👨‍🏫"}</span>
-                <span>
-                  {role === "student"
-                    ? "Student registration requires a valid Student ID from the enrollment masterlist."
-                    : "Faculty registration requires a valid Employee ID from the faculty masterlist."}
-                </span>
+              <div className={`flex items-center gap-2 px-4 py-2.5 rounded-xl mb-5 text-xs font-medium border ${cfg.badge}`}>
+                <span>{cfg.emoji}</span>
+                <span>{cfg.label} registration requires a valid {cfg.idLabel} from the {cfg.label.toLowerCase()} masterlist.</span>
               </div>
 
               <div className="space-y-4">
-                {/* VERIFICATION ID */}
-                {role === "student" ? (
-                  <div>
-                    <label className={labelCls}>Student ID <span className="text-red-400">*</span></label>
-                    <input type="text" placeholder="e.g. 2021-00001" value={form.studentId}
-                      onChange={(e) => f("studentId", e.target.value)} className={inputCls} />
-                    <p className="text-xs text-slate-400 mt-1">Must match the enrollment masterlist.</p>
-                  </div>
-                ) : (
-                  <div>
-                    <label className={labelCls}>Employee ID <span className="text-red-400">*</span></label>
-                    <input type="text" placeholder="e.g. FAC-2024-001" value={form.employeeId}
-                      onChange={(e) => f("employeeId", e.target.value)} className={inputCls} />
-                    <p className="text-xs text-slate-400 mt-1">Must match the faculty masterlist.</p>
-                  </div>
-                )}
+                {/* VERIFY ID */}
+                <div>
+                  <label className={labelCls}>{cfg.idLabel} <span className="text-red-400">*</span></label>
+                  <input type="text" placeholder={cfg.idPlaceholder} value={form.verifyId}
+                    onChange={(e) => f("verifyId", e.target.value)} className={inputCls} />
+                  <p className="text-xs text-slate-400 mt-1">{cfg.idHint}</p>
+                </div>
 
                 <div>
                   <label className={labelCls}>Full Name <span className="text-red-400">*</span></label>
@@ -221,8 +220,8 @@ export default function Register() {
                     onChange={(e) => f("username", e.target.value)} className={inputCls} />
                 </div>
 
-                {/* STUDENT: Course + Year | FACULTY: Department */}
-                {role === "student" ? (
+                {/* ROLE-SPECIFIC FIELDS */}
+                {role === "student" && (
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className={labelCls}>Course <span className="text-red-400">*</span></label>
@@ -239,12 +238,22 @@ export default function Register() {
                       </select>
                     </div>
                   </div>
-                ) : (
+                )}
+                {role === "faculty" && (
                   <div>
                     <label className={labelCls}>Department <span className="text-red-400">*</span></label>
                     <select value={form.department} onChange={(e) => f("department", e.target.value)} className={inputCls}>
                       <option value="">Select department</option>
                       {departments.map((d) => <option key={d} value={d}>{d}</option>)}
+                    </select>
+                  </div>
+                )}
+                {role === "staff" && (
+                  <div>
+                    <label className={labelCls}>Position <span className="text-red-400">*</span></label>
+                    <select value={form.position} onChange={(e) => f("position", e.target.value)} className={inputCls}>
+                      <option value="">Select position</option>
+                      {staffPositions.map((p) => <option key={p} value={p}>{p}</option>)}
                     </select>
                   </div>
                 )}
@@ -270,12 +279,8 @@ export default function Register() {
               </div>
 
               <button onClick={handleRegister} disabled={loading}
-                className={`w-full py-3 rounded-xl transition font-semibold mt-6 text-sm shadow-lg text-white disabled:opacity-60 ${
-                  role === "student"
-                    ? "bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800"
-                    : "bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800"
-                }`}>
-                {loading ? "Verifying & sending code..." : `Create ${role === "faculty" ? "Faculty" : "Student"} Account`}
+                className={`w-full py-3 rounded-xl transition font-semibold mt-6 text-sm shadow-lg text-white disabled:opacity-60 ${btnColor[role]}`}>
+                {loading ? "Verifying & sending code..." : `Create ${cfg.label} Account`}
               </button>
 
               <p className="text-center text-sm text-slate-400 mt-5">
