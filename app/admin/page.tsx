@@ -503,31 +503,6 @@ export default function AdminPage() {
             ))}
           </div>
 
-          <div className="flex gap-1 bg-slate-100 p-1 rounded-xl w-fit mb-6">
-            {(["books", "borrowers", "reviews", "users", "masterlist", "chat"] as const).map((tab) => (
-              <button key={tab} onClick={() => setActiveTab(tab)}
-                className={`px-5 py-2 rounded-lg text-sm font-medium capitalize transition ${
-                  activeTab === tab ? "bg-white text-slate-800 shadow-sm" : "text-slate-500 hover:text-slate-700"
-                }`}>
-                {tab === "books" ? "📚 Books" : tab === "borrowers" ? (
-                  <span className="flex items-center gap-2">
-                    👥 Borrowers
-                    {(borrowers.filter(b => b.status === "Pending").length + borrowers.filter(b => b.status === "Pending Return").length + borrowers.filter(b => b.status === "Early Return").length) > 0 && (
-                      <span className="bg-blue-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">
-                        {borrowers.filter(b => b.status === "Pending").length + borrowers.filter(b => b.status === "Pending Return").length + borrowers.filter(b => b.status === "Early Return").length}
-                      </span>
-                    )}
-                  </span>
-                ) : tab === "reviews" ? "💬 Reviews" : tab === "users" ? "👤 Users" : tab === "masterlist" ? "🎓 Masterlist" : (
-                  <span className="flex items-center gap-2">
-                    💬 Chat
-                    {chatUsers.length > 0 && <span className="bg-blue-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">{chatUsers.length}</span>}
-                  </span>
-                )}
-              </button>
-            ))}
-          </div>
-
           {activeTab === "books" && (
             <>
               <div className="flex justify-between items-center mb-5">
