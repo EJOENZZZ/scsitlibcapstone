@@ -4,7 +4,7 @@ import { useSearchParams } from "next/navigation";
 import { useState, useEffect, Suspense } from "react";
 import { supabase, getAuthUser } from "@/lib/supabase";
 
-type Book = { id: string; title: string; author: string; genre: string; available: boolean; copies: number; image?: string; shelf?: string; description?: string; };
+type Book = { id: string; title: string; author: string; genre: string; available: boolean; copies: number; image?: string; shelf?: string; level?: string; description?: string; };
 type BorrowRecord = { id: string; book_title: string; book_author: string; borrow_date: string; due_date: string; status: string; book_id: string; };
 type ChatMessage = { id: string; username: string; message: string; is_admin: boolean; created_at: string; };
 const departments = [
@@ -491,7 +491,7 @@ function DashboardContent() {
                     <div className="absolute inset-0 bg-gradient-to-t from-blue-900/95 via-blue-800/80 to-blue-600/40 opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col justify-end p-5">
                       <p className="text-white font-bold text-sm leading-tight mb-1">{book.title}</p>
                       <p className="text-blue-200 text-xs mb-1">{book.author}</p>
-                      {book.shelf && <p className="text-amber-300 text-xs mb-3">📍 Shelf {book.shelf}</p>}
+                      {book.shelf && <p className="text-amber-300 text-xs mb-3">📍 Shelf {book.shelf}{book.level ? ` · Level ${book.level}` : ""}</p>}
                       <button onClick={() => setPreviewBook(book)} className="w-full text-center bg-white text-blue-700 hover:bg-blue-50 font-bold text-xs py-2.5 rounded-xl transition shadow-lg">
                         👁 View Details
                       </button>
@@ -508,7 +508,7 @@ function DashboardContent() {
                     </div>
                     {book.shelf && (
                       <div className="flex items-center gap-1.5 pt-1">
-                        <span className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md font-medium">📍 Shelf {book.shelf}</span>
+                        <span className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md font-medium">📍 Shelf {book.shelf}{book.level ? ` · Level ${book.level}` : ""}</span>
                       </div>
                     )}
                     <div className="flex items-center justify-between pt-1">
@@ -681,7 +681,7 @@ function DashboardContent() {
                 {previewBook.shelf && (
                   <div className="flex items-center gap-1.5 bg-amber-50 border border-amber-100 px-3 py-1.5 rounded-xl">
                     <span className="text-sm">📍</span>
-                    <span className="text-xs font-semibold text-amber-700">Shelf {previewBook.shelf}</span>
+                    <span className="text-xs font-semibold text-amber-700">Shelf {previewBook.shelf}{previewBook.level ? ` · Level ${previewBook.level}` : ""}</span>
                   </div>
                 )}
                 <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-100 px-3 py-1.5 rounded-xl">

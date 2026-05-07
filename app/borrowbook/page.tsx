@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { supabase, getAuthUser } from "@/lib/supabase";
 
-type Book = { id: string; title: string; author: string; genre: string; available: boolean; shelf?: string; copies?: number; description?: string; image?: string; };
+type Book = { id: string; title: string; author: string; genre: string; available: boolean; shelf?: string; level?: string; copies?: number; description?: string; image?: string; };
 
 function BorrowBookContent() {
   const searchParams = useSearchParams();
@@ -173,7 +173,7 @@ function BorrowBookContent() {
                       <p className="text-slate-500 text-sm mt-0.5">by <span className="font-semibold text-slate-700">{selected.author}</span></p>
                       <div className="flex gap-3 mt-2 flex-wrap">
                         {selected.shelf && (
-                          <span className="text-xs bg-amber-50 border border-amber-100 text-amber-700 px-2.5 py-1 rounded-lg font-medium">📍 Shelf {selected.shelf}</span>
+                          <span className="text-xs bg-amber-50 border border-amber-100 text-amber-700 px-2.5 py-1 rounded-lg font-medium">📍 Shelf {selected.shelf}{selected.level ? ` · Level ${selected.level}` : ""}</span>
                         )}
                         {selected.copies !== undefined && (
                           <span className="text-xs bg-slate-100 text-slate-600 px-2.5 py-1 rounded-lg font-medium">📚 {selected.copies} {selected.copies === 1 ? "copy" : "copies"}</span>
