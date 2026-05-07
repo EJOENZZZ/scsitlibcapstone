@@ -651,10 +651,7 @@ export default function AdminPage() {
                               <span className="text-xs font-semibold text-red-500">₱{overdueDays}.00 fine</span>
                             )}
                             {b.status === "Returned" && (
-                              <button onClick={() => handleRemoveBorrowRecord(b.id)}
-                                className="px-3 py-1.5 text-xs font-medium border border-red-200 text-red-500 rounded-lg hover:bg-red-50 transition">
-                                Remove
-                              </button>
+                              <span className="text-xs font-medium text-slate-400">Returned</span>
                             )}
                           </div>
                         </td>
