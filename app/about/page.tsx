@@ -91,6 +91,28 @@ export default function AboutPage() {
         )}
       </nav>
 
+      {/* DEPARTMENT BANNER */}
+      <div className="w-full bg-[#0f172a] border-b border-slate-800 py-2.5 px-10">
+        <div className="flex flex-wrap justify-center gap-x-6 gap-y-1">
+          {[
+            { code: "BSIT", name: "Information Technology" },
+            { code: "BSCS", name: "Computer Science" },
+            { code: "BSCE", name: "Civil Engineering" },
+            { code: "BSBA", name: "Business Administration" },
+            { code: "BSN", name: "Nursing" },
+            { code: "BSHM", name: "Hospitality Management" },
+            { code: "BSCRIM", name: "Criminology" },
+            { code: "BSED", name: "Education" },
+          ].map((d) => (
+            <div key={d.code} className="flex items-center gap-1 cursor-default">
+              <span className="text-blue-400 font-semibold" style={{fontSize:"10px"}}>{d.code}</span>
+              <span className="text-slate-600" style={{fontSize:"10px"}}>·</span>
+              <span className="text-slate-500" style={{fontSize:"10px"}}>{d.name}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* HERO */}
       <section className="py-20 bg-gradient-to-br from-[#0f172a] to-slate-800 text-white text-center">
         <span className="text-xs font-bold text-blue-400 uppercase tracking-widest">Who We Are</span>
