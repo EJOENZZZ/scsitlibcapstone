@@ -11,6 +11,8 @@ type EnrolledStudent = { id: string; student_id: string; full_name: string; cour
 type ChatMessage = { id: string; user_id: string; username: string; message: string; is_admin: boolean; created_at: string; };
 const emptyForm = { title: "", author: "", genre: "", copies: 1, available: true, image: "", shelf: "", description: "" };
 const emptyEnroll = { student_id: "", full_name: "", course: "", year: "" };
+const emptyFaculty = { employee_id: "", full_name: "", department: "" };
+const masterlistDepts = ["BSIT","BSCS","BSCE","BSBA","BSN","BSHM","BSCRIM","BSED","General Education","Mathematics","English","Filipino","NSTP"];
 
 export default function AdminPage() {
   const [authed, setAuthed] = useState(false);
@@ -36,6 +38,10 @@ export default function AdminPage() {
   const [enrolledStudents, setEnrolledStudents] = useState<EnrolledStudent[]>([]);
   const [enrollForm, setEnrollForm] = useState(emptyEnroll);
   const [enrollLoading, setEnrollLoading] = useState(false);
+  const [facultyList, setFacultyList] = useState<{id:string;employee_id:string;full_name:string;department:string}[]>([]);
+  const [facultyForm, setFacultyForm] = useState(emptyFaculty);
+  const [facultyLoading, setFacultyLoading] = useState(false);
+  const [masterlistTab, setMasterlistTab] = useState<"students"|"faculty">("students");
   const [chatUsers, setChatUsers] = useState<{user_id: string; username: string; last_message: string}[]>([]);
   const [activeChatUser, setActiveChatUser] = useState<{user_id: string; username: string} | null>(null);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
@@ -71,6 +77,8 @@ export default function AdminPage() {
     if (userData) setUsers(userData);
     const { data: enrollData } = await supabase.from("enrolled_students").select("*").order("full_name");
     if (enrollData) setEnrolledStudents(enrollData);
+    const { data: facData } = await supabase.from("faculty_masterlist").select("*").order("full_name");
+    if (facData) setFacultyList(facData);
     // Load chat user list (distinct users who sent messages)
     const { data: chatData } = await supabase.from("chat_messages").select("*").eq("is_admin", false).order("created_at", { ascending: false });
     if (chatData) {
@@ -95,6 +103,21 @@ export default function AdminPage() {
 
   const handleDeleteEnrolled = async (id: string) => {
     await supabase.from("enrolled_students").delete().eq("id", id);
+    await fetchData();
+  };
+
+  const handleAddFaculty = async () => {
+    if (!facultyForm.employee_id || !facultyForm.full_name || !facultyForm.department) return;
+    setFacultyLoading(true);
+    const { error } = await supabase.from("faculty_masterlist").insert(facultyForm);
+    if (error) { alert("Failed: " + error.message); setFacultyLoading(false); return; }
+    setFacultyForm(emptyFaculty);
+    await fetchData();
+    setFacultyLoading(false);
+  };
+
+  const handleDeleteFaculty = async (id: string) => {
+    await supabase.from("faculty_masterlist").delete().eq("id", id);
     await fetchData();
   };
 
@@ -648,61 +671,131 @@ export default function AdminPage() {
           )}
           {activeTab === "masterlist" && (
             <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-              <div className="px-6 py-5 border-b border-slate-100">
-                <h3 className="font-semibold text-slate-700 mb-4">Add Enrolled Student</h3>
-                <div className="grid grid-cols-4 gap-3">
-                  <input placeholder="Student ID (e.g. 2021-00001)" value={enrollForm.student_id}
-                    onChange={(e) => setEnrollForm({ ...enrollForm, student_id: e.target.value })}
-                    className="border border-slate-200 px-3 py-2 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-400" />
-                  <input placeholder="Full Name" value={enrollForm.full_name}
-                    onChange={(e) => setEnrollForm({ ...enrollForm, full_name: e.target.value })}
-                    className="border border-slate-200 px-3 py-2 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-400" />
-                  <select value={enrollForm.course} onChange={(e) => setEnrollForm({ ...enrollForm, course: e.target.value })}
-                    className="border border-slate-200 px-3 py-2 rounded-xl text-xs bg-white focus:outline-none focus:ring-2 focus:ring-blue-400">
-                    <option value="">Course</option>
-                    {["BSIT","BSCS","BSCE","BSBA","BSN","BSHM","BSCRIM","BSED"].map((c) => <option key={c} value={c}>{c}</option>)}
-                  </select>
-                  <select value={enrollForm.year} onChange={(e) => setEnrollForm({ ...enrollForm, year: e.target.value })}
-                    className="border border-slate-200 px-3 py-2 rounded-xl text-xs bg-white focus:outline-none focus:ring-2 focus:ring-blue-400">
-                    <option value="">Year</option>
-                    {["1st Year","2nd Year","3rd Year","4th Year"].map((y) => <option key={y} value={y}>{y}</option>)}
-                  </select>
-                </div>
-                <button onClick={handleAddEnrolled} disabled={enrollLoading}
-                  className="mt-3 px-5 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white text-xs font-semibold rounded-xl transition">
-                  {enrollLoading ? "Adding..." : "+ Add Student"}
-                </button>
+              {/* SUB TABS */}
+              <div className="px-6 pt-5 pb-0 border-b border-slate-100 flex gap-1">
+                <button onClick={() => setMasterlistTab("students")}
+                  className={`px-5 py-2 rounded-t-xl text-sm font-semibold border-b-2 transition ${
+                    masterlistTab === "students" ? "border-blue-600 text-blue-700 bg-blue-50" : "border-transparent text-slate-500 hover:text-slate-700"
+                  }`}>🎓 Students ({enrolledStudents.length})</button>
+                <button onClick={() => setMasterlistTab("faculty")}
+                  className={`px-5 py-2 rounded-t-xl text-sm font-semibold border-b-2 transition ${
+                    masterlistTab === "faculty" ? "border-emerald-600 text-emerald-700 bg-emerald-50" : "border-transparent text-slate-500 hover:text-slate-700"
+                  }`}>👨🏫 Faculty ({facultyList.length})</button>
               </div>
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="bg-slate-50 border-b border-slate-100">
-                    {["Student ID","Full Name","Course","Year","Action"].map((h) => (
-                      <th key={h} className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-50">
-                  {enrolledStudents.length === 0 ? (
-                    <tr><td colSpan={5} className="px-6 py-12 text-center text-slate-400">No enrolled students yet. Add some above.</td></tr>
-                  ) : (
-                    enrolledStudents.map((s) => (
-                      <tr key={s.id} className="hover:bg-slate-50 transition">
-                        <td className="px-6 py-4 font-mono text-slate-700 text-xs">{s.student_id}</td>
-                        <td className="px-6 py-4 font-semibold text-slate-800">{s.full_name}</td>
-                        <td className="px-6 py-4"><span className="bg-blue-50 text-blue-700 text-xs px-2.5 py-1 rounded-full font-medium">{s.course}</span></td>
-                        <td className="px-6 py-4 text-slate-500 text-xs">{s.year}</td>
-                        <td className="px-6 py-4">
-                          <button onClick={() => handleDeleteEnrolled(s.id)}
-                            className="px-3 py-1.5 text-xs font-medium border border-red-200 text-red-500 rounded-lg hover:bg-red-50 transition">Remove</button>
-                        </td>
+
+              {masterlistTab === "students" && (
+                <>
+                  <div className="px-6 py-5 border-b border-slate-100">
+                    <p className="text-xs text-slate-500 mb-3">Students must be on this list to register. Their Student ID will be verified during sign-up.</p>
+                    <div className="grid grid-cols-4 gap-3">
+                      <input placeholder="Student ID (e.g. 2021-00001)" value={enrollForm.student_id}
+                        onChange={(e) => setEnrollForm({ ...enrollForm, student_id: e.target.value })}
+                        className="border border-slate-200 px-3 py-2 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-400" />
+                      <input placeholder="Full Name" value={enrollForm.full_name}
+                        onChange={(e) => setEnrollForm({ ...enrollForm, full_name: e.target.value })}
+                        className="border border-slate-200 px-3 py-2 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-400" />
+                      <select value={enrollForm.course} onChange={(e) => setEnrollForm({ ...enrollForm, course: e.target.value })}
+                        className="border border-slate-200 px-3 py-2 rounded-xl text-xs bg-white focus:outline-none focus:ring-2 focus:ring-blue-400">
+                        <option value="">Course</option>
+                        {["BSIT","BSCS","BSCE","BSBA","BSN","BSHM","BSCRIM","BSED"].map((c) => <option key={c} value={c}>{c}</option>)}
+                      </select>
+                      <select value={enrollForm.year} onChange={(e) => setEnrollForm({ ...enrollForm, year: e.target.value })}
+                        className="border border-slate-200 px-3 py-2 rounded-xl text-xs bg-white focus:outline-none focus:ring-2 focus:ring-blue-400">
+                        <option value="">Year</option>
+                        {["1st Year","2nd Year","3rd Year","4th Year"].map((y) => <option key={y} value={y}>{y}</option>)}
+                      </select>
+                    </div>
+                    <button onClick={handleAddEnrolled} disabled={enrollLoading}
+                      className="mt-3 px-5 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white text-xs font-semibold rounded-xl transition">
+                      {enrollLoading ? "Adding..." : "+ Add Student"}
+                    </button>
+                  </div>
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="bg-slate-50 border-b border-slate-100">
+                        {["Student ID","Full Name","Course","Year","Action"].map((h) => (
+                          <th key={h} className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">{h}</th>
+                        ))}
                       </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-              <div className="px-6 py-3 border-t border-slate-100 bg-slate-50 text-xs text-slate-400">
-                {enrolledStudents.length} enrolled students · Students must be on this list to register
-              </div>
+                    </thead>
+                    <tbody className="divide-y divide-slate-50">
+                      {enrolledStudents.length === 0 ? (
+                        <tr><td colSpan={5} className="px-6 py-12 text-center text-slate-400">No enrolled students yet.</td></tr>
+                      ) : (
+                        enrolledStudents.map((s) => (
+                          <tr key={s.id} className="hover:bg-slate-50 transition">
+                            <td className="px-6 py-4 font-mono text-slate-700 text-xs">{s.student_id}</td>
+                            <td className="px-6 py-4 font-semibold text-slate-800">{s.full_name}</td>
+                            <td className="px-6 py-4"><span className="bg-blue-50 text-blue-700 text-xs px-2.5 py-1 rounded-full font-medium">{s.course}</span></td>
+                            <td className="px-6 py-4 text-slate-500 text-xs">{s.year}</td>
+                            <td className="px-6 py-4">
+                              <button onClick={() => handleDeleteEnrolled(s.id)}
+                                className="px-3 py-1.5 text-xs font-medium border border-red-200 text-red-500 rounded-lg hover:bg-red-50 transition">Remove</button>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                  <div className="px-6 py-3 border-t border-slate-100 bg-slate-50 text-xs text-slate-400">
+                    {enrolledStudents.length} enrolled students
+                  </div>
+                </>
+              )}
+
+              {masterlistTab === "faculty" && (
+                <>
+                  <div className="px-6 py-5 border-b border-slate-100">
+                    <p className="text-xs text-slate-500 mb-3">Faculty members must be on this list to register. Their Employee ID will be verified during sign-up.</p>
+                    <div className="grid grid-cols-3 gap-3">
+                      <input placeholder="Employee ID (e.g. FAC-2024-001)" value={facultyForm.employee_id}
+                        onChange={(e) => setFacultyForm({ ...facultyForm, employee_id: e.target.value })}
+                        className="border border-slate-200 px-3 py-2 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-emerald-400" />
+                      <input placeholder="Full Name" value={facultyForm.full_name}
+                        onChange={(e) => setFacultyForm({ ...facultyForm, full_name: e.target.value })}
+                        className="border border-slate-200 px-3 py-2 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-emerald-400" />
+                      <select value={facultyForm.department} onChange={(e) => setFacultyForm({ ...facultyForm, department: e.target.value })}
+                        className="border border-slate-200 px-3 py-2 rounded-xl text-xs bg-white focus:outline-none focus:ring-2 focus:ring-emerald-400">
+                        <option value="">Department</option>
+                        {masterlistDepts.map((d) => <option key={d} value={d}>{d}</option>)}
+                      </select>
+                    </div>
+                    <button onClick={handleAddFaculty} disabled={facultyLoading}
+                      className="mt-3 px-5 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white text-xs font-semibold rounded-xl transition">
+                      {facultyLoading ? "Adding..." : "+ Add Faculty"}
+                    </button>
+                  </div>
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="bg-slate-50 border-b border-slate-100">
+                        {["Employee ID","Full Name","Department","Action"].map((h) => (
+                          <th key={h} className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-50">
+                      {facultyList.length === 0 ? (
+                        <tr><td colSpan={4} className="px-6 py-12 text-center text-slate-400">No faculty members yet.</td></tr>
+                      ) : (
+                        facultyList.map((f) => (
+                          <tr key={f.id} className="hover:bg-slate-50 transition">
+                            <td className="px-6 py-4 font-mono text-slate-700 text-xs">{f.employee_id}</td>
+                            <td className="px-6 py-4 font-semibold text-slate-800">{f.full_name}</td>
+                            <td className="px-6 py-4"><span className="bg-emerald-50 text-emerald-700 text-xs px-2.5 py-1 rounded-full font-medium">{f.department}</span></td>
+                            <td className="px-6 py-4">
+                              <button onClick={() => handleDeleteFaculty(f.id)}
+                                className="px-3 py-1.5 text-xs font-medium border border-red-200 text-red-500 rounded-lg hover:bg-red-50 transition">Remove</button>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                  <div className="px-6 py-3 border-t border-slate-100 bg-slate-50 text-xs text-slate-400">
+                    {facultyList.length} faculty members
+                  </div>
+                </>
+              )}
             </div>
           )}
 
