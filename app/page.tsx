@@ -34,10 +34,7 @@ export default async function Home() {
           <div className="w-11 h-11">
             <img src="/scsitlogo.png" alt="SCSIT Logo" className="w-full h-full object-contain" />
           </div>
-          <div>
-            <p className="text-white font-bold text-sm leading-tight">SCSIT Library</p>
-            <p className="text-slate-400 text-xs">School of Computer Studies & IT</p>
-          </div>
+          <span className="text-lg font-bold text-white tracking-tight">SCSIT Library</span>
         </div>
         <div className="hidden md:flex items-center gap-1 bg-slate-800 rounded-xl p-1">
           <Link href="/" className="px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white">Home</Link>
@@ -51,8 +48,12 @@ export default async function Home() {
       </nav>
 
       {/* HERO + DEPARTMENTS */}
-      <section className="bg-[#0f172a] pt-16 pb-0">
-        <div className="max-w-7xl mx-auto px-10">
+      <section className="relative bg-[#0f172a] pt-16 pb-0">
+        <div className="absolute inset-0">
+          <img src="/Library.jpg" alt="Library" className="w-full h-full object-cover opacity-30" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#0f172a]/70 via-[#0f172a]/60 to-[#0f172a]" />
+        </div>
+        <div className="relative z-10 max-w-7xl mx-auto px-10">
           {/* HERO TEXT */}
           <div className="text-center mb-12">
             <span className="inline-block bg-blue-600/20 text-blue-400 text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-widest mb-5 border border-blue-500/30">
