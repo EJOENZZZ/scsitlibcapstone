@@ -62,28 +62,20 @@ export default async function Home() {
               Your Academic Resources,<br />
               <span className="text-blue-400">All in One Place.</span>
             </h1>
-            <p className="text-slate-400 text-lg max-w-2xl mx-auto mb-8">
+            <p className="text-slate-400 text-lg max-w-2xl mx-auto">
               Browse, borrow, and manage library books online. Available to all enrolled students and faculty of SCSIT.
             </p>
-            <div className="flex items-center justify-center gap-4 flex-wrap">
-              <Link href="/register" className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl text-sm transition shadow-lg shadow-blue-900/40">
-                Get Started
-              </Link>
-              <Link href="/login" className="px-6 py-3 bg-white/10 hover:bg-white/15 text-white font-semibold rounded-xl text-sm transition border border-white/10">
-                Sign In
-              </Link>
-            </div>
           </div>
 
           {/* DEPARTMENT STRIP */}
-          <div className="border-t border-slate-700/60 py-6">
-            <p className="text-xs text-slate-500 font-semibold uppercase tracking-widest text-center mb-4">Serving all departments</p>
-            <div className="flex flex-wrap justify-center gap-2">
+          <div className="border-t border-slate-700/60 py-5">
+            <p className="text-xs text-slate-500 font-semibold uppercase tracking-widest text-center mb-3">Serving all departments</p>
+            <div className="flex flex-wrap justify-center gap-x-6 gap-y-1">
               {departments.map((d) => (
-                <div key={d.code} className="flex items-center gap-1.5 bg-slate-800/80 border border-slate-700 px-3 py-1.5 rounded-lg hover:border-blue-500/50 hover:bg-slate-700/80 transition cursor-default">
-                  <span className="text-blue-400 font-bold text-xs">{d.code}</span>
-                  <span className="text-slate-600 text-xs">·</span>
-                  <span className="text-slate-400 text-xs">{d.name}</span>
+                <div key={d.code} className="flex items-center gap-1 cursor-default">
+                  <span className="text-blue-400 font-semibold" style={{fontSize:"10px"}}>{d.code}</span>
+                  <span className="text-slate-600" style={{fontSize:"10px"}}>·</span>
+                  <span className="text-slate-500" style={{fontSize:"10px"}}>{d.name}</span>
                 </div>
               ))}
             </div>
@@ -155,19 +147,8 @@ export default async function Home() {
       </section>
 
       {/* FOOTER */}
-      <footer className="bg-[#0f172a] border-t border-slate-800 py-8 px-10">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8">
-              <img src="/scsitlogo.png" alt="SCSIT Logo" className="w-full h-full object-contain" />
-            </div>
-            <div>
-              <p className="text-white text-sm font-bold">SCSIT Library</p>
-              <p className="text-slate-500 text-xs">School of Computer Studies & Information Technology</p>
-            </div>
-          </div>
-          <p className="text-slate-500 text-xs">© {new Date().getFullYear()} SCSIT Library. All rights reserved.</p>
-        </div>
+      <footer className="bg-[#0f172a] border-t border-slate-800 py-5 text-center">
+        <p className="text-slate-500 text-xs">© {new Date().getFullYear()} SCSIT Library. All rights reserved.</p>
       </footer>
     </div>
   );
