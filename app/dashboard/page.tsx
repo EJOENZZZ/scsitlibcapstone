@@ -7,7 +7,16 @@ import { supabase, getAuthUser } from "@/lib/supabase";
 type Book = { id: string; title: string; author: string; genre: string; available: boolean; copies: number; image?: string; shelf?: string; description?: string; };
 type BorrowRecord = { id: string; book_title: string; book_author: string; borrow_date: string; due_date: string; status: string; book_id: string; };
 type ChatMessage = { id: string; username: string; message: string; is_admin: boolean; created_at: string; };
-const departments = ["BSIT","BSCS","BSCE","BSBA","BSN","BSHM","BSCRIM","BSED"];
+const departments = [
+  { code: "BSIT", name: "Information Technology" },
+  { code: "BSCS", name: "Computer Science" },
+  { code: "BSCE", name: "Civil Engineering" },
+  { code: "BSBA", name: "Business Administration" },
+  { code: "BSN", name: "Nursing" },
+  { code: "BSHM", name: "Hospitality Management" },
+  { code: "BSCRIM", name: "Criminology" },
+  { code: "BSED", name: "Education" },
+];
 
 const calcFine = (due_date: string, status: string) => {
   if (status === "Returned") return 0;
@@ -319,7 +328,6 @@ function DashboardContent() {
         </div>
         <div className="hidden md:flex items-center gap-1 bg-slate-800 rounded-xl p-1">
           <Link href="/dashboard" className="px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white">Home</Link>
-          <Link href="/borrowbook" className="px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-700 transition">Borrow</Link>
           <button onClick={() => { setShowFavorites(true); }} className="px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-700 transition flex items-center gap-1">
             ❤️ Favorites {favorites.length > 0 && <span className="bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">{favorites.length}</span>}
           </button>
@@ -357,11 +365,16 @@ function DashboardContent() {
 
 
       {/* DEPARTMENT BANNER */}
-      <div className="w-full bg-slate-800 border-b border-slate-700 py-2 px-10 flex items-center gap-2 overflow-x-auto">
-        <span className="text-xs text-slate-400 font-semibold uppercase tracking-wider mr-2 whitespace-nowrap">Departments:</span>
-        {departments.map((d) => (
-          <span key={d} className="px-3 py-1 rounded-full bg-slate-700 text-slate-300 text-xs font-medium whitespace-nowrap hover:bg-blue-600 hover:text-white transition cursor-default">{d}</span>
-        ))}
+      <div className="w-full bg-[#0f172a] border-b border-slate-800 py-2.5 px-10">
+        <div className="flex flex-wrap justify-center gap-x-6 gap-y-1">
+          {departments.map((d) => (
+            <div key={d.code} className="flex items-center gap-1 cursor-default">
+              <span className="text-blue-400 font-semibold" style={{fontSize:"10px"}}>{d.code}</span>
+              <span className="text-slate-600" style={{fontSize:"10px"}}>·</span>
+              <span className="text-slate-500" style={{fontSize:"10px"}}>{d.name}</span>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* BORROW SUBMITTED BANNER */}
@@ -498,6 +511,20 @@ function DashboardContent() {
                         <span className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md font-medium">📍 Shelf {book.shelf}</span>
                       </div>
                     )}
+                    <div className="flex items-center justify-between pt-1">
+                      <Link href={`/borrowbook?bookId=${book.id}`} onClick={(e) => e.stopPropagation()}
+                        className="text-xs bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg font-medium transition">
+                        Borrow
+                      </Link>
+                      <button onClick={(e) => { e.stopPropagation(); toggleFavorite(book.id); }}
+                        className={`flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg font-medium transition border ${
+                          favorites.includes(book.id)
+                            ? "bg-red-50 border-red-200 text-red-500"
+                            : "bg-slate-50 border-slate-200 text-slate-400 hover:text-red-500 hover:border-red-200"
+                        }`}>
+                        ❤ {favorites.includes(book.id) ? "Saved" : "Save"}
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}
