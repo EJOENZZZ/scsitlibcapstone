@@ -29,7 +29,7 @@ export default function AdminPage() {
   const [selected, setSelected] = useState<Book | null>(null);
   const [deleteUserTarget, setDeleteUserTarget] = useState<UserProfile | null>(null);
   const [form, setForm] = useState(emptyForm);
-  const [activeTab, setActiveTab] = useState<"books" | "borrowers" | "reviews" | "users" | "masterlist" | "chat">("books");
+  const [activeTab, setActiveTab] = useState<"dashboard" | "books" | "borrowers" | "reviews" | "users" | "masterlist" | "chat">("dashboard");
   const [loading, setLoading] = useState(false);
   const [returningId, setReturningId] = useState<string | null>(null);
   const [imageUploading, setImageUploading] = useState(false);
@@ -373,20 +373,27 @@ export default function AdminPage() {
           </div>
         </div>
         <nav className="flex-1 px-4 py-6 space-y-1">
-          {[
-            { icon: "📚", label: "Books" },
-            { icon: "👥", label: "Borrowers" },
-            { icon: "💬", label: "Reviews" },
-            { icon: "👤", label: "Users" },
-            { icon: "🎓", label: "Masterlist" },
-            { icon: "💬", label: "Chat" },
-          ].map((item) => (
-            <button key={item.label}
-              onClick={() => setActiveTab(item.label.toLowerCase() as "books" | "borrowers" | "reviews" | "users" | "masterlist" | "chat")}
+          {([
+            { icon: "🏠", label: "Dashboard", key: "dashboard" },
+            { icon: "📚", label: "Books", key: "books" },
+            { icon: "👥", label: "Borrowers", key: "borrowers" },
+            { icon: "💬", label: "Reviews", key: "reviews" },
+            { icon: "👤", label: "Users", key: "users" },
+            { icon: "🎓", label: "Masterlist", key: "masterlist" },
+            { icon: "💬", label: "Chat", key: "chat" },
+          ] as const).map((item) => (
+            <button key={item.key}
+              onClick={() => setActiveTab(item.key)}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition text-left ${
-                activeTab === item.label.toLowerCase() ? "bg-blue-600 text-white" : "text-slate-400 hover:bg-slate-800 hover:text-white"
+                activeTab === item.key ? "bg-blue-600 text-white" : "text-slate-400 hover:bg-slate-800 hover:text-white"
               }`}>
-              <span>{item.icon}</span>{item.label}
+              <span>{item.icon}</span>
+              <span className="flex-1">{item.label}</span>
+              {item.key === "borrowers" && borrowers.filter(b => ["Pending","Pending Return","Early Return"].includes(b.status)).length > 0 && (
+                <span className="bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">
+                  {borrowers.filter(b => ["Pending","Pending Return","Early Return"].includes(b.status)).length}
+                </span>
+              )}
             </button>
           ))}
         </nav>
@@ -440,68 +447,25 @@ export default function AdminPage() {
               <button onClick={() => setEarlyReturnDone("")} className="text-emerald-500 hover:text-emerald-700 text-lg font-bold ml-4">✕</button>
             </div>
           )}
-          {borrowers.filter(b => b.status === "Pending").length > 0 && (
-            <div className="bg-blue-50 border border-blue-200 rounded-2xl px-6 py-4 mb-6 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <span className="text-2xl">📬</span>
-                <div>
-                  <p className="font-semibold text-blue-800 text-sm">
-                    {borrowers.filter(b => b.status === "Pending").length} borrow request{borrowers.filter(b => b.status === "Pending").length > 1 ? "s" : ""} waiting for approval
-                  </p>
-                  <p className="text-xs text-blue-600 mt-0.5">Go to Borrowers tab to approve or reject.</p>
-                </div>
+          {activeTab === "dashboard" && (
+            <>
+              <div className="mb-6">
+                <h2 className="text-xl font-bold text-slate-800">Dashboard</h2>
+                <p className="text-xs text-slate-400 mt-0.5">Library overview at a glance</p>
               </div>
-              <button onClick={() => setActiveTab("borrowers")}
-                className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white text-xs font-semibold rounded-xl transition">
-                View Requests
-              </button>
-            </div>
+              <div className="grid grid-cols-5 gap-5">
+                {stats.map((s) => (
+                  <div key={s.label} className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm flex items-center gap-4">
+                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl ${s.color}`}>{s.icon}</div>
+                    <div>
+                      <p className="text-2xl font-bold text-slate-800">{s.value}</p>
+                      <p className="text-xs text-slate-400 mt-0.5">{s.label}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
           )}
-          {borrowers.filter(b => b.status === "Pending Return").length > 0 && (
-            <div className="bg-amber-50 border border-amber-200 rounded-2xl px-6 py-4 mb-6 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <span className="text-2xl">📬</span>
-                <div>
-                  <p className="font-semibold text-amber-800 text-sm">
-                    {borrowers.filter(b => b.status === "Pending Return").length} return request{borrowers.filter(b => b.status === "Pending Return").length > 1 ? "s" : ""} waiting for your confirmation
-                  </p>
-                  <p className="text-xs text-amber-600 mt-0.5">Go to Borrowers tab to confirm.</p>
-                </div>
-              </div>
-              <button onClick={() => setActiveTab("borrowers")}
-                className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold rounded-xl transition">
-                View Requests
-              </button>
-            </div>
-          )}
-          {borrowers.filter(b => b.status === "Early Return").length > 0 && (
-            <div className="bg-purple-50 border border-purple-200 rounded-2xl px-6 py-4 mb-6 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <span className="text-2xl">↩</span>
-                <div>
-                  <p className="font-semibold text-purple-800 text-sm">
-                    {borrowers.filter(b => b.status === "Early Return").length} early return request{borrowers.filter(b => b.status === "Early Return").length > 1 ? "s" : ""} waiting for your confirmation
-                  </p>
-                  <p className="text-xs text-purple-600 mt-0.5">Go to Borrowers tab to confirm.</p>
-                </div>
-              </div>
-              <button onClick={() => setActiveTab("borrowers")}
-                className="px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white text-xs font-semibold rounded-xl transition">
-                View Requests
-              </button>
-            </div>
-          )}
-          <div className="grid grid-cols-5 gap-5 mb-8">
-            {stats.map((s) => (
-              <div key={s.label} className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm flex items-center gap-4">
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl ${s.color}`}>{s.icon}</div>
-                <div>
-                  <p className="text-2xl font-bold text-slate-800">{s.value}</p>
-                  <p className="text-xs text-slate-400 mt-0.5">{s.label}</p>
-                </div>
-              </div>
-            ))}
-          </div>
 
           {activeTab === "books" && (
             <>
