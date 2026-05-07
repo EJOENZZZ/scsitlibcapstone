@@ -122,18 +122,18 @@ export default function Register() {
       {/* LEFT PANEL */}
       <div className="hidden lg:flex w-5/12 flex-col justify-between p-12 relative overflow-hidden">
         <img src="/scsitbuilding.jpg" alt="SCSIT Building" className="absolute inset-0 w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-b from-blue-900/85 via-blue-900/75 to-slate-900/95" />
+        <div className="absolute inset-0 bg-gradient-to-b from-blue-900/80 via-blue-900/70 to-slate-900/90" />
         <div className="relative z-10 flex items-center gap-3">
           <div className="w-11 h-11"><img src="/scsitlogo.png" alt="SCSIT Logo" className="w-full h-full object-contain" /></div>
-          <span className="text-white font-bold text-lg">SCSIT Library</span>
+          <span className="text-white font-bold text-base">SCSIT Library</span>
         </div>
         <div className="relative z-10">
-          <div className="text-6xl mb-6 select-none">{cfg.emoji}</div>
-          <h2 className="text-4xl font-bold text-white leading-tight mb-4">{cfg.heading}</h2>
-          <p className="text-blue-200 text-sm leading-relaxed">{cfg.subtext}</p>
-          <div className="mt-8 space-y-3">
+          <div className="text-5xl mb-4 select-none">{cfg.emoji}</div>
+          <h2 className="text-2xl font-bold text-white leading-snug mb-3">{cfg.heading}</h2>
+          <p className="text-blue-200 text-xs leading-relaxed">{cfg.subtext}</p>
+          <div className="mt-6 space-y-2">
             {["✅ Access the full book catalog", "✅ Borrow up to 3 books at a time", "✅ Track your borrowing history"].map((item) => (
-              <p key={item} className="text-sm text-blue-100">{item}</p>
+              <p key={item} className="text-xs text-blue-100">{item}</p>
             ))}
           </div>
         </div>
