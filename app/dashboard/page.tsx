@@ -6,6 +6,8 @@ import { supabase, getAuthUser } from "@/lib/supabase";
 
 type Book = { id: string; title: string; author: string; genre: string; available: boolean; copies: number; image?: string; shelf?: string; description?: string; };
 type BorrowRecord = { id: string; book_title: string; book_author: string; borrow_date: string; due_date: string; status: string; book_id: string; };
+type ChatMessage = { id: string; username: string; message: string; is_admin: boolean; created_at: string; };
+const departments = ["BSIT","BSCS","BSCE","BSBA","BSN","BSHM","BSCRIM","BSED"];
 
 const calcFine = (due_date: string, status: string) => {
   if (status === "Returned") return 0;
@@ -159,6 +161,12 @@ function DashboardContent() {
   const [profileOpen, setProfileOpen] = useState(false);
   const [previewBook, setPreviewBook] = useState<Book | null>(null);
   const [approvedBooks, setApprovedBooks] = useState<BorrowRecord[]>([]);
+  const [favorites, setFavorites] = useState<string[]>([]);
+  const [showFavorites, setShowFavorites] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [chatInput, setChatInput] = useState("");
+  const [chatUserId, setChatUserId] = useState<string>("");
   const [dismissedApprovals, setDismissedApprovals] = useState<string[]>(() => {
     if (typeof window === "undefined") return [];
     return JSON.parse(localStorage.getItem("dismissedApprovals") || "[]");
@@ -171,9 +179,11 @@ function DashboardContent() {
 
       const user = await getAuthUser();
       if (user) {
-        const { data: profile } = await supabase.from("profiles").select("username").eq("id", user.id).single();
+        setChatUserId(user.id);
+        const { data: profile } = await supabase.from("profiles").select("username, favorites").eq("id", user.id).single();
         if (profile?.username) setUsername(profile.username);
         else if (user.user_metadata?.username) setUsername(user.user_metadata.username);
+        if (profile?.favorites) setFavorites(profile.favorites);
 
         const { data: borrowData } = await supabase
           .from("borrow_records").select("*").eq("user_id", user.id).order("created_at", { ascending: false });
@@ -264,6 +274,30 @@ function DashboardContent() {
     }
   };
 
+  const toggleFavorite = async (bookId: string) => {
+    const user = await getAuthUser();
+    if (!user) return;
+    const updated = favorites.includes(bookId) ? favorites.filter((id) => id !== bookId) : [...favorites, bookId];
+    setFavorites(updated);
+    await supabase.from("profiles").update({ favorites: updated }).eq("id", user.id);
+  };
+
+  const loadChat = async () => {
+    const user = await getAuthUser();
+    if (!user) return;
+    const { data } = await supabase.from("chat_messages").select("*").or(`user_id.eq.${user.id},is_admin.eq.true`).order("created_at");
+    if (data) setChatMessages(data);
+  };
+
+  const sendChat = async () => {
+    if (!chatInput.trim()) return;
+    const user = await getAuthUser();
+    if (!user) return;
+    await supabase.from("chat_messages").insert({ user_id: user.id, username, message: chatInput.trim(), is_admin: false });
+    setChatInput("");
+    loadChat();
+  };
+
   const handleSignOut = async () => {
     const user = await getAuthUser();
     if (user) {
@@ -286,6 +320,9 @@ function DashboardContent() {
         <div className="hidden md:flex items-center gap-1 bg-slate-800 rounded-xl p-1">
           <Link href="/dashboard" className="px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white">Home</Link>
           <Link href="/borrowbook" className="px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-700 transition">Borrow</Link>
+          <button onClick={() => { setShowFavorites(true); }} className="px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-700 transition flex items-center gap-1">
+            ❤️ Favorites {favorites.length > 0 && <span className="bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">{favorites.length}</span>}
+          </button>
           <Link href="/about" className="px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-700 transition">About</Link>
           <Link href="/reviews" className="px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-700 transition">Reviews</Link>
         </div>
@@ -318,6 +355,14 @@ function DashboardContent() {
         </div>
       </nav>
 
+
+      {/* DEPARTMENT BANNER */}
+      <div className="w-full bg-slate-800 border-b border-slate-700 py-2 px-10 flex items-center gap-2 overflow-x-auto">
+        <span className="text-xs text-slate-400 font-semibold uppercase tracking-wider mr-2 whitespace-nowrap">Departments:</span>
+        {departments.map((d) => (
+          <span key={d} className="px-3 py-1 rounded-full bg-slate-700 text-slate-300 text-xs font-medium whitespace-nowrap hover:bg-blue-600 hover:text-white transition cursor-default">{d}</span>
+        ))}
+      </div>
 
       {/* BORROW SUBMITTED BANNER */}
       {borrowedBanner && (
@@ -419,7 +464,13 @@ function DashboardContent() {
                         {book.available ? "✓ Available" : "✗ Borrowed"}
                       </span>
                     </div>
-                    <div className="absolute top-3 right-3">
+                    <div className="absolute top-3 right-3 flex flex-col gap-1 items-end">
+                      <button onClick={(e) => { e.stopPropagation(); toggleFavorite(book.id); }}
+                        className={`w-7 h-7 rounded-full flex items-center justify-center text-sm shadow transition ${
+                          favorites.includes(book.id) ? "bg-red-500 text-white" : "bg-white/80 text-slate-400 hover:text-red-500"
+                        }`}>
+                        ❤
+                      </button>
                       <span className="bg-blue-600/90 backdrop-blur-sm text-white text-xs px-2.5 py-1 rounded-full font-semibold shadow">
                         {book.genre}
                       </span>
@@ -479,6 +530,95 @@ function DashboardContent() {
       <footer className="bg-white border-t border-slate-200 text-center py-5 text-slate-400 text-xs">
         © {new Date().getFullYear()} SCSIT Library. All rights reserved.
       </footer>
+
+      {/* CHAT BUBBLE */}
+      <button onClick={() => { setChatOpen(true); loadChat(); }}
+        className="fixed bottom-6 right-6 w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-2xl flex items-center justify-center text-2xl z-40 transition">
+        💬
+      </button>
+
+      {/* CHAT PANEL */}
+      {chatOpen && (
+        <div className="fixed bottom-24 right-6 w-80 bg-white rounded-2xl shadow-2xl border border-slate-200 z-50 flex flex-col overflow-hidden" style={{height:"420px"}}>
+          <div className="bg-[#0f172a] px-4 py-3 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-lg">💬</span>
+              <div>
+                <p className="text-white text-sm font-semibold">Library Chat</p>
+                <p className="text-slate-400 text-xs">Message the librarian</p>
+              </div>
+            </div>
+            <button onClick={() => setChatOpen(false)} className="text-slate-400 hover:text-white text-lg transition">✕</button>
+          </div>
+          <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50">
+            {chatMessages.length === 0 && (
+              <p className="text-xs text-slate-400 text-center mt-8">No messages yet. Say hi! 👋</p>
+            )}
+            {chatMessages.map((m) => (
+              <div key={m.id} className={`flex ${m.is_admin ? "justify-start" : "justify-end"}`}>
+                <div className={`max-w-[75%] px-3 py-2 rounded-2xl text-xs ${
+                  m.is_admin ? "bg-white border border-slate-200 text-slate-700 rounded-tl-sm" : "bg-blue-600 text-white rounded-tr-sm"
+                }`}>
+                  {m.is_admin && <p className="font-bold text-blue-600 mb-0.5 text-xs">Librarian</p>}
+                  <p>{m.message}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="p-3 border-t border-slate-200 bg-white flex gap-2">
+            <input value={chatInput} onChange={(e) => setChatInput(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && sendChat()}
+              placeholder="Type a message..."
+              className="flex-1 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-400" />
+            <button onClick={sendChat} className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-xl text-xs font-semibold transition">Send</button>
+          </div>
+        </div>
+      )}
+
+      {/* FAVORITES MODAL */}
+      {showFavorites && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 px-4" onClick={() => setShowFavorites(false)}>
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[80vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
+            <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
+              <div>
+                <h2 className="font-bold text-slate-800 text-lg">❤️ My Favorites</h2>
+                <p className="text-xs text-slate-400 mt-0.5">Books you&apos;ve saved for later</p>
+              </div>
+              <button onClick={() => setShowFavorites(false)} className="w-8 h-8 bg-slate-100 hover:bg-slate-200 rounded-full flex items-center justify-center text-slate-500 text-lg transition">&times;</button>
+            </div>
+            <div className="overflow-y-auto p-6">
+              {favorites.length === 0 ? (
+                <div className="text-center py-12">
+                  <div className="text-5xl mb-3">❤️</div>
+                  <p className="text-slate-500">No favorites yet.</p>
+                  <p className="text-xs text-slate-400 mt-1">Click the ❤️ on any book to save it here.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-4">
+                  {books.filter((b) => favorites.includes(b.id)).map((book) => (
+                    <div key={book.id} className="flex gap-3 bg-slate-50 rounded-2xl p-3 border border-slate-100">
+                      <img src={book.image || "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=100&h=140&fit=crop"} alt={book.title} className="w-14 h-20 object-cover rounded-xl flex-shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-slate-800 text-xs leading-tight line-clamp-2">{book.title}</p>
+                        <p className="text-slate-400 text-xs mt-0.5">{book.author}</p>
+                        <span className={`inline-block mt-1.5 text-xs px-2 py-0.5 rounded-full font-semibold ${book.available ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-600"}`}>
+                          {book.available ? "Available" : "Unavailable"}
+                        </span>
+                        <div className="flex gap-1.5 mt-2">
+                          {book.available && (
+                            <Link href={`/borrowbook?bookId=${book.id}`} className="text-xs bg-blue-600 text-white px-2 py-1 rounded-lg font-medium hover:bg-blue-700 transition">Borrow</Link>
+                          )}
+                          <button onClick={() => toggleFavorite(book.id)} className="text-xs bg-red-50 text-red-500 px-2 py-1 rounded-lg font-medium hover:bg-red-100 transition">Remove</button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* BOOK PREVIEW MODAL */}
       {previewBook && (

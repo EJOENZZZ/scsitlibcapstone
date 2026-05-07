@@ -7,7 +7,10 @@ type Book = { id: string; title: string; author: string; genre: string; copies: 
 type Borrower = { id: string; user_name: string; book_title: string; borrow_date: string; due_date: string; status: string; book_id: string; };
 type Review = { id: string; username: string; course: string; comment: string; rating: number; approved: boolean; created_at: string; };
 type UserProfile = { id: string; username: string; full_name: string; course: string; year: string; contact_number: string; created_at: string; };
+type EnrolledStudent = { id: string; student_id: string; full_name: string; course: string; year: string; };
+type ChatMessage = { id: string; user_id: string; username: string; message: string; is_admin: boolean; created_at: string; };
 const emptyForm = { title: "", author: "", genre: "", copies: 1, available: true, image: "", shelf: "", description: "" };
+const emptyEnroll = { student_id: "", full_name: "", course: "", year: "" };
 
 export default function AdminPage() {
   const [authed, setAuthed] = useState(false);
@@ -22,13 +25,21 @@ export default function AdminPage() {
   const [selected, setSelected] = useState<Book | null>(null);
   const [deleteUserTarget, setDeleteUserTarget] = useState<UserProfile | null>(null);
   const [form, setForm] = useState(emptyForm);
-  const [activeTab, setActiveTab] = useState<"books" | "borrowers" | "reviews" | "users">("books");
+  const [activeTab, setActiveTab] = useState<"books" | "borrowers" | "reviews" | "users" | "masterlist" | "chat">("books");
   const [loading, setLoading] = useState(false);
   const [returningId, setReturningId] = useState<string | null>(null);
   const [imageUploading, setImageUploading] = useState(false);
   const [adminProfileOpen, setAdminProfileOpen] = useState(false);
   const [earlyReturnTarget, setEarlyReturnTarget] = useState<Borrower | null>(null);
   const [earlyReturnDone, setEarlyReturnDone] = useState<string>("");
+  const [borrowerFilter, setBorrowerFilter] = useState<string>("All");
+  const [enrolledStudents, setEnrolledStudents] = useState<EnrolledStudent[]>([]);
+  const [enrollForm, setEnrollForm] = useState(emptyEnroll);
+  const [enrollLoading, setEnrollLoading] = useState(false);
+  const [chatUsers, setChatUsers] = useState<{user_id: string; username: string; last_message: string}[]>([]);
+  const [activeChatUser, setActiveChatUser] = useState<{user_id: string; username: string} | null>(null);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [chatReply, setChatReply] = useState("");
 
   const handleImageUpload = async (file: File) => {
     setImageUploading(true);
@@ -58,6 +69,45 @@ export default function AdminPage() {
     if (reviewData) setReviews(reviewData);
     const { data: userData } = await supabase.from("profiles").select("*").order("created_at", { ascending: false });
     if (userData) setUsers(userData);
+    const { data: enrollData } = await supabase.from("enrolled_students").select("*").order("full_name");
+    if (enrollData) setEnrolledStudents(enrollData);
+    // Load chat user list (distinct users who sent messages)
+    const { data: chatData } = await supabase.from("chat_messages").select("*").eq("is_admin", false).order("created_at", { ascending: false });
+    if (chatData) {
+      const seen = new Set<string>();
+      const list: {user_id: string; username: string; last_message: string}[] = [];
+      for (const m of chatData) {
+        if (!seen.has(m.user_id)) { seen.add(m.user_id); list.push({ user_id: m.user_id, username: m.username, last_message: m.message }); }
+      }
+      setChatUsers(list);
+    }
+  };
+
+  const handleAddEnrolled = async () => {
+    if (!enrollForm.student_id || !enrollForm.full_name || !enrollForm.course || !enrollForm.year) return;
+    setEnrollLoading(true);
+    const { error } = await supabase.from("enrolled_students").insert(enrollForm);
+    if (error) { alert("Failed: " + error.message); setEnrollLoading(false); return; }
+    setEnrollForm(emptyEnroll);
+    await fetchData();
+    setEnrollLoading(false);
+  };
+
+  const handleDeleteEnrolled = async (id: string) => {
+    await supabase.from("enrolled_students").delete().eq("id", id);
+    await fetchData();
+  };
+
+  const loadChatThread = async (userId: string) => {
+    const { data } = await supabase.from("chat_messages").select("*").or(`user_id.eq.${userId},is_admin.eq.true`).order("created_at");
+    if (data) setChatMessages(data);
+  };
+
+  const sendAdminReply = async () => {
+    if (!chatReply.trim() || !activeChatUser) return;
+    await supabase.from("chat_messages").insert({ user_id: activeChatUser.user_id, username: "Admin", message: chatReply.trim(), is_admin: true });
+    setChatReply("");
+    loadChatThread(activeChatUser.user_id);
   };
 
   const handleAdminLogin = () => {
@@ -283,9 +333,11 @@ export default function AdminPage() {
             { icon: "👥", label: "Borrowers" },
             { icon: "💬", label: "Reviews" },
             { icon: "👤", label: "Users" },
+            { icon: "🎓", label: "Masterlist" },
+            { icon: "💬", label: "Chat" },
           ].map((item) => (
             <button key={item.label}
-              onClick={() => setActiveTab(item.label.toLowerCase() as "books" | "borrowers" | "reviews" | "users")}
+              onClick={() => setActiveTab(item.label.toLowerCase() as "books" | "borrowers" | "reviews" | "users" | "masterlist" | "chat")}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition text-left ${
                 activeTab === item.label.toLowerCase() ? "bg-blue-600 text-white" : "text-slate-400 hover:bg-slate-800 hover:text-white"
               }`}>
@@ -407,7 +459,7 @@ export default function AdminPage() {
           </div>
 
           <div className="flex gap-1 bg-slate-100 p-1 rounded-xl w-fit mb-6">
-            {(["books", "borrowers", "reviews", "users"] as const).map((tab) => (
+            {(["books", "borrowers", "reviews", "users", "masterlist", "chat"] as const).map((tab) => (
               <button key={tab} onClick={() => setActiveTab(tab)}
                 className={`px-5 py-2 rounded-lg text-sm font-medium capitalize transition ${
                   activeTab === tab ? "bg-white text-slate-800 shadow-sm" : "text-slate-500 hover:text-slate-700"
@@ -421,7 +473,12 @@ export default function AdminPage() {
                       </span>
                     )}
                   </span>
-                ) : tab === "reviews" ? "💬 Reviews" : "👤 Users"}
+                ) : tab === "reviews" ? "💬 Reviews" : tab === "users" ? "👤 Users" : tab === "masterlist" ? "🎓 Masterlist" : (
+                  <span className="flex items-center gap-2">
+                    💬 Chat
+                    {chatUsers.length > 0 && <span className="bg-blue-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">{chatUsers.length}</span>}
+                  </span>
+                )}
               </button>
             ))}
           </div>
@@ -485,7 +542,15 @@ export default function AdminPage() {
           {activeTab === "borrowers" && (
             <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
               <div className="px-6 py-5 border-b border-slate-100 flex justify-between items-center">
-                <h3 className="font-semibold text-slate-700">Borrower Records</h3>
+                <div className="flex items-center gap-3">
+                  <h3 className="font-semibold text-slate-700">Borrower Records</h3>
+                  <select value={borrowerFilter} onChange={(e) => setBorrowerFilter(e.target.value)}
+                    className="border border-slate-200 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 transition">
+                    {["All", "Pending", "Active", "Pending Return", "Early Return", "Returned"].map((s) => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </select>
+                </div>
                 <div className="flex items-center gap-3">
                   {borrowers.filter(b => b.status === "Pending").length > 0 && (
                     <span className="bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1 rounded-full">
@@ -517,7 +582,7 @@ export default function AdminPage() {
                   {borrowers.length === 0 ? (
                     <tr><td colSpan={5} className="px-6 py-12 text-center text-slate-400">No borrow records yet.</td></tr>
                   ) : (
-                    borrowers.map((b) => {
+                    borrowers.filter((b) => borrowerFilter === "All" || b.status === borrowerFilter).map((b) => {
                       const overdueDays = calcOverdue(b.due_date, b.status);
                       const isOverdue = overdueDays > 0;
                       return (
@@ -581,6 +646,140 @@ export default function AdminPage() {
               </table>
             </div>
           )}
+          {activeTab === "masterlist" && (
+            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+              <div className="px-6 py-5 border-b border-slate-100">
+                <h3 className="font-semibold text-slate-700 mb-4">Add Enrolled Student</h3>
+                <div className="grid grid-cols-4 gap-3">
+                  <input placeholder="Student ID (e.g. 2021-00001)" value={enrollForm.student_id}
+                    onChange={(e) => setEnrollForm({ ...enrollForm, student_id: e.target.value })}
+                    className="border border-slate-200 px-3 py-2 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-400" />
+                  <input placeholder="Full Name" value={enrollForm.full_name}
+                    onChange={(e) => setEnrollForm({ ...enrollForm, full_name: e.target.value })}
+                    className="border border-slate-200 px-3 py-2 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-400" />
+                  <select value={enrollForm.course} onChange={(e) => setEnrollForm({ ...enrollForm, course: e.target.value })}
+                    className="border border-slate-200 px-3 py-2 rounded-xl text-xs bg-white focus:outline-none focus:ring-2 focus:ring-blue-400">
+                    <option value="">Course</option>
+                    {["BSIT","BSCS","BSCE","BSBA","BSN","BSHM","BSCRIM","BSED"].map((c) => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                  <select value={enrollForm.year} onChange={(e) => setEnrollForm({ ...enrollForm, year: e.target.value })}
+                    className="border border-slate-200 px-3 py-2 rounded-xl text-xs bg-white focus:outline-none focus:ring-2 focus:ring-blue-400">
+                    <option value="">Year</option>
+                    {["1st Year","2nd Year","3rd Year","4th Year"].map((y) => <option key={y} value={y}>{y}</option>)}
+                  </select>
+                </div>
+                <button onClick={handleAddEnrolled} disabled={enrollLoading}
+                  className="mt-3 px-5 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white text-xs font-semibold rounded-xl transition">
+                  {enrollLoading ? "Adding..." : "+ Add Student"}
+                </button>
+              </div>
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-slate-50 border-b border-slate-100">
+                    {["Student ID","Full Name","Course","Year","Action"].map((h) => (
+                      <th key={h} className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-50">
+                  {enrolledStudents.length === 0 ? (
+                    <tr><td colSpan={5} className="px-6 py-12 text-center text-slate-400">No enrolled students yet. Add some above.</td></tr>
+                  ) : (
+                    enrolledStudents.map((s) => (
+                      <tr key={s.id} className="hover:bg-slate-50 transition">
+                        <td className="px-6 py-4 font-mono text-slate-700 text-xs">{s.student_id}</td>
+                        <td className="px-6 py-4 font-semibold text-slate-800">{s.full_name}</td>
+                        <td className="px-6 py-4"><span className="bg-blue-50 text-blue-700 text-xs px-2.5 py-1 rounded-full font-medium">{s.course}</span></td>
+                        <td className="px-6 py-4 text-slate-500 text-xs">{s.year}</td>
+                        <td className="px-6 py-4">
+                          <button onClick={() => handleDeleteEnrolled(s.id)}
+                            className="px-3 py-1.5 text-xs font-medium border border-red-200 text-red-500 rounded-lg hover:bg-red-50 transition">Remove</button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+              <div className="px-6 py-3 border-t border-slate-100 bg-slate-50 text-xs text-slate-400">
+                {enrolledStudents.length} enrolled students · Students must be on this list to register
+              </div>
+            </div>
+          )}
+
+          {activeTab === "chat" && (
+            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden flex" style={{height:"600px"}}>
+              {/* USER LIST */}
+              <div className="w-64 border-r border-slate-100 flex flex-col">
+                <div className="px-4 py-4 border-b border-slate-100">
+                  <h3 className="font-semibold text-slate-700 text-sm">Student Messages</h3>
+                  <p className="text-xs text-slate-400 mt-0.5">{chatUsers.length} conversation{chatUsers.length !== 1 ? "s" : ""}</p>
+                </div>
+                <div className="flex-1 overflow-y-auto">
+                  {chatUsers.length === 0 ? (
+                    <p className="text-xs text-slate-400 text-center mt-8 px-4">No messages yet.</p>
+                  ) : (
+                    chatUsers.map((u) => (
+                      <button key={u.user_id}
+                        onClick={() => { setActiveChatUser({ user_id: u.user_id, username: u.username }); loadChatThread(u.user_id); }}
+                        className={`w-full px-4 py-3 text-left border-b border-slate-50 hover:bg-slate-50 transition ${
+                          activeChatUser?.user_id === u.user_id ? "bg-blue-50" : ""
+                        }`}>
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-xs flex-shrink-0">
+                            {u.username.charAt(0).toUpperCase()}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-xs font-semibold text-slate-800 truncate">{u.username}</p>
+                            <p className="text-xs text-slate-400 truncate">{u.last_message}</p>
+                          </div>
+                        </div>
+                      </button>
+                    ))
+                  )}
+                </div>
+              </div>
+              {/* CHAT THREAD */}
+              <div className="flex-1 flex flex-col">
+                {!activeChatUser ? (
+                  <div className="flex-1 flex items-center justify-center">
+                    <div className="text-center">
+                      <div className="text-4xl mb-3">💬</div>
+                      <p className="text-slate-400 text-sm">Select a conversation to reply</p>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div className="px-5 py-4 border-b border-slate-100 flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-xs">
+                        {activeChatUser.username.charAt(0).toUpperCase()}
+                      </div>
+                      <p className="font-semibold text-slate-800 text-sm">{activeChatUser.username}</p>
+                    </div>
+                    <div className="flex-1 overflow-y-auto p-5 space-y-3 bg-slate-50">
+                      {chatMessages.map((m) => (
+                        <div key={m.id} className={`flex ${m.is_admin ? "justify-end" : "justify-start"}`}>
+                          <div className={`max-w-[70%] px-3 py-2 rounded-2xl text-xs ${
+                            m.is_admin ? "bg-blue-600 text-white rounded-tr-sm" : "bg-white border border-slate-200 text-slate-700 rounded-tl-sm"
+                          }`}>
+                            {!m.is_admin && <p className="font-bold text-blue-600 mb-0.5">{m.username}</p>}
+                            <p>{m.message}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="p-4 border-t border-slate-100 bg-white flex gap-2">
+                      <input value={chatReply} onChange={(e) => setChatReply(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && sendAdminReply()}
+                        placeholder="Type a reply..."
+                        className="flex-1 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-400" />
+                      <button onClick={sendAdminReply} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-xs font-semibold transition">Send</button>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
+
           {activeTab === "users" && (
             <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
               <div className="px-6 py-5 border-b border-slate-100 flex justify-between items-center">

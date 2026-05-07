@@ -7,7 +7,7 @@ const courses = ["BSIT", "BSCS", "BSCE", "BSBA", "BSN", "BSHM", "BSCRIM", "BSED"
 const yearLevels = ["1st Year", "2nd Year", "3rd Year", "4th Year"];
 
 export default function Register() {
-  const [form, setForm] = useState({ name: "", email: "", username: "", password: "", confirmPassword: "", course: "", year: "", contact: "" });
+  const [form, setForm] = useState({ name: "", email: "", username: "", password: "", confirmPassword: "", course: "", year: "", contact: "", studentId: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState<"form" | "otp">("form");
@@ -15,7 +15,7 @@ export default function Register() {
   const [verifying, setVerifying] = useState(false);
 
   const handleRegister = async () => {
-    if (!form.name || !form.email || !form.username || !form.password || !form.confirmPassword || !form.course || !form.year) {
+    if (!form.name || !form.email || !form.username || !form.password || !form.confirmPassword || !form.course || !form.year || !form.studentId) {
       setError("Please fill in all fields."); return;
     }
     if (form.password !== form.confirmPassword) {
@@ -23,6 +23,20 @@ export default function Register() {
     }
     setLoading(true);
     setError("");
+
+    // Verify student ID against enrolled_students masterlist
+    const { data: enrolled, error: enrollErr } = await supabase
+      .from("enrolled_students")
+      .select("id")
+      .eq("student_id", form.studentId.trim())
+      .single();
+
+    if (enrollErr || !enrolled) {
+      setError("Student ID not found in the enrollment masterlist. Please contact the librarian.");
+      setLoading(false);
+      return;
+    }
+
     const { data, error: authError } = await supabase.auth.signUp({
       email: form.email,
       password: form.password,
@@ -37,6 +51,7 @@ export default function Register() {
         course: form.course,
         year: form.year,
         contact_number: form.contact,
+        student_id: form.studentId,
       });
     }
     setLoading(false);
@@ -125,6 +140,13 @@ export default function Register() {
                 <p className="text-slate-400 text-sm mt-1">Join the SCSIT Library community today</p>
               </div>
               <div className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium text-slate-700 mb-1.5 block">Student ID</label>
+                  <input type="text" placeholder="e.g. 2021-00001"
+                    className="border border-slate-200 p-3 w-full rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition shadow-sm"
+                    onChange={(e) => setForm({ ...form, studentId: e.target.value })} />
+                  <p className="text-xs text-slate-400 mt-1">Must match the enrollment masterlist for verification.</p>
+                </div>
                 <div>
                   <label className="text-sm font-medium text-slate-700 mb-1.5 block">Full Name</label>
                   <input type="text" placeholder="e.g. Juan Dela Cruz"

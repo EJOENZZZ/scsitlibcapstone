@@ -7,6 +7,8 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
+const departments = ["BSIT","BSCS","BSCE","BSBA","BSN","BSHM","BSCRIM","BSED"];
+
 export default async function Home() {
   noStore();
   const { data: books } = await supabase.from("books").select("*").order("title");
@@ -35,6 +37,14 @@ export default async function Home() {
           <Link href="/register" className="px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white transition">Sign Up</Link>
         </div>
       </nav>
+
+      {/* DEPARTMENT BANNER */}
+      <div className="w-full bg-slate-800 border-b border-slate-700 py-2 px-10 flex items-center gap-2 overflow-x-auto scrollbar-none">
+        <span className="text-xs text-slate-400 font-semibold uppercase tracking-wider mr-2 whitespace-nowrap">Departments:</span>
+        {departments.map((d) => (
+          <span key={d} className="px-3 py-1 rounded-full bg-slate-700 text-slate-300 text-xs font-medium whitespace-nowrap hover:bg-blue-600 hover:text-white transition cursor-default">{d}</span>
+        ))}
+      </div>
 
       {/* FEATURED BOOKS */}
       <section id="books" className="py-24 bg-gradient-to-b from-white to-slate-50">
@@ -102,33 +112,23 @@ export default async function Home() {
               The SCSIT Library is dedicated to supporting the academic growth and intellectual development of every student in the School of Computer Studies and Information Technology.
             </p>
           </div>
-
-          {/* ABOUT CARDS */}
           <div className="grid md:grid-cols-3 gap-8 mb-16">
             <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-3xl p-8 border border-blue-200/50 shadow-sm">
               <div className="w-14 h-14 rounded-2xl bg-blue-600 flex items-center justify-center text-2xl mb-6 shadow-lg">🏛️</div>
               <h3 className="font-bold text-slate-800 text-xl mb-3">Our Library</h3>
-              <p className="text-slate-600 leading-relaxed text-sm">
-                The SCSIT Library serves as the academic resource center of the School of Computer Studies and Information Technology. It provides students and faculty with access to a wide collection of books, references, and academic materials that support learning and research.
-              </p>
+              <p className="text-slate-600 leading-relaxed text-sm">The SCSIT Library serves as the academic resource center of the School of Computer Studies and Information Technology. It provides students and faculty with access to a wide collection of books, references, and academic materials that support learning and research.</p>
             </div>
             <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-3xl p-8 border border-emerald-200/50 shadow-sm">
               <div className="w-14 h-14 rounded-2xl bg-emerald-600 flex items-center justify-center text-2xl mb-6 shadow-lg">🎯</div>
               <h3 className="font-bold text-slate-800 text-xl mb-3">Our Mission</h3>
-              <p className="text-slate-600 leading-relaxed text-sm">
-                To provide accessible, organized, and efficient library services that support the academic and research needs of SCSIT students and faculty — fostering a culture of reading, learning, and intellectual growth through the use of modern technology.
-              </p>
+              <p className="text-slate-600 leading-relaxed text-sm">To provide accessible, organized, and efficient library services that support the academic and research needs of SCSIT students and faculty — fostering a culture of reading, learning, and intellectual growth through the use of modern technology.</p>
             </div>
             <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-3xl p-8 border border-purple-200/50 shadow-sm">
               <div className="w-14 h-14 rounded-2xl bg-purple-600 flex items-center justify-center text-2xl mb-6 shadow-lg">🔭</div>
               <h3 className="font-bold text-slate-800 text-xl mb-3">Our Vision</h3>
-              <p className="text-slate-600 leading-relaxed text-sm">
-                To be a leading digital library that empowers every SCSIT student with the knowledge and resources they need to excel academically — a library that is modern, inclusive, and responsive to the evolving needs of the academic community.
-              </p>
+              <p className="text-slate-600 leading-relaxed text-sm">To be a leading digital library that empowers every SCSIT student with the knowledge and resources they need to excel academically — a library that is modern, inclusive, and responsive to the evolving needs of the academic community.</p>
             </div>
           </div>
-
-          {/* CORE VALUES */}
           <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-3xl p-10 text-white">
             <div className="text-center mb-10">
               <span className="text-xs font-bold text-blue-400 uppercase tracking-widest">What We Stand For</span>
@@ -149,8 +149,6 @@ export default async function Home() {
               ))}
             </div>
           </div>
-
-          {/* LIBRARIAN */}
           <div className="mt-12 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-3xl p-10 border border-blue-100 flex flex-col md:flex-row items-center gap-8">
             <div className="w-24 h-24 rounded-full overflow-hidden shadow-xl flex-shrink-0 border-4 border-blue-200">
               <img src="/edith.jpg" alt="Miss Edith Laborte" className="w-full h-full object-cover" />
@@ -158,9 +156,7 @@ export default async function Home() {
             <div>
               <span className="text-xs font-bold text-blue-600 uppercase tracking-widest">Meet Our Librarian</span>
               <h3 className="text-2xl font-bold text-slate-800 mt-1 mb-2">Miss Edith Laborte</h3>
-              <p className="text-slate-600 leading-relaxed">
-                Miss Edith Laborte is the dedicated librarian of the SCSIT Library. She oversees the day-to-day operations of the library, manages the book collection, and ensures that every student has a positive and productive library experience. Her commitment to service and her passion for supporting student learning are the driving forces behind this digital library system.
-              </p>
+              <p className="text-slate-600 leading-relaxed">Miss Edith Laborte is the dedicated librarian of the SCSIT Library. She oversees the day-to-day operations of the library, manages the book collection, and ensures that every student has a positive and productive library experience.</p>
             </div>
           </div>
         </div>
@@ -178,9 +174,7 @@ export default async function Home() {
             <div className="text-center py-16 bg-white rounded-3xl border border-slate-200 shadow-sm">
               <div className="text-5xl mb-4">💬</div>
               <p className="text-slate-500 text-lg">No reviews yet.</p>
-              <Link href="/register" className="inline-block mt-6 px-6 py-3 bg-blue-600 text-white rounded-xl font-semibold text-sm hover:bg-blue-700 transition">
-                Create Account & Review
-              </Link>
+              <Link href="/register" className="inline-block mt-6 px-6 py-3 bg-blue-600 text-white rounded-xl font-semibold text-sm hover:bg-blue-700 transition">Create Account & Review</Link>
             </div>
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
