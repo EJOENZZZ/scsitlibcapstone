@@ -108,8 +108,8 @@ export default function Register() {
     window.location.href = `/dashboard?user=${encodeURIComponent(form.username)}`;
   };
 
-  const inputCls = "border border-slate-200 p-3 w-full rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition shadow-sm";
-  const labelCls = "text-sm font-medium text-slate-700 mb-1.5 block";
+  const inputCls = "border border-slate-200 p-2.5 w-full rounded-xl text-xs bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition shadow-sm";
+  const labelCls = "text-xs font-medium text-slate-700 mb-1 block";
 
   const btnColor: Record<Role, string> = {
     student: "bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800",
@@ -146,15 +146,15 @@ export default function Register() {
         <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-100/50 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
 
         <div className="w-full max-w-md relative z-10">
-          {error && <div className="bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-3 rounded-xl mb-5">{error}</div>}
+          {error && <div className="bg-red-50 border border-red-200 text-red-600 text-xs px-3 py-2.5 rounded-xl mb-4">{error}</div>}
 
           {step === "otp" ? (
             <>
-              <div className="text-center mb-6">
-                <div className="text-4xl mb-3">📧</div>
-                <h1 className="text-2xl font-bold text-slate-800 mb-1">Check your email</h1>
-                <p className="text-slate-400 text-sm">We sent a 6-digit code to</p>
-                <p className="text-blue-600 font-semibold text-sm mt-1">{form.email}</p>
+              <div className="text-center mb-5">
+                <div className="text-3xl mb-2">📧</div>
+                <h1 className="text-xl font-bold text-slate-800 mb-1">Check your email</h1>
+                <p className="text-slate-400 text-xs">We sent a 6-digit code to</p>
+                <p className="text-blue-600 font-semibold text-xs mt-1">{form.email}</p>
               </div>
               <label className={labelCls}>Enter OTP Code</label>
               <input type="text" maxLength={6} placeholder="000000" value={otp}
@@ -162,38 +162,38 @@ export default function Register() {
                 onKeyDown={(e) => e.key === "Enter" && handleVerify()}
                 className="border border-slate-200 p-3 w-full rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition shadow-sm text-center text-2xl tracking-widest font-bold" />
               <button onClick={handleVerify} disabled={verifying}
-                className="bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white w-full py-3 rounded-xl transition font-semibold mt-4 text-sm shadow-lg">
+                className="bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white w-full py-2.5 rounded-xl transition font-semibold mt-3 text-xs shadow-lg">
                 {verifying ? "Verifying..." : "Verify & Create Account"}
               </button>
               <button onClick={() => { setStep("form"); setOtp(""); setError(""); }}
-                className="w-full text-center text-sm text-slate-400 hover:text-slate-600 transition mt-3">
+                className="w-full text-center text-xs text-slate-400 hover:text-slate-600 transition mt-2">
                 ← Back
               </button>
             </>
           ) : (
             <>
-              <div className="mb-6">
-                <h1 className="text-2xl font-bold text-slate-800">Create your account</h1>
-                <p className="text-slate-400 text-sm mt-1">Join the SCSIT Library community today</p>
+              <div className="mb-4">
+                <h1 className="text-xl font-bold text-slate-800">Create your account</h1>
+                <p className="text-slate-400 text-xs mt-1">Join the SCSIT Library community today</p>
               </div>
 
               {/* ROLE TOGGLE */}
-              <div className="flex bg-slate-100 rounded-2xl p-1 mb-5">
+              <div className="flex bg-slate-100 rounded-xl p-1 mb-4">
                 {(["student", "faculty", "staff"] as Role[]).map((r) => (
                   <button key={r} onClick={() => setRole(r)}
-                    className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition ${role === r ? `bg-white shadow-sm ${roleConfig[r].btnActive}` : "text-slate-500 hover:text-slate-700"}`}>
+                    className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-xs font-semibold transition ${role === r ? `bg-white shadow-sm ${roleConfig[r].btnActive}` : "text-slate-500 hover:text-slate-700"}`}>
                     {roleConfig[r].emoji} {roleConfig[r].label}
                   </button>
                 ))}
               </div>
 
               {/* ROLE BADGE */}
-              <div className={`flex items-center gap-2 px-4 py-2.5 rounded-xl mb-5 text-xs font-medium border ${cfg.badge}`}>
+              <div className={`flex items-center gap-2 px-3 py-2 rounded-lg mb-4 text-xs font-medium border ${cfg.badge}`}>
                 <span>{cfg.emoji}</span>
                 <span>{cfg.label} registration requires a valid {cfg.idLabel} from the {cfg.label.toLowerCase()} masterlist.</span>
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {/* VERIFY ID */}
                 <div>
                   <label className={labelCls}>{cfg.idLabel} <span className="text-red-400">*</span></label>
@@ -279,11 +279,11 @@ export default function Register() {
               </div>
 
               <button onClick={handleRegister} disabled={loading}
-                className={`w-full py-3 rounded-xl transition font-semibold mt-6 text-sm shadow-lg text-white disabled:opacity-60 ${btnColor[role]}`}>
+                className={`w-full py-2.5 rounded-xl transition font-semibold mt-4 text-xs shadow-lg text-white disabled:opacity-60 ${btnColor[role]}`}>
                 {loading ? "Verifying & sending code..." : `Create ${cfg.label} Account`}
               </button>
 
-              <p className="text-center text-sm text-slate-400 mt-5">
+              <p className="text-center text-xs text-slate-400 mt-4">
                 Already have an account?{" "}
                 <Link href="/login" className="text-blue-600 font-medium hover:underline">Sign in</Link>
               </p>
