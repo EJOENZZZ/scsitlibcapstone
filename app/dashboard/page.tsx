@@ -27,7 +27,7 @@ const calcFine = (due_date: string, status: string) => {
   const days = Math.floor((today.getTime() - due.getTime()) / 86400000);
   return days > 0 ? days : 0;
 };
-type Review = { id: string; username: string; course: string; comment: string; rating: number; created_at: string; };
+type Review = { id: string; username: string; email?: string; course: string; comment: string; rating: number; created_at: string; };
 
 const features = [
   { icon: "🔍", title: "Smart Search", desc: "Find any book instantly by title, author, or genre across our entire catalog." },
@@ -54,6 +54,7 @@ function ReviewForm({ username, onSubmit }: { username: string; onSubmit: () => 
     const { error: insertError } = await supabase.from("reviews").insert({
       user_id: user.id,
       username,
+      email: user.email,
       course,
       comment,
       rating,
@@ -141,10 +142,10 @@ function ReviewsList() {
           <p className="text-slate-600 leading-relaxed mb-6 text-sm">&ldquo;{r.comment}&rdquo;</p>
           <div className="flex items-center gap-3 border-t border-slate-100 pt-4">
             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center text-lg font-bold text-blue-600">
-              {r.username.charAt(0).toUpperCase()}
+              {(r.email || r.username).charAt(0).toUpperCase()}
             </div>
             <div>
-              <p className="font-bold text-slate-800 text-sm">{r.username}</p>
+              <p className="font-bold text-slate-800 text-sm">{r.email || r.username}</p>
               <p className="text-xs text-slate-500">{r.course}</p>
             </div>
           </div>
@@ -187,29 +188,29 @@ function DashboardContent() {
       if (booksData) setBooks(booksData);
 
       const user = await getAuthUser();
-      if (user) {
-        setChatUserId(user.id);
-        const { data: profile } = await supabase.from("profiles").select("username, favorites").eq("id", user.id).single();
-        if (profile?.username) setUsername(profile.username);
-        else if (user.user_metadata?.username) setUsername(user.user_metadata.username);
-        if (profile?.favorites) setFavorites(profile.favorites);
+      if (!user) { window.location.href = "/login"; return; }
 
-        const { data: borrowData } = await supabase
-          .from("borrow_records").select("*").eq("user_id", user.id).order("created_at", { ascending: false });
-        if (borrowData) {
-          setBorrows(borrowData);
-          setApprovedBooks(borrowData.filter((b: BorrowRecord) => b.status === "Active"));
-        }
+      setChatUserId(user.id);
+      const { data: profile } = await supabase.from("profiles").select("username, favorites").eq("id", user.id).single();
+      if (profile?.username) setUsername(profile.username);
+      else if (user.user_metadata?.username) setUsername(user.user_metadata.username);
+      if (profile?.favorites) setFavorites(profile.favorites);
 
-        // Mark user as online
-        const { data: existing } = await supabase
-          .from("user_sessions").select("id").eq("user_id", user.id).single();
+      const { data: borrowData } = await supabase
+        .from("borrow_records").select("*").eq("user_id", user.id).order("created_at", { ascending: false });
+      if (borrowData) {
+        setBorrows(borrowData);
+        setApprovedBooks(borrowData.filter((b: BorrowRecord) => b.status === "Active"));
+      }
 
-        if (existing) {
-          await supabase.from("user_sessions").update({ last_seen: new Date().toISOString() }).eq("user_id", user.id);
-        } else {
-          await supabase.from("user_sessions").insert({ user_id: user.id, username, last_seen: new Date().toISOString() });
-        }
+      // Mark user as online
+      const { data: existing } = await supabase
+        .from("user_sessions").select("id").eq("user_id", user.id).single();
+
+      if (existing) {
+        await supabase.from("user_sessions").update({ last_seen: new Date().toISOString() }).eq("user_id", user.id);
+      } else {
+        await supabase.from("user_sessions").insert({ user_id: user.id, username, last_seen: new Date().toISOString() });
       }
 
       // Count users online in last 10 minutes

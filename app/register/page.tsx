@@ -67,6 +67,14 @@ export default function Register() {
     setLoading(true);
     setError("");
 
+    // Check username uniqueness
+    const { data: existingUser } = await supabase
+      .from("profiles").select("id").eq("username", form.username.trim()).single();
+    if (existingUser) {
+      setError("Username is already taken. Please choose a different one.");
+      setLoading(false); return;
+    }
+
     const { data: verified, error: verifyErr } = await supabase
       .from(cfg.table).select("id").eq(cfg.tableKey, form.verifyId.trim()).single();
     if (verifyErr || !verified) {
@@ -95,6 +103,8 @@ export default function Register() {
         position: role === "staff" ? form.position : null,
       });
     }
+    // Sign out immediately so user can't access dashboard before OTP verification
+    await supabase.auth.signOut();
     setLoading(false);
     setStep("otp");
   };

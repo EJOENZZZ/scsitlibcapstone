@@ -65,7 +65,13 @@ export default function AdminPage() {
   };
 
   useEffect(() => {
+    const session = sessionStorage.getItem("adminAuthed");
+    if (session === "1") setAuthed(true);
+  }, []);
+
+  useEffect(() => {
     if (authed) {
+      sessionStorage.setItem("adminAuthed", "1");
       fetchData();
       const interval = setInterval(fetchData, 10000);
       return () => clearInterval(interval);

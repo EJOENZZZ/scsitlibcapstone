@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 
-type Review = { id: string; username: string; course: string; comment: string; rating: number; created_at: string; };
+type Review = { id: string; username: string; email?: string; course: string; comment: string; rating: number; created_at: string; };
 
 function ReviewForm({ username, onSubmit }: { username: string; onSubmit: () => void }) {
   const [comment, setComment] = useState("");
@@ -23,6 +23,7 @@ function ReviewForm({ username, onSubmit }: { username: string; onSubmit: () => 
     const { error: insertError } = await supabase.from("reviews").insert({
       user_id: user.id,
       username,
+      email: user.email,
       course,
       comment,
       rating,
@@ -111,10 +112,10 @@ function ReviewsList({ refreshKey }: { refreshKey: number }) {
           <p className="text-slate-600 leading-relaxed mb-6 text-sm">&ldquo;{r.comment}&rdquo;</p>
           <div className="flex items-center gap-3 border-t border-slate-100 pt-4">
             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center text-lg font-bold text-blue-600">
-              {r.username.charAt(0).toUpperCase()}
+              {(r.email || r.username).charAt(0).toUpperCase()}
             </div>
             <div>
-              <p className="font-bold text-slate-800 text-sm">{r.username}</p>
+              <p className="font-bold text-slate-800 text-sm">{r.email || r.username}</p>
               <p className="text-xs text-slate-500">{r.course}</p>
             </div>
           </div>
