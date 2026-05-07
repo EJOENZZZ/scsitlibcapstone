@@ -51,6 +51,7 @@ export default function AdminPage() {
   const [activeChatUser, setActiveChatUser] = useState<{user_id: string; username: string} | null>(null);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [chatReply, setChatReply] = useState("");
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
   const handleImageUpload = async (file: File) => {
     setImageUploading(true);
@@ -506,9 +507,19 @@ export default function AdminPage() {
                             </span>
                           </td>
                           <td className="px-6 py-4">
-                            <div className="flex gap-2">
-                              <button onClick={() => openEdit(book)} className="px-3 py-1.5 text-xs font-medium border border-blue-200 text-blue-600 rounded-lg hover:bg-blue-50 transition">Edit</button>
-                              <button onClick={() => openDelete(book)} className="px-3 py-1.5 text-xs font-medium border border-red-200 text-red-500 rounded-lg hover:bg-red-50 transition">Delete</button>
+                            <div className="relative">
+                              <button onClick={() => setOpenDropdown(openDropdown === book.id ? null : book.id)}
+                                className="px-3 py-1.5 text-xs font-medium border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 transition flex items-center gap-1">
+                                Actions <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                              </button>
+                              {openDropdown === book.id && (
+                                <div className="absolute right-0 mt-1 w-36 bg-white rounded-xl shadow-xl border border-slate-100 py-1 z-20">
+                                  <button onClick={() => { openEdit(book); setOpenDropdown(null); }}
+                                    className="w-full text-left px-4 py-2 text-xs text-blue-600 hover:bg-blue-50 transition">✏️ Edit</button>
+                                  <button onClick={() => { openDelete(book); setOpenDropdown(null); }}
+                                    className="w-full text-left px-4 py-2 text-xs text-red-500 hover:bg-red-50 transition">🗑️ Delete</button>
+                                </div>
+                              )}
                             </div>
                           </td>
                         </tr>
@@ -586,36 +597,47 @@ export default function AdminPage() {
                           }`}>{isOverdue ? `Overdue (${overdueDays}d)` : b.status}</span>
                         </td>
                         <td className="px-6 py-4">
-                          <div className="flex gap-2">
-                            {b.status === "Pending" && (
-                              <>
-                                <button onClick={() => handleApproveBorrow(b)} disabled={returningId === b.id}
-                                  className="px-3 py-1.5 text-xs font-medium border border-blue-200 text-blue-600 rounded-lg hover:bg-blue-50 transition disabled:opacity-50">
-                                  {returningId === b.id ? "Processing..." : "✅ Approve"}
-                                </button>
-                                <button onClick={() => handleRejectBorrow(b)}
-                                  className="px-3 py-1.5 text-xs font-medium border border-red-200 text-red-500 rounded-lg hover:bg-red-50 transition">
-                                  ✗ Reject
-                                </button>
-                              </>
-                            )}
-                            {b.status === "Pending Return" && (
-                              <button onClick={() => handleReturn(b)} disabled={returningId === b.id}
-                                className="px-3 py-1.5 text-xs font-medium border border-emerald-200 text-emerald-600 rounded-lg hover:bg-emerald-50 transition disabled:opacity-50">
-                                {returningId === b.id ? "Processing..." : "✅ Confirm Return"}
-                              </button>
-                            )}
-                            {b.status === "Early Return" && (
-                              <button onClick={() => setEarlyReturnTarget(b)} disabled={returningId === b.id}
-                                className="px-3 py-1.5 text-xs font-medium border border-purple-200 text-purple-600 rounded-lg hover:bg-purple-50 transition disabled:opacity-50">
-                                ↩ Confirm Early Return
-                              </button>
-                            )}
-                            {isOverdue && (
-                              <span className="text-xs font-semibold text-red-500">₱{overdueDays}.00 fine</span>
-                            )}
-                            {b.status === "Returned" && (
+                          <div className="relative">
+                            {b.status === "Returned" ? (
                               <span className="text-xs font-medium text-slate-400">Returned</span>
+                            ) : (
+                              <>
+                                <button onClick={() => setOpenDropdown(openDropdown === b.id ? null : b.id)}
+                                  className="px-3 py-1.5 text-xs font-medium border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 transition flex items-center gap-1">
+                                  Actions <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                                </button>
+                                {openDropdown === b.id && (
+                                  <div className="absolute right-0 mt-1 w-44 bg-white rounded-xl shadow-xl border border-slate-100 py-1 z-20">
+                                    {b.status === "Pending" && (
+                                      <>
+                                        <button onClick={() => { handleApproveBorrow(b); setOpenDropdown(null); }} disabled={returningId === b.id}
+                                          className="w-full text-left px-4 py-2 text-xs text-emerald-600 hover:bg-emerald-50 transition disabled:opacity-50">
+                                          {returningId === b.id ? "Processing..." : "✅ Approve"}
+                                        </button>
+                                        <button onClick={() => { handleRejectBorrow(b); setOpenDropdown(null); }}
+                                          className="w-full text-left px-4 py-2 text-xs text-red-500 hover:bg-red-50 transition">✗ Reject</button>
+                                      </>
+                                    )}
+                                    {b.status === "Pending Return" && (
+                                      <button onClick={() => { handleReturn(b); setOpenDropdown(null); }} disabled={returningId === b.id}
+                                        className="w-full text-left px-4 py-2 text-xs text-emerald-600 hover:bg-emerald-50 transition disabled:opacity-50">
+                                        {returningId === b.id ? "Processing..." : "✅ Confirm Return"}
+                                      </button>
+                                    )}
+                                    {b.status === "Early Return" && (
+                                      <button onClick={() => { setEarlyReturnTarget(b); setOpenDropdown(null); }} disabled={returningId === b.id}
+                                        className="w-full text-left px-4 py-2 text-xs text-purple-600 hover:bg-purple-50 transition disabled:opacity-50">
+                                        ↩ Confirm Early Return
+                                      </button>
+                                    )}
+                                    {isOverdue && (
+                                      <div className="px-4 py-2 text-xs text-red-500 font-semibold border-t border-slate-100">
+                                        Fine: ₱{overdueDays}.00
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+                              </>
                             )}
                           </div>
                         </td>
@@ -916,10 +938,18 @@ export default function AdminPage() {
                         <td className="px-6 py-4 text-slate-500">{u.contact_number || "—"}</td>
                         <td className="px-6 py-4 text-slate-400 text-xs">{new Date(u.created_at).toLocaleDateString()}</td>
                         <td className="px-6 py-4">
-                          <button onClick={() => setDeleteUserTarget(u)}
-                            className="px-3 py-1.5 text-xs font-medium border border-red-200 text-red-500 rounded-lg hover:bg-red-50 transition">
-                            Remove
-                          </button>
+                          <div className="relative">
+                            <button onClick={() => setOpenDropdown(openDropdown === u.id ? null : u.id)}
+                              className="px-3 py-1.5 text-xs font-medium border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 transition flex items-center gap-1">
+                              Actions <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                            </button>
+                            {openDropdown === u.id && (
+                              <div className="absolute right-0 mt-1 w-36 bg-white rounded-xl shadow-xl border border-slate-100 py-1 z-20">
+                                <button onClick={() => { setDeleteUserTarget(u); setOpenDropdown(null); }}
+                                  className="w-full text-left px-4 py-2 text-xs text-red-500 hover:bg-red-50 transition">Remove</button>
+                              </div>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     ))
@@ -969,22 +999,24 @@ export default function AdminPage() {
                           </span>
                         </td>
                         <td className="px-6 py-4">
-                          <div className="flex gap-2">
-                            {!r.approved ? (
-                              <button onClick={() => handleApproveReview(r.id, true)}
-                                className="px-3 py-1.5 text-xs font-medium border border-emerald-200 text-emerald-600 rounded-lg hover:bg-emerald-50 transition">
-                                Approve
-                              </button>
-                            ) : (
-                              <button onClick={() => handleApproveReview(r.id, false)}
-                                className="px-3 py-1.5 text-xs font-medium border border-amber-200 text-amber-600 rounded-lg hover:bg-amber-50 transition">
-                                Hide
-                              </button>
-                            )}
-                            <button onClick={() => handleDeleteReview(r.id)}
-                              className="px-3 py-1.5 text-xs font-medium border border-red-200 text-red-500 rounded-lg hover:bg-red-50 transition">
-                              Delete
+                          <div className="relative">
+                            <button onClick={() => setOpenDropdown(openDropdown === r.id ? null : r.id)}
+                              className="px-3 py-1.5 text-xs font-medium border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 transition flex items-center gap-1">
+                              Actions <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                             </button>
+                            {openDropdown === r.id && (
+                              <div className="absolute right-0 mt-1 w-36 bg-white rounded-xl shadow-xl border border-slate-100 py-1 z-20">
+                                {!r.approved ? (
+                                  <button onClick={() => { handleApproveReview(r.id, true); setOpenDropdown(null); }}
+                                    className="w-full text-left px-4 py-2 text-xs text-emerald-600 hover:bg-emerald-50 transition">Approve</button>
+                                ) : (
+                                  <button onClick={() => { handleApproveReview(r.id, false); setOpenDropdown(null); }}
+                                    className="w-full text-left px-4 py-2 text-xs text-amber-600 hover:bg-amber-50 transition">Hide</button>
+                                )}
+                                <button onClick={() => { handleDeleteReview(r.id); setOpenDropdown(null); }}
+                                  className="w-full text-left px-4 py-2 text-xs text-red-500 hover:bg-red-50 transition">Delete</button>
+                              </div>
+                            )}
                           </div>
                         </td>
                       </tr>
